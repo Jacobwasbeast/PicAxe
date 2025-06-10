@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "picaxe",
+  "version": "${version}",
+  "name": "PicAxe",
+  "description": "Use a Picture Axe to put internet images onto your shields, banners and even your beds.",
+  "authors": [
+    "Jacobwasbeast"
+  ],
+  "contact": {
+    "homepage": "https://jacobwasbeast.net/mods/picaxe"
+  },
+  "license": "MIT",
+  "icon": "assets/picaxe/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.jacobwasbeast.picaxe.fabric.MainFabric"
+    ],
+    "client": [
+      "net.jacobwasbeast.picaxe.fabric.client.MainFabricClient"
+    ]
+  },
+  "mixins": [
+    "picaxe.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "architectury": ">=13.0.8",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

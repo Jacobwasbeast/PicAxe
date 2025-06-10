@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "picaxe:block/six_sided_image_block"
+    }
+  }
+}

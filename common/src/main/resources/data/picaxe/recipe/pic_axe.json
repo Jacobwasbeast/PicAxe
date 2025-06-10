@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "pattern": [
+    " P ",
+    "PAP",
+    " P "
+  ],
+  "key": {
+    "P": {
+      "item": "picaxe:pixel_dust"
+    },
+    "A": {
+      "item": "minecraft:iron_axe"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "picaxe:pic_axe"
+  }
+}

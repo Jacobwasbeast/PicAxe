@@ -1,0 +1,39 @@
+{
+  "item.picaxe.pic_axe": "Picture Axe",
+  "item.picaxe.pixel_dust": "Pixel Dust",
+  "item.picaxe.image_shield": "Image Shield",
+  "tooltip.picaxe.url": "URL: %s",
+  "tooltip.picaxe.when_used": "When used:",
+  "tooltip.picaxe.use_action": "▶ Sneak + Right-click: Set image URL",
+  "tooltip.picaxe.sneak_use_action": "▶ Right-click on block: Apply image",
+  "block.picaxe.image_banner": "Image Banner",
+  "block.picaxe.image_bed": "Image Bed",
+  "block.picaxe.six_sided_image_block": "Six-Sided Image Block",
+  "block.picaxe.image_frame": "Image Frame",
+
+  "picaxe.image_bed.set": "Image Bed texture set.",
+  "picaxe.image_bed.render_type": "Image Bed render type set to: %s",
+
+  "picaxe.image_banner.set": "Image Banner texture set.",
+  "picaxe.image_banner.render_type": "Image Banner render type set to: %s",
+  "picaxe.image_banner.already_set": "This image is already set on the banner.",
+
+  "picaxe.image_block.set_face": "Image Block %s face set to: %s",
+  "picaxe.image_block.remove_face": "Image Block %s face removed.",
+
+  "picaxe.screen.url_input.title": "Set Image URL",
+  "picaxe.screen.url_input.url": "Image URL...",
+  "picaxe.screen.url_input.confirm": "Confirm",
+  "picaxe.screen.url_input.cancel": "Cancel",
+
+  "picaxe.screen.image_frame.title": "Configure Image Frame",
+  "picaxe.screen.image_frame.width": "Width",
+  "picaxe.screen.image_frame.height": "Height",
+  "picaxe.screen.image_frame.width_label": "Width (1-6)",
+  "picaxe.screen.image_frame.height_label": "Height (1-6)",
+  "picaxe.screen.image_frame.stretch_mode": "Stretch to Fit: %s",
+  "picaxe.screen.image_frame.stretch_on": "On",
+  "picaxe.screen.image_frame.stretch_off": "Off",
+  "picaxe.screen.image_frame.url_label": "Image URL"
+
+}
