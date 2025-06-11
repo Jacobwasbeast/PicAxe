@@ -24,6 +24,7 @@ import java.awt.image.RasterFormatException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -31,17 +32,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class ImageUtils {
     private static final Minecraft mc = Minecraft.getInstance();
     private static final int MAX_LOAD_TRIES = 3;
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    private static final ExecutorService executor = Executors.newFixedThreadPool(Math.max(2, Runtime.getRuntime().availableProcessors()));
 
     private static final Set<String> blacklist = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private static final Set<String> loading = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private static final Map<String, byte[]> rawDataCache = new ConcurrentHashMap<>();
+    private static final Map<String, SoftReference<byte[]>> rawDataCache = new ConcurrentHashMap<>();
 
     private static final Map<String, ResourceLocation> cachedTextures = new ConcurrentHashMap<>();
     private static final Map<String, AnimatedTexture> cachedAnimatedTextures = new ConcurrentHashMap<>();
@@ -52,6 +52,7 @@ public class ImageUtils {
     private static final Map<String, AnimatedTexture> cachedAnimatedSideDrapeLeft = new ConcurrentHashMap<>();
     private static final Map<String, ResourceLocation> cachedSideDrapeRight = new ConcurrentHashMap<>();
     private static final Map<String, AnimatedTexture> cachedAnimatedSideDrapeRight = new ConcurrentHashMap<>();
+    private static final Set<String> pendingSideTransforms = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private static final Map<String, ResourceLocation> cachedFrontBackTopper = new ConcurrentHashMap<>();
     private static final Map<String, AnimatedTexture> cachedAnimatedFrontBackTopper = new ConcurrentHashMap<>();
@@ -59,18 +60,22 @@ public class ImageUtils {
     private static final Map<String, AnimatedTexture> cachedAnimatedFrontDrape = new ConcurrentHashMap<>();
     private static final Map<String, ResourceLocation> cachedBackDrape = new ConcurrentHashMap<>();
     private static final Map<String, AnimatedTexture> cachedAnimatedBackDrape = new ConcurrentHashMap<>();
+    private static final Set<String> pendingFrontBackTransforms = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private static final Map<String, ResourceLocation> cachedSingleFrontDrape = new ConcurrentHashMap<>();
     private static final Map<String, AnimatedTexture> cachedAnimatedSingleFrontDrape = new ConcurrentHashMap<>();
     private static final Map<String, ResourceLocation> cachedSingleTopper = new ConcurrentHashMap<>();
     private static final Map<String, AnimatedTexture> cachedAnimatedSingleTopper = new ConcurrentHashMap<>();
-
+    private static final Set<String> pendingSingleFrontTransforms = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private static final ResourceLocation NOT_FOUND_TEXTURE;
     private static final ResourceLocation LOADING_TEXTURE;
 
     private record AnimatedTexture(ResourceLocation[] frames, int[] delays, int totalDuration) {
         public ResourceLocation getCurrentFrame() {
+            if (frames == null || frames.length == 0) {
+                return NOT_FOUND_TEXTURE;
+            }
             if (frames.length <= 1) {
                 return frames[0];
             }
@@ -87,7 +92,6 @@ public class ImageUtils {
         }
     }
 
-
     static {
         BufferedImage notFoundImage = loadBufferedImageFromResource("picaxe", "textures/blocks/notfound.png");
         BufferedImage loadingImage = loadBufferedImageFromResource("picaxe", "textures/blocks/loadingimage.png");
@@ -96,7 +100,7 @@ public class ImageUtils {
                 notFoundImage.getWidth() + loadingImage.getWidth(),
                 Math.max(notFoundImage.getHeight(), loadingImage.getHeight()),
                 BufferedImage.TYPE_INT_ARGB);
-        java.awt.Graphics2D g = combinedLoadingImage.createGraphics();
+        Graphics2D g = combinedLoadingImage.createGraphics();
         g.drawImage(loadingImage, 0, 0, null);
         g.drawImage(notFoundImage, loadingImage.getWidth(), 0, null);
         g.dispose();
@@ -125,8 +129,11 @@ public class ImageUtils {
         int width = img.getWidth();
         int height = img.getHeight();
 
-        BufferedImage convertedImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
-        convertedImg.getGraphics().drawImage(img, 0, 0, null);
+        BufferedImage convertedImg = img;
+        if (img.getType() != BufferedImage.TYPE_INT_ARGB_PRE) {
+            convertedImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
+            convertedImg.getGraphics().drawImage(img, 0, 0, null);
+        }
 
         int[] argbPixels = ((DataBufferInt) convertedImg.getRaster().getDataBuffer()).getData();
 
@@ -174,7 +181,7 @@ public class ImageUtils {
         for (int i = 1; i <= MAX_LOAD_TRIES; i++) {
             try (InputStream in = new URL(url).openStream()) {
                 byte[] imageBytes = in.readAllBytes();
-                rawDataCache.put(url, imageBytes);
+                rawDataCache.put(url, new SoftReference<>(imageBytes));
 
                 if (isGif(imageBytes)) {
                     loadAnimatedGif(url, imageBytes);
@@ -193,87 +200,80 @@ public class ImageUtils {
     }
 
     private static void loadAnimatedGif(String url, byte[] data) throws IOException {
-        List<BufferedImage> finalFrames = getAnimationFrames(data);
+        List<NativeImage> nativeFrames = new ArrayList<>();
         int[] delayMillis;
         int totalDuration = 0;
 
         try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(data))) {
-            ImageReader reader = ImageIO.getImageReaders(stream).next();
-            reader.setInput(stream);
-            int numFrames = reader.getNumImages(true);
-            delayMillis = new int[numFrames];
-            for (int i = 0; i < numFrames; i++) {
-                IIOMetadata metadata = reader.getImageMetadata(i);
-                IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(metadata.getNativeMetadataFormatName());
-                NodeList gces = root.getElementsByTagName("GraphicControlExtension");
-                int delay = 10;
-                if (gces.getLength() > 0) {
-                    delay = Integer.parseInt(((IIOMetadataNode) gces.item(0)).getAttribute("delayTime"));
-                }
-                delayMillis[i] = delay * 10 > 0 ? delay * 10 : 100;
-                totalDuration += delayMillis[i];
-            }
-        }
-
-        final int[] finalDelays = delayMillis;
-        final int finalTotalDuration = totalDuration;
-        mc.execute(() -> {
-            ResourceLocation[] frameLocations = new ResourceLocation[finalFrames.size()];
-            for (int j = 0; j < finalFrames.size(); j++) {
-                frameLocations[j] = registerTextureFromImage(url + "_frame_" + j, finalFrames.get(j), true);
-            }
-            cachedAnimatedTextures.put(url, new AnimatedTexture(frameLocations, finalDelays, finalTotalDuration));
-        });
-    }
-
-    private static List<BufferedImage> getAnimationFrames(byte[] data) throws IOException {
-        try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(data))) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
-            if (!readers.hasNext()) throw new IOException("No GIF reader found");
-
+            if (!readers.hasNext()) throw new IOException("No GIF ImageReader found");
             ImageReader reader = readers.next();
             reader.setInput(stream);
 
             int numFrames = reader.getNumImages(true);
-            List<BufferedImage> finalFrames = new ArrayList<>(numFrames);
+            delayMillis = new int[numFrames];
             BufferedImage canvas = null;
             Graphics2D g = null;
 
             for (int i = 0; i < numFrames; i++) {
                 BufferedImage frameImage = reader.read(i);
-                IIOMetadata metadata = reader.getImageMetadata(i);
-                IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(metadata.getNativeMetadataFormatName());
-                IIOMetadataNode imageDescriptor = (IIOMetadataNode) root.getElementsByTagName("ImageDescriptor").item(0);
-                int x = Integer.parseInt(imageDescriptor.getAttribute("imageLeftPosition"));
-                int y = Integer.parseInt(imageDescriptor.getAttribute("imageTopPosition"));
-
                 if (canvas == null) {
                     canvas = new BufferedImage(reader.getWidth(0), reader.getHeight(0), BufferedImage.TYPE_INT_ARGB);
                     g = canvas.createGraphics();
                     g.setBackground(new Color(0, 0, 0, 0));
                 }
 
+                IIOMetadata metadata = reader.getImageMetadata(i);
+                IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(metadata.getNativeMetadataFormatName());
+
+                NodeList gces = root.getElementsByTagName("GraphicControlExtension");
+                int delay = 10;
+                String disposal = "none";
+                if (gces.getLength() > 0) {
+                    IIOMetadataNode gce = (IIOMetadataNode) gces.item(0);
+                    delay = Integer.parseInt(gce.getAttribute("delayTime"));
+                    disposal = gce.getAttribute("disposalMethod");
+                }
+                delayMillis[i] = delay * 10 > 0 ? delay * 10 : 100;
+                totalDuration += delayMillis[i];
+
+                IIOMetadataNode imageDescriptor = (IIOMetadataNode) root.getElementsByTagName("ImageDescriptor").item(0);
+                int x = Integer.parseInt(imageDescriptor.getAttribute("imageLeftPosition"));
+                int y = Integer.parseInt(imageDescriptor.getAttribute("imageTopPosition"));
+
                 g.drawImage(frameImage, x, y, null);
 
                 BufferedImage finalFrame = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
                 finalFrame.createGraphics().drawImage(canvas, 0, 0, null);
-                finalFrames.add(finalFrame);
+                nativeFrames.add(toNativeImage(finalFrame));
 
-                NodeList gces = root.getElementsByTagName("GraphicControlExtension");
-                if (gces.getLength() > 0) {
-                    IIOMetadataNode gce = (IIOMetadataNode) gces.item(0);
-                    if (gce.getAttribute("disposalMethod").equals("restoreToBackgroundColor")) {
-                        g.clearRect(x, y, frameImage.getWidth(), frameImage.getHeight());
-                    }
+                if (disposal.equals("restoreToBackgroundColor")) {
+                    g.clearRect(x, y, frameImage.getWidth(), frameImage.getHeight());
                 }
             }
             if (g != null) g.dispose();
-            return finalFrames;
         }
+
+        final int[] finalDelays = delayMillis;
+        final int finalTotalDuration = totalDuration;
+        mc.execute(() -> {
+            ResourceLocation[] frameLocations = new ResourceLocation[nativeFrames.size()];
+            for (int j = 0; j < nativeFrames.size(); j++) {
+                NativeImage ni = nativeFrames.get(j);
+                if (ni != null) {
+                    DynamicTexture dyn = new DynamicTexture(ni);
+                    frameLocations[j] = mc.getTextureManager().register("dynamic/" + sanitize(url + "_frame_" + j), dyn);
+                } else {
+                    frameLocations[j] = NOT_FOUND_TEXTURE;
+                }
+            }
+            nativeFrames.clear();
+            cachedAnimatedTextures.put(url, new AnimatedTexture(frameLocations, finalDelays, finalTotalDuration));
+        });
     }
 
     private static boolean isGif(byte[] bytes) {
-        if (bytes.length < 3) return false;
+        if (bytes == null || bytes.length < 3) return false;
         return bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F';
     }
 
@@ -304,6 +304,11 @@ public class ImageUtils {
         });
 
         return LOADING_TEXTURE;
+    }
+
+    private static byte[] getRawDataFromCache(String url) {
+        SoftReference<byte[]> ref = rawDataCache.get(url);
+        return (ref != null) ? ref.get() : null;
     }
 
     public static void renderImageFromURL(
@@ -382,7 +387,7 @@ public class ImageUtils {
             float bedWidth, float bedLength, float drapeDepth,
             String url
     ) {
-        String key = url + "_split_" + bedLength + "_" + drapeDepth;
+        String key = url + "_split_sides_" + bedWidth + "_" + drapeDepth;
         ResourceLocation topperTex, leftDrapeTex, rightDrapeTex;
 
         if (cachedAnimatedSideTopper.containsKey(key)) {
@@ -393,38 +398,90 @@ public class ImageUtils {
             topperTex = cachedSideTopper.get(key);
             leftDrapeTex = cachedSideDrapeLeft.get(key);
             rightDrapeTex = cachedSideDrapeRight.get(key);
+        } else if (pendingSideTransforms.contains(key)) {
+            topperTex = leftDrapeTex = rightDrapeTex = LOADING_TEXTURE;
         } else {
             topperTex = leftDrapeTex = rightDrapeTex = getOrLoadTexture(url);
-            if (rawDataCache.containsKey(url)) {
+            byte[] data = getRawDataFromCache(url);
+            if (data != null) {
+                pendingSideTransforms.add(key);
+                topperTex = leftDrapeTex = rightDrapeTex = LOADING_TEXTURE;
                 executor.submit(() -> {
                     try {
-                        byte[] data = rawDataCache.get(url);
                         if (isGif(data)) {
-                            List<BufferedImage> frames = getAnimationFrames(data);
-                            int W = frames.get(0).getWidth(), H = frames.get(0).getHeight();
-                            float totalWidthBlocks = bedWidth + 2 * drapeDepth;
-                            if (totalWidthBlocks <= 0) return;
+                            List<NativeImage> nativeToppers = new ArrayList<>();
+                            List<NativeImage> nativeLefts = new ArrayList<>();
+                            List<NativeImage> nativeRights = new ArrayList<>();
+                            final int[] delays;
+                            final int totalDuration;
 
-                            int leftW = Math.round((drapeDepth / totalWidthBlocks) * W);
-                            int midW = W - (2 * leftW);
-                            if (leftW <= 0 || midW <= 0) return;
+                            try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(data))) {
+                                Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+                                if (!readers.hasNext()) throw new IOException("No GIF reader");
+                                ImageReader reader = readers.next();
+                                reader.setInput(stream);
+                                int numFrames = reader.getNumImages(true);
+                                delays = new int[numFrames];
+                                int duration = 0;
+                                BufferedImage canvas = null;
+                                Graphics2D g = null;
 
-                            List<NativeImage> nativeToppers = frames.parallelStream().map(f -> toNativeImage(f.getSubimage(leftW, 0, midW, H))).filter(Objects::nonNull).collect(Collectors.toList());
-                            List<NativeImage> nativeLefts = frames.parallelStream().map(f -> toNativeImage(f.getSubimage(leftW + midW, 0, leftW, H))).filter(Objects::nonNull).collect(Collectors.toList());
-                            List<NativeImage> nativeRights = frames.parallelStream().map(f -> toNativeImage(f.getSubimage(0, 0, leftW, H))).filter(Objects::nonNull).collect(Collectors.toList());
+                                for (int i = 0; i < numFrames; i++) {
+                                    BufferedImage frameImage = reader.read(i);
+                                    if (canvas == null) {
+                                        canvas = new BufferedImage(reader.getWidth(0), reader.getHeight(0), BufferedImage.TYPE_INT_ARGB);
+                                        g = canvas.createGraphics();
+                                    }
+
+                                    IIOMetadata metadata = reader.getImageMetadata(i);
+                                    IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(metadata.getNativeMetadataFormatName());
+                                    IIOMetadataNode gce = (IIOMetadataNode) root.getElementsByTagName("GraphicControlExtension").item(0);
+                                    delays[i] = Integer.parseInt(gce.getAttribute("delayTime")) * 10;
+                                    if (delays[i] <= 0) delays[i] = 100;
+                                    duration += delays[i];
+                                    String disposal = gce.getAttribute("disposalMethod");
+
+                                    IIOMetadataNode desc = (IIOMetadataNode) root.getElementsByTagName("ImageDescriptor").item(0);
+                                    int x = Integer.parseInt(desc.getAttribute("imageLeftPosition"));
+                                    int y = Integer.parseInt(desc.getAttribute("imageTopPosition"));
+                                    g.drawImage(frameImage, x, y, null);
+
+                                    BufferedImage currentFrameToSplit = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                                    currentFrameToSplit.createGraphics().drawImage(canvas, 0, 0, null);
+
+                                    int W = currentFrameToSplit.getWidth(), H = currentFrameToSplit.getHeight();
+                                    float totalWidthBlocks = bedWidth + 2 * drapeDepth;
+                                    if (totalWidthBlocks <= 0) continue;
+                                    int leftW = Math.round((drapeDepth / totalWidthBlocks) * W);
+                                    int midW = W - (2 * leftW);
+                                    if (leftW <= 0 || midW <= 0 || (leftW + midW) > W) continue;
+
+                                    nativeRights.add(toNativeImage(currentFrameToSplit.getSubimage(0, 0, leftW, H)));
+                                    nativeToppers.add(toNativeImage(currentFrameToSplit.getSubimage(leftW, 0, midW, H)));
+                                    nativeLefts.add(toNativeImage(currentFrameToSplit.getSubimage(leftW + midW, 0, leftW, H)));
+
+                                    if (disposal.equals("restoreToBackgroundColor")) {
+                                        g.clearRect(x, y, frameImage.getWidth(), frameImage.getHeight());
+                                    }
+                                }
+                                totalDuration = duration;
+                                if (g != null) g.dispose();
+                            }
 
                             mc.execute(() -> {
-                                AnimatedTexture originalAnim = cachedAnimatedTextures.get(url);
                                 AtomicInteger index = new AtomicInteger(0);
-                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> new DynamicTexture(ni)).map(dyn -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()), dyn)).toArray(ResourceLocation[]::new);
+                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
                                 index.set(0);
-                                ResourceLocation[] leftLocs = nativeLefts.stream().map(ni -> new DynamicTexture(ni)).map(dyn -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_left_" + index.getAndIncrement()), dyn)).toArray(ResourceLocation[]::new);
+                                ResourceLocation[] leftLocs = nativeLefts.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_left_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
                                 index.set(0);
-                                ResourceLocation[] rightLocs = nativeRights.stream().map(ni -> new DynamicTexture(ni)).map(dyn -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_right_" + index.getAndIncrement()), dyn)).toArray(ResourceLocation[]::new);
+                                ResourceLocation[] rightLocs = nativeRights.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_right_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
 
-                                cachedAnimatedSideTopper.put(key, new AnimatedTexture(topperLocs, originalAnim.delays, originalAnim.totalDuration));
-                                cachedAnimatedSideDrapeLeft.put(key, new AnimatedTexture(leftLocs, originalAnim.delays, originalAnim.totalDuration));
-                                cachedAnimatedSideDrapeRight.put(key, new AnimatedTexture(rightLocs, originalAnim.delays, originalAnim.totalDuration));
+                                cachedAnimatedSideTopper.put(key, new AnimatedTexture(topperLocs, delays, totalDuration));
+                                cachedAnimatedSideDrapeLeft.put(key, new AnimatedTexture(leftLocs, delays, totalDuration));
+                                cachedAnimatedSideDrapeRight.put(key, new AnimatedTexture(rightLocs, delays, totalDuration));
+                                nativeToppers.clear();
+                                nativeLefts.clear();
+                                nativeRights.clear();
                             });
 
                         } else {
@@ -450,6 +507,8 @@ public class ImageUtils {
                     } catch (IOException | RasterFormatException e) {
                         System.err.println("Error splitting texture " + key + ": " + e.getMessage());
                         blacklist.add(url);
+                    } finally {
+                        pendingSideTransforms.remove(key);
                     }
                 });
             }
@@ -524,7 +583,6 @@ public class ImageUtils {
         ps.popPose();
     }
 
-
     public static void renderImageFrontBackDrapesFromURL(
             PoseStack ps, MultiBufferSource bufSrc,
             int packedLight, int packedOverlay,
@@ -543,38 +601,90 @@ public class ImageUtils {
             topperTex = cachedFrontBackTopper.get(key);
             frontDrapeTex = cachedFrontDrape.get(key);
             backDrapeTex = cachedBackDrape.get(key);
+        } else if (pendingFrontBackTransforms.contains(key)) {
+            topperTex = frontDrapeTex = backDrapeTex = LOADING_TEXTURE;
         } else {
             topperTex = frontDrapeTex = backDrapeTex = getOrLoadTexture(url);
-            if (rawDataCache.containsKey(url)) {
+            byte[] data = getRawDataFromCache(url);
+            if (data != null) {
+                pendingFrontBackTransforms.add(key);
+                topperTex = frontDrapeTex = backDrapeTex = LOADING_TEXTURE;
                 executor.submit(() -> {
                     try {
-                        byte[] data = rawDataCache.get(url);
                         if (isGif(data)) {
-                            List<BufferedImage> frames = getAnimationFrames(data);
-                            int W = frames.get(0).getWidth(), H = frames.get(0).getHeight();
-                            float totalLengthBlocks = bedLength + 2 * drapeDepth;
-                            if (totalLengthBlocks <= 0) return;
+                            List<NativeImage> nativeToppers = new ArrayList<>();
+                            List<NativeImage> nativeFronts = new ArrayList<>();
+                            List<NativeImage> nativeBacks = new ArrayList<>();
+                            final int[] delays;
+                            final int totalDuration;
 
-                            int frontH = Math.round((drapeDepth / totalLengthBlocks) * H);
-                            int midH = H - (2 * frontH);
-                            if (frontH <= 0 || midH <= 0) return;
+                            try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(data))) {
+                                Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+                                if (!readers.hasNext()) throw new IOException("No GIF reader");
+                                ImageReader reader = readers.next();
+                                reader.setInput(stream);
+                                int numFrames = reader.getNumImages(true);
+                                delays = new int[numFrames];
+                                int duration = 0;
+                                BufferedImage canvas = null;
+                                Graphics2D g = null;
 
-                            List<NativeImage> nativeToppers = frames.parallelStream().map(f -> toNativeImage(f.getSubimage(0, frontH, W, midH))).filter(Objects::nonNull).collect(Collectors.toList());
-                            List<NativeImage> nativeFronts = frames.parallelStream().map(f -> toNativeImage(f.getSubimage(0, frontH + midH, W, frontH))).filter(Objects::nonNull).collect(Collectors.toList());
-                            List<NativeImage> nativeBacks = frames.parallelStream().map(f -> toNativeImage(f.getSubimage(0, 0, W, frontH))).filter(Objects::nonNull).collect(Collectors.toList());
+                                for (int i = 0; i < numFrames; i++) {
+                                    BufferedImage frameImage = reader.read(i);
+                                    if (canvas == null) {
+                                        canvas = new BufferedImage(reader.getWidth(0), reader.getHeight(0), BufferedImage.TYPE_INT_ARGB);
+                                        g = canvas.createGraphics();
+                                    }
+
+                                    IIOMetadata metadata = reader.getImageMetadata(i);
+                                    IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(metadata.getNativeMetadataFormatName());
+                                    IIOMetadataNode gce = (IIOMetadataNode) root.getElementsByTagName("GraphicControlExtension").item(0);
+                                    delays[i] = Integer.parseInt(gce.getAttribute("delayTime")) * 10;
+                                    if (delays[i] <= 0) delays[i] = 100;
+                                    duration += delays[i];
+                                    String disposal = gce.getAttribute("disposalMethod");
+
+                                    IIOMetadataNode desc = (IIOMetadataNode) root.getElementsByTagName("ImageDescriptor").item(0);
+                                    int x = Integer.parseInt(desc.getAttribute("imageLeftPosition"));
+                                    int y = Integer.parseInt(desc.getAttribute("imageTopPosition"));
+                                    g.drawImage(frameImage, x, y, null);
+
+                                    BufferedImage currentFrameToSplit = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                                    currentFrameToSplit.createGraphics().drawImage(canvas, 0, 0, null);
+
+                                    int W = currentFrameToSplit.getWidth(), H = currentFrameToSplit.getHeight();
+                                    float totalLengthBlocks = bedLength + 2 * drapeDepth;
+                                    if (totalLengthBlocks <= 0) continue;
+                                    int frontH = Math.round((drapeDepth / totalLengthBlocks) * H);
+                                    int midH = H - (2 * frontH);
+                                    if (frontH <= 0 || midH <= 0 || (frontH + midH > H)) continue;
+
+                                    nativeBacks.add(toNativeImage(currentFrameToSplit.getSubimage(0, 0, W, frontH)));
+                                    nativeToppers.add(toNativeImage(currentFrameToSplit.getSubimage(0, frontH, W, midH)));
+                                    nativeFronts.add(toNativeImage(currentFrameToSplit.getSubimage(0, frontH + midH, W, frontH)));
+
+                                    if (disposal.equals("restoreToBackgroundColor")) {
+                                        g.clearRect(x, y, frameImage.getWidth(), frameImage.getHeight());
+                                    }
+                                }
+                                totalDuration = duration;
+                                if (g != null) g.dispose();
+                            }
 
                             mc.execute(() -> {
-                                AnimatedTexture originalAnim = cachedAnimatedTextures.get(url);
                                 AtomicInteger index = new AtomicInteger(0);
-                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> new DynamicTexture(ni)).map(dyn -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()), dyn)).toArray(ResourceLocation[]::new);
+                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
                                 index.set(0);
-                                ResourceLocation[] frontLocs = nativeFronts.stream().map(ni -> new DynamicTexture(ni)).map(dyn -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_front_" + index.getAndIncrement()), dyn)).toArray(ResourceLocation[]::new);
+                                ResourceLocation[] frontLocs = nativeFronts.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_front_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
                                 index.set(0);
-                                ResourceLocation[] backLocs = nativeBacks.stream().map(ni -> new DynamicTexture(ni)).map(dyn -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_back_" + index.getAndIncrement()), dyn)).toArray(ResourceLocation[]::new);
+                                ResourceLocation[] backLocs = nativeBacks.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_back_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
 
-                                cachedAnimatedFrontBackTopper.put(key, new AnimatedTexture(topperLocs, originalAnim.delays, originalAnim.totalDuration));
-                                cachedAnimatedFrontDrape.put(key, new AnimatedTexture(frontLocs, originalAnim.delays, originalAnim.totalDuration));
-                                cachedAnimatedBackDrape.put(key, new AnimatedTexture(backLocs, originalAnim.delays, originalAnim.totalDuration));
+                                cachedAnimatedFrontBackTopper.put(key, new AnimatedTexture(topperLocs, delays, totalDuration));
+                                cachedAnimatedFrontDrape.put(key, new AnimatedTexture(frontLocs, delays, totalDuration));
+                                cachedAnimatedBackDrape.put(key, new AnimatedTexture(backLocs, delays, totalDuration));
+                                nativeToppers.clear();
+                                nativeFronts.clear();
+                                nativeBacks.clear();
                             });
                         } else {
                             BufferedImage full = ImageIO.read(new ByteArrayInputStream(data));
@@ -599,6 +709,8 @@ public class ImageUtils {
                     } catch (IOException | RasterFormatException e) {
                         System.err.println("Error splitting texture " + key + ": " + e.getMessage());
                         blacklist.add(url);
+                    } finally {
+                        pendingFrontBackTransforms.remove(key);
                     }
                 });
             }
@@ -691,35 +803,83 @@ public class ImageUtils {
         } else if (cachedSingleTopper.containsKey(key)) {
             topperTex = cachedSingleTopper.get(key);
             frontDrapeTex = cachedSingleFrontDrape.get(key);
+        } else if (pendingSingleFrontTransforms.contains(key)) {
+            topperTex = frontDrapeTex = LOADING_TEXTURE;
         } else {
             topperTex = frontDrapeTex = getOrLoadTexture(url);
-
-            if (rawDataCache.containsKey(url)) {
+            byte[] data = getRawDataFromCache(url);
+            if (data != null) {
+                pendingSingleFrontTransforms.add(key);
+                topperTex = frontDrapeTex = LOADING_TEXTURE;
                 executor.submit(() -> {
                     try {
-                        byte[] data = rawDataCache.get(url);
                         if (isGif(data)) {
-                            List<BufferedImage> frames = getAnimationFrames(data);
-                            int W = frames.get(0).getWidth(), H = frames.get(0).getHeight();
-                            float totalLengthBlocks = bedLength + drapeDepth;
-                            if (totalLengthBlocks <= 0) return;
+                            List<NativeImage> nativeToppers = new ArrayList<>();
+                            List<NativeImage> nativeDrapes = new ArrayList<>();
+                            final int[] delays;
+                            final int totalDuration;
 
-                            int drapeH = Math.round((drapeDepth / totalLengthBlocks) * H);
-                            int topperH = H - drapeH;
-                            if (drapeH <= 0 || topperH <= 0) return;
+                            try (ImageInputStream stream = ImageIO.createImageInputStream(new ByteArrayInputStream(data))) {
+                                Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
+                                if (!readers.hasNext()) throw new IOException("No GIF reader");
+                                ImageReader reader = readers.next();
+                                reader.setInput(stream);
+                                int numFrames = reader.getNumImages(true);
+                                delays = new int[numFrames];
+                                int duration = 0;
+                                BufferedImage canvas = null;
+                                Graphics2D g = null;
 
-                            List<NativeImage> nativeToppers = frames.parallelStream().map(f -> toNativeImage(f.getSubimage(0, 0, W, topperH))).filter(Objects::nonNull).collect(Collectors.toList());
-                            List<NativeImage> nativeDrapes = frames.parallelStream().map(f -> toNativeImage(f.getSubimage(0, topperH, W, drapeH))).filter(Objects::nonNull).collect(Collectors.toList());
+                                for (int i = 0; i < numFrames; i++) {
+                                    BufferedImage frameImage = reader.read(i);
+                                    if (canvas == null) {
+                                        canvas = new BufferedImage(reader.getWidth(0), reader.getHeight(0), BufferedImage.TYPE_INT_ARGB);
+                                        g = canvas.createGraphics();
+                                    }
 
+                                    IIOMetadata metadata = reader.getImageMetadata(i);
+                                    IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(metadata.getNativeMetadataFormatName());
+                                    IIOMetadataNode gce = (IIOMetadataNode) root.getElementsByTagName("GraphicControlExtension").item(0);
+                                    delays[i] = Integer.parseInt(gce.getAttribute("delayTime")) * 10;
+                                    if (delays[i] <= 0) delays[i] = 100;
+                                    duration += delays[i];
+                                    String disposal = gce.getAttribute("disposalMethod");
+
+                                    IIOMetadataNode desc = (IIOMetadataNode) root.getElementsByTagName("ImageDescriptor").item(0);
+                                    int x = Integer.parseInt(desc.getAttribute("imageLeftPosition"));
+                                    int y = Integer.parseInt(desc.getAttribute("imageTopPosition"));
+                                    g.drawImage(frameImage, x, y, null);
+
+                                    BufferedImage currentFrameToSplit = new BufferedImage(canvas.getWidth(), canvas.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                                    currentFrameToSplit.createGraphics().drawImage(canvas, 0, 0, null);
+
+                                    int W = currentFrameToSplit.getWidth(), H = currentFrameToSplit.getHeight();
+                                    float totalLengthBlocks = bedLength + drapeDepth;
+                                    if (totalLengthBlocks <= 0) continue;
+                                    int drapeH = Math.round((drapeDepth / totalLengthBlocks) * H);
+                                    int topperH = H - drapeH;
+                                    if (drapeH <= 0 || topperH <= 0) continue;
+
+                                    nativeToppers.add(toNativeImage(currentFrameToSplit.getSubimage(0, 0, W, topperH)));
+                                    nativeDrapes.add(toNativeImage(currentFrameToSplit.getSubimage(0, topperH, W, drapeH)));
+
+                                    if (disposal.equals("restoreToBackgroundColor")) {
+                                        g.clearRect(x, y, frameImage.getWidth(), frameImage.getHeight());
+                                    }
+                                }
+                                totalDuration = duration;
+                                if (g != null) g.dispose();
+                            }
                             mc.execute(() -> {
-                                AnimatedTexture originalAnim = cachedAnimatedTextures.get(url);
                                 AtomicInteger index = new AtomicInteger(0);
-                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> new DynamicTexture(ni)).map(dyn -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()), dyn)).toArray(ResourceLocation[]::new);
+                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
                                 index.set(0);
-                                ResourceLocation[] drapeLocs = nativeDrapes.stream().map(ni -> new DynamicTexture(ni)).map(dyn -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_drape_" + index.getAndIncrement()), dyn)).toArray(ResourceLocation[]::new);
+                                ResourceLocation[] drapeLocs = nativeDrapes.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_drape_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
 
-                                cachedAnimatedSingleTopper.put(key, new AnimatedTexture(topperLocs, originalAnim.delays, originalAnim.totalDuration));
-                                cachedAnimatedSingleFrontDrape.put(key, new AnimatedTexture(drapeLocs, originalAnim.delays, originalAnim.totalDuration));
+                                cachedAnimatedSingleTopper.put(key, new AnimatedTexture(topperLocs, delays, totalDuration));
+                                cachedAnimatedSingleFrontDrape.put(key, new AnimatedTexture(drapeLocs, delays, totalDuration));
+                                nativeToppers.clear();
+                                nativeDrapes.clear();
                             });
                         } else {
                             BufferedImage full = ImageIO.read(new ByteArrayInputStream(data));
@@ -741,6 +901,8 @@ public class ImageUtils {
                     } catch (IOException | RasterFormatException e) {
                         System.err.println("Error splitting texture " + key + ": " + e.getMessage());
                         blacklist.add(url);
+                    } finally {
+                        pendingSingleFrontTransforms.remove(key);
                     }
                 });
             }
