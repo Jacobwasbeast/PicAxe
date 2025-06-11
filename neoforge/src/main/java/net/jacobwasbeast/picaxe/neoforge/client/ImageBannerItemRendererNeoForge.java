@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.neoforge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModBlocks;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -15,7 +16,7 @@ public class ImageBannerItemRendererNeoForge extends BlockEntityWithoutLevelRend
 
     private final ImageBannerBlockEntity dummyBanner = new ImageBannerBlockEntity(
             BlockPos.ZERO,
-            Main.IMAGE_BANNER_BLOCK.get().defaultBlockState()
+            ModBlocks.IMAGE_BANNER_BLOCK.get().defaultBlockState()
     );
 
     public ImageBannerItemRendererNeoForge() {

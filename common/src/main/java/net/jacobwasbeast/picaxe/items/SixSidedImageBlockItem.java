@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.items;
 
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModItems;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -23,7 +24,7 @@ public class SixSidedImageBlockItem extends BlockItem implements Equipable {
     }
 
     public static ItemStack create(Map<Direction, String> imageUrls) {
-        ItemStack stack = new ItemStack(Main.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
+        ItemStack stack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
 
         CompoundTag tag = new CompoundTag();
 

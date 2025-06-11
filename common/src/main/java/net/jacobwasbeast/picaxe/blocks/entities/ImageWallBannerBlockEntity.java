@@ -1,5 +1,6 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
+import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
 import net.minecraft.client.Minecraft;
@@ -22,13 +23,13 @@ public class ImageWallBannerBlockEntity extends BlockEntity {
     public BannerRenderTypes renderTypes = BannerRenderTypes.OVER_BANNER;
 
     public ImageWallBannerBlockEntity(BlockPos blockPos, BlockState blockState) {
-        super(Main.IMAGE_WALL_BANNER_BLOCK_ENTITY.get(), blockPos, blockState);
+        super(ModBlockEntities.IMAGE_WALL_BANNER_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = DyeColor.WHITE;
         this.imageLocation = "picaxe:blocks/banner";
     }
 
     public ImageWallBannerBlockEntity(BlockPos blockPos, BlockState blockState, DyeColor dyeColor) {
-        super(Main.IMAGE_WALL_BANNER_BLOCK_ENTITY.get(), blockPos, blockState);
+        super(ModBlockEntities.IMAGE_WALL_BANNER_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = dyeColor;
         this.imageLocation = "picaxe:blocks/banner";
     }

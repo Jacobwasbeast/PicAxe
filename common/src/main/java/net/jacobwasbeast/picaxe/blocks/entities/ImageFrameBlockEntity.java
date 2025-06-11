@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -18,7 +19,7 @@ public class ImageFrameBlockEntity extends BlockEntity {
     private boolean stretchToFit = false;
 
     public ImageFrameBlockEntity(BlockPos pos, BlockState state) {
-        super(Main.IMAGE_FRAME_BLOCK_ENTITY.get(), pos, state);
+        super(ModBlockEntities.IMAGE_FRAME_BLOCK_ENTITY.get(), pos, state);
     }
 
     public String getImageUrl() { return this.imageUrl; }

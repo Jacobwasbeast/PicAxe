@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.mixins;
 
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -17,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class BedBlockMixin {
     @Inject(method = "useWithoutItem", at = @At("HEAD"), cancellable = true)
     private void onUseWithoutItem(BlockState blockState, Level level, BlockPos blockPos, Player player, BlockHitResult blockHitResult, CallbackInfoReturnable<InteractionResult> cir) {
-        if (player.getMainHandItem().is(Main.PIC_AXE_ITEM.get())) {
+        if (player.getMainHandItem().is(ModItems.PIC_AXE_ITEM.get())) {
             cir.setReturnValue(InteractionResult.PASS);
         }
     }

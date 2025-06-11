@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.neoforge;
 
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModItems;
 import net.jacobwasbeast.picaxe.neoforge.client.ImageBannerItemRendererNeoForge;
 import net.jacobwasbeast.picaxe.neoforge.client.ImageShieldItemRendererNeoForge;
 import net.jacobwasbeast.picaxe.neoforge.client.SixSidedImageBlockItemRendererNeoForge;
@@ -29,18 +30,18 @@ public final class MainNeoForge {
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 return new ImageBannerItemRendererNeoForge();
             }
-        }, Main.IMAGE_BANNER_ITEM.get());
+        }, ModItems.IMAGE_BANNER_ITEM.get());
         event.registerItem(new IClientItemExtensions() {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 return new SixSidedImageBlockItemRendererNeoForge();
             }
-        }, Main.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
+        }, ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
         event.registerItem(new IClientItemExtensions() {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 return new ImageShieldItemRendererNeoForge();
             }
-        }, Main.IMAGE_SHIELD.get());
+        }, ModItems.IMAGE_SHIELD.get());
     }
 }

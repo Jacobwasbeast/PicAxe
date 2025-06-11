@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModBlocks;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
 import net.jacobwasbeast.picaxe.blocks.renderer.ImageBannerBlockRenderer;
 import net.minecraft.client.Minecraft;
@@ -17,7 +18,7 @@ public class ImageBannerItemRendererFabric implements BuiltinItemRendererRegistr
 
     private final ImageBannerBlockEntity dummyBanner = new ImageBannerBlockEntity(
             BlockPos.ZERO,
-            Main.IMAGE_BANNER_BLOCK.get().defaultBlockState()
+            ModBlocks.IMAGE_BANNER_BLOCK.get().defaultBlockState()
     );
 
     @Override

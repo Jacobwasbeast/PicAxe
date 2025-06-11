@@ -34,6 +34,8 @@
   "picaxe.screen.image_frame.stretch_mode": "Stretch to Fit: %s",
   "picaxe.screen.image_frame.stretch_on": "On",
   "picaxe.screen.image_frame.stretch_off": "Off",
-  "picaxe.screen.image_frame.url_label": "Image URL"
+  "picaxe.screen.image_frame.url_label": "Image URL",
+
+  "category.picaxe": "Picture Axe Items"
 
 }

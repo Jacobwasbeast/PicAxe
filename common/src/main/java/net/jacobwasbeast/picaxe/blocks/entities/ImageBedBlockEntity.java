@@ -1,5 +1,7 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
+import net.jacobwasbeast.picaxe.ModBlockEntities;
+import net.jacobwasbeast.picaxe.ModBlocks;
 import net.jacobwasbeast.picaxe.api.BedRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
 import net.minecraft.client.Minecraft;
@@ -22,21 +24,21 @@ public class ImageBedBlockEntity extends BlockEntity {
     public BedRenderTypes renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
 
     public ImageBedBlockEntity(BlockPos blockPos, BlockState blockState) {
-        super(Main.IMAGE_BED_BLOCK_ENTITY.get(), blockPos, blockState);
+        super(ModBlockEntities.IMAGE_BED_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = DyeColor.WHITE;
         imageLocation = "picaxe:blocks/bed";
         renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
     }
 
     public ImageBedBlockEntity(BlockPos blockPos, BlockState blockState, DyeColor dyeColor) {
-        super(Main.IMAGE_BED_BLOCK_ENTITY.get(), blockPos, blockState);
+        super(ModBlockEntities.IMAGE_BED_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = dyeColor;
         imageLocation = "picaxe:blocks/bed";
         renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
     }
 
     public ImageBedBlockEntity(BlockEntityRendererProvider.Context context) {
-        super(Main.IMAGE_BED_BLOCK_ENTITY.get(), BlockPos.ZERO, Main.IMAGE_BED_BLOCK.get().defaultBlockState());
+        super(ModBlockEntities.IMAGE_BED_BLOCK_ENTITY.get(), BlockPos.ZERO, ModBlocks.IMAGE_BED_BLOCK.get().defaultBlockState());
     }
 
     public String getImageLocation() {

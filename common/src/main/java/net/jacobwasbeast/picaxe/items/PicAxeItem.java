@@ -1,5 +1,6 @@
 package net.jacobwasbeast.picaxe.items;
 
+import net.jacobwasbeast.picaxe.ModBlocks;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
 import net.jacobwasbeast.picaxe.api.BedRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
@@ -28,6 +29,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+import static net.jacobwasbeast.picaxe.ModCreativeTabs.PICAXE_TAB;
+
 public class PicAxeItem extends AxeItem {
 
     public static final String DEFAULT_URL = "picaxe:blocks/bed";
@@ -36,7 +39,7 @@ public class PicAxeItem extends AxeItem {
         super(Tiers.IRON,new Item.Properties()
                 .stacksTo(1)
                 .durability(100)
-                .component(ModDataComponents.IMAGE_URL.get(), DEFAULT_URL)
+                .component(ModDataComponents.IMAGE_URL.get(), DEFAULT_URL).arch$tab(PICAXE_TAB)
         );
     }
 
@@ -184,7 +187,7 @@ public class PicAxeItem extends AxeItem {
         BedPart part = blockState.getValue(BedBlock.PART);
         BlockPos otherPartPos = part == BedPart.HEAD ? clickedPos.relative(facing.getOpposite()) : clickedPos.relative(facing);
 
-        ImageBedBlock imageBed = Main.IMAGE_BED_BLOCK.get();
+        ImageBedBlock imageBed = ModBlocks.IMAGE_BED_BLOCK.get();
         BlockState newFoot = imageBed.defaultBlockState().setValue(BedBlock.FACING, facing).setValue(BedBlock.PART, BedPart.FOOT);
         BlockState newHead = imageBed.defaultBlockState().setValue(BedBlock.FACING, facing).setValue(BedBlock.PART, BedPart.HEAD);
 
@@ -220,10 +223,10 @@ public class PicAxeItem extends AxeItem {
         BlockState newState;
 
         if (block instanceof WallBannerBlock) {
-            newBlock = Main.IMAGE_WALL_BANNER_BLOCK.get();
+            newBlock = ModBlocks.IMAGE_WALL_BANNER_BLOCK.get();
             newState = newBlock.defaultBlockState().setValue(WallBannerBlock.FACING, blockState.getValue(WallBannerBlock.FACING));
         } else {
-            newBlock = Main.IMAGE_BANNER_BLOCK.get();
+            newBlock = ModBlocks.IMAGE_BANNER_BLOCK.get();
             newState = newBlock.defaultBlockState().setValue(BannerBlock.ROTATION, blockState.getValue(BannerBlock.ROTATION));
         }
 

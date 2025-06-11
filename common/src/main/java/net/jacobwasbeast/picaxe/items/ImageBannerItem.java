@@ -1,5 +1,6 @@
 package net.jacobwasbeast.picaxe.items;
 
+import net.jacobwasbeast.picaxe.ModItems;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
 import net.minecraft.core.Direction;
@@ -45,7 +46,7 @@ public class ImageBannerItem extends StandingAndWallBlockItem implements Equipab
     }
 
     public static ItemStack create(DyeColor color, String imageUrl, BannerRenderTypes renderType) {
-        ItemStack stack = new ItemStack(Main.IMAGE_BANNER_ITEM.get());
+        ItemStack stack = new ItemStack(ModItems.IMAGE_BANNER_ITEM.get());
         CompoundTag tag = new CompoundTag();
 
         tag.putString("id", Main.MOD_ID + ":image_banner");

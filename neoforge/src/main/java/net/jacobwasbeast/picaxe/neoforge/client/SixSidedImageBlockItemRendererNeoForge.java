@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.neoforge.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModBlocks;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -15,7 +16,7 @@ public class SixSidedImageBlockItemRendererNeoForge extends BlockEntityWithoutLe
 
     private final SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
             BlockPos.ZERO,
-            Main.SIX_SIDED_IMAGE_BLOCK.get().defaultBlockState()
+            ModBlocks.SIX_SIDED_IMAGE_BLOCK.get().defaultBlockState()
     );
 
     public SixSidedImageBlockItemRendererNeoForge() {

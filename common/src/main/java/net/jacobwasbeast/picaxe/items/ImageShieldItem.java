@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.items;
 
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModItems;
 import net.jacobwasbeast.picaxe.component.ModDataComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -37,7 +38,7 @@ public class ImageShieldItem extends ShieldItem {
     }
 
     public static ItemStack createFromBanner(ItemStack bannerStack) {
-        ItemStack shieldStack = new ItemStack(Main.IMAGE_SHIELD.get());
+        ItemStack shieldStack = new ItemStack(ModItems.IMAGE_SHIELD.get());
 
         CustomData bannerData = bannerStack.get(DataComponents.BLOCK_ENTITY_DATA);
         if (bannerData != null) {

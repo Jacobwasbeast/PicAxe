@@ -3,6 +3,8 @@ package net.jacobwasbeast.picaxe.fabric.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModBlocks;
+import net.jacobwasbeast.picaxe.ModItems;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.jacobwasbeast.picaxe.blocks.renderer.SixSidedImageBlockRenderer;
 import net.jacobwasbeast.picaxe.items.SixSidedImageBlockItem;
@@ -17,7 +19,7 @@ public class SixSidedImageBlockItemRendererFabric implements BuiltinItemRenderer
 
     private final SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
             BlockPos.ZERO,
-            Main.SIX_SIDED_IMAGE_BLOCK.get().defaultBlockState()
+            ModBlocks.SIX_SIDED_IMAGE_BLOCK.get().defaultBlockState()
     );
 
     @Override

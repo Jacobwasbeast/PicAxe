@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.recipe;
 
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModRecipes;
 import net.jacobwasbeast.picaxe.items.ImageBannerItem;
 import net.jacobwasbeast.picaxe.items.ImageShieldItem;
 import net.minecraft.core.HolderLookup;
@@ -66,6 +67,6 @@ public class ImageShieldDecorationRecipe extends CustomRecipe {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return Main.IMAGE_SHIELD_RECIPE_SERIALIZER.get();
+        return ModRecipes.IMAGE_SHIELD_RECIPE_SERIALIZER.get();
     }
 }

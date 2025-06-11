@@ -1,6 +1,8 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.ModBlockEntities;
+import net.jacobwasbeast.picaxe.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -21,7 +23,7 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     private final Map<Direction, String> imageUrls = new EnumMap<>(Direction.class);
 
     public SixSidedImageBlockEntity(BlockPos pos, BlockState state) {
-        super(Main.SIX_SIDED_IMAGE_BLOCK_ENTITY.get(), pos, state);
+        super(ModBlockEntities.SIX_SIDED_IMAGE_BLOCK_ENTITY.get(), pos, state);
         for (Direction dir : Direction.Plane.HORIZONTAL) {
             imageUrls.put(dir, "");
         }
@@ -106,7 +108,7 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     }
 
     public ItemStack createItemStack() {
-        ItemStack itemStack = new ItemStack(Main.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
+        ItemStack itemStack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
         CompoundTag tag = this.saveWithoutMetadata(this.level.registryAccess());
 
         CustomData customData = CustomData.of(tag);
