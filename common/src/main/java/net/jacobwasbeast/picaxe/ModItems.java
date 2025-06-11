@@ -25,7 +25,7 @@ public class ModItems {
 
     // BlockItems
     public static final RegistrySupplier<Item> IMAGE_BED_ITEM = ITEMS.register("image_bed",
-            () -> new ImageBedBlockItem(ModBlocks.IMAGE_BED_BLOCK.get(), new Item.Properties()));
+            () -> new ImageBedBlockItem(ModBlocks.IMAGE_BED_BLOCK.get(), new Item.Properties().arch$tab(PICAXE_TAB)));
 
     public static final RegistrySupplier<Item> IMAGE_BANNER_ITEM = ITEMS.register("image_banner",
             () -> new ImageBannerItem(ModBlocks.IMAGE_BANNER_BLOCK.get(), ModBlocks.IMAGE_WALL_BANNER_BLOCK.get(), new Item.Properties().arch$tab(PICAXE_TAB), Direction.UP));
