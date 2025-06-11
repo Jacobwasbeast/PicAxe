@@ -2,10 +2,7 @@ package net.jacobwasbeast.picaxe;
 
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
-import net.jacobwasbeast.picaxe.items.ImageBannerItem;
-import net.jacobwasbeast.picaxe.items.ImageShieldItem;
-import net.jacobwasbeast.picaxe.items.PicAxeItem;
-import net.jacobwasbeast.picaxe.items.SixSidedImageBlockItem;
+import net.jacobwasbeast.picaxe.items.*;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -28,7 +25,7 @@ public class ModItems {
 
     // BlockItems
     public static final RegistrySupplier<Item> IMAGE_BED_ITEM = ITEMS.register("image_bed",
-            () -> new BlockItem(ModBlocks.IMAGE_BED_BLOCK.get(), new Item.Properties()));
+            () -> new ImageBedBlockItem(ModBlocks.IMAGE_BED_BLOCK.get(), new Item.Properties()));
 
     public static final RegistrySupplier<Item> IMAGE_BANNER_ITEM = ITEMS.register("image_banner",
             () -> new ImageBannerItem(ModBlocks.IMAGE_BANNER_BLOCK.get(), ModBlocks.IMAGE_WALL_BANNER_BLOCK.get(), new Item.Properties().arch$tab(PICAXE_TAB), Direction.UP));

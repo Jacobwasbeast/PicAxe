@@ -22,9 +22,10 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
         var minecraft = Minecraft.getInstance();
         var customState = blockEntity.getBlockState();
 
-        if (customState.getValue(ImageBedBlock.PART) == BedPart.FOOT) {
+        if (blockEntity.hasLevel() && customState.getValue(BedBlock.PART) == BedPart.FOOT) {
             return;
         }
+
         Block vanillaBedBlock = ColorUtils.BEDS_BY_COLOR.get(blockEntity.getColor());
 
         var facing = customState.getValue(ImageBedBlock.FACING);

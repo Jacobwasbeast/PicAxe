@@ -1,17 +1,24 @@
 package net.jacobwasbeast.picaxe.blocks;
 
+// Add these new imports
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.properties.BedPart;
+
+// Other imports...
 import net.jacobwasbeast.picaxe.blocks.entities.ImageBedBlockEntity;
-import net.jacobwasbeast.picaxe.utils.ColorUtils;
+import net.jacobwasbeast.picaxe.items.ImageBedBlockItem;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import java.util.Collections;
+import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class ImageBedBlock extends BedBlock {
     public ImageBedBlock(DyeColor dyeColor, Properties properties) {
@@ -24,27 +31,32 @@ public class ImageBedBlock extends BedBlock {
     }
 
     @Override
-    protected void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
-        DyeColor color;
-        Block bed = null;
-        BlockPos headPos = blockState.getValue(PART) == BedPart.HEAD ? blockPos : blockPos.relative(blockState.getValue(FACING));
-        if (level.getBlockEntity(headPos) instanceof ImageBedBlockEntity imageBedBlockEntity) {
-            color = imageBedBlockEntity.color;
-            bed = ColorUtils.BEDS_BY_COLOR.get(color);
-        }
-        super.onRemove(blockState, level, blockPos, blockState2, bl);
-        if (level.getBlockEntity(headPos) instanceof ImageBedBlockEntity imageBedBlockEntity) {
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (!level.isClientSide) {
+            BlockPos headPos = state.getValue(PART) == BedPart.HEAD ? pos : pos.relative(state.getValue(FACING));
 
-        }
-        else {
-            if (bed == null) {
-                return;
+            BlockEntity blockEntity = level.getBlockEntity(headPos);
+            if (blockEntity instanceof ImageBedBlockEntity imageBedEntity) {
+                imageBedEntity.loadFromItemStackComponents(stack);
             }
-            ItemStack itemStack = new ItemStack(bed);
-            ItemEntity itemEntity = new ItemEntity(level, blockPos.getX() + 0.5, blockPos.getY() + 0.5, blockPos.getZ() + 0.5, itemStack);
-            itemEntity.setDefaultPickUpDelay();
-            itemEntity.setExtendedLifetime();
-            level.addFreshEntity(itemEntity);
         }
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+        if (state.getValue(PART) == BedPart.HEAD) {
+            BlockEntity blockEntity = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+            if (blockEntity instanceof ImageBedBlockEntity bedEntity) {
+                ItemStack itemStackToDrop = ImageBedBlockItem.create(
+                        bedEntity.getColor(),
+                        bedEntity.getImageLocation(),
+                        bedEntity.getRenderTypes()
+                );
+                return Collections.singletonList(itemStackToDrop);
+            }
+        }
+
+        return Collections.emptyList();
     }
 }

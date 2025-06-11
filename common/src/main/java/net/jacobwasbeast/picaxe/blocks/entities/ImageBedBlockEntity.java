@@ -8,10 +8,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -118,6 +120,29 @@ public class ImageBedBlockEntity extends BlockEntity {
         if (level != null && !level.isClientSide()) {
             setChanged();
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public void loadFromItemStackComponents(ItemStack copy) {
+        if (copy.has(DataComponents.BLOCK_ENTITY_DATA)) {
+            CompoundTag tag = copy.get(DataComponents.BLOCK_ENTITY_DATA).copyTag();
+            if (tag.contains("imageLocation")) {
+                this.imageLocation = tag.getString("imageLocation");
+            }
+            if (tag.contains("color")) {
+                this.color = DyeColor.byName(tag.getString("color"), DyeColor.WHITE);
+            }
+            if (tag.contains("renderTypes")) {
+                try {
+                    this.renderTypes = BedRenderTypes.valueOf(tag.getString("renderTypes"));
+                } catch (IllegalArgumentException e) {
+                    this.renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
+                }
+            }
+        } else {
+            this.imageLocation = "picaxe:blocks/bed";
+            this.color = DyeColor.WHITE;
+            this.renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
         }
     }
 }

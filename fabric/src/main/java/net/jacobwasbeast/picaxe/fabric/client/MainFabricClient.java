@@ -12,6 +12,7 @@ public final class MainFabricClient implements ClientModInitializer {
         Main.initClient();
 
         BuiltinItemRendererRegistry.INSTANCE.register(ModItems.IMAGE_BANNER_ITEM.get(), new ImageBannerItemRendererFabric());
+        BuiltinItemRendererRegistry.INSTANCE.register(ModItems.IMAGE_BED_ITEM.get(), new ImageBedItemRendererFabric());
         BuiltinItemRendererRegistry.INSTANCE.register(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get(), new SixSidedImageBlockItemRendererFabric());
         BuiltinItemRendererRegistry.INSTANCE.register(ModItems.IMAGE_SHIELD.get(), new ImageShieldItemRenderer());
     }
