@@ -55,15 +55,15 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                 case DRAPE_SIDES_PILLOW -> {
                     poseStack.mulPose(XN.rotationDegrees(0));
                     poseStack.mulPose(YP.rotationDegrees(0));
-                    poseStack.translate(0.5, -0.43, -0.22);
+                    poseStack.translate(0.5, -0.4572, -0.22);
                     ImageUtils.renderImageSideDrapesFromURL(
                             poseStack,
                             bufferSource,
                             packedLight,
                             packedOverlay,
                             partialTick,
-                            1.0f,
-                            1.55f,
+                            0.982f,
+                            1.542f,
                             0.3f,
                             blockEntity.getImageLocation()
                     );
@@ -72,14 +72,14 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                 case DRAPE_SIDES_FULL -> {
                     poseStack.mulPose(XN.rotationDegrees(0));
                     poseStack.mulPose(YP.rotationDegrees(0));
-                    poseStack.translate(0.5, -0.43, 0);
+                    poseStack.translate(0.5, -0.4572, 0);
                     ImageUtils.renderImageSideDrapesFromURL(
                             poseStack,
                             bufferSource,
                             packedLight,
                             packedOverlay,
                             partialTick,
-                            1.0f,
+                            0.982f,
                             2.0f,
                             0.3f,
                             blockEntity.getImageLocation()
@@ -89,7 +89,7 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                 case DRAPE_HEAD_AND_FOOT -> {
                     poseStack.mulPose(XN.rotationDegrees(0));
                     poseStack.mulPose(YP.rotationDegrees(0));
-                    poseStack.translate(0.5, -0.43, 0);
+                    poseStack.translate(0.5, -0.4572, 0);
                     ImageUtils.renderImageFrontBackDrapesFromURL(
                             poseStack,
                             bufferSource,
@@ -97,7 +97,7 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             packedOverlay,
                             partialTick,
                             1.0f,
-                            2.0f,
+                            1.982f,
                             0.3f,
                             blockEntity.getImageLocation()
                     );
@@ -106,7 +106,7 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                 case DRAPE_FOOT -> {
                     poseStack.mulPose(XN.rotationDegrees(0));
                     poseStack.mulPose(YP.rotationDegrees(0));
-                    poseStack.translate(0.5, -0.43, -0.22);
+                    poseStack.translate(0.5, -0.4572, -0.22);
                     ImageUtils.renderImageFrontDrapeFromURL(
                             poseStack,
                             bufferSource,
@@ -114,7 +114,7 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             packedOverlay,
                             partialTick,
                             1.0f,
-                            1.55f,
+                            1.542f,
                             0.3f,
                             blockEntity.getImageLocation()
                     );
@@ -124,7 +124,7 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                     poseStack.mulPose(XN.rotationDegrees(0));
                     poseStack.mulPose(YP.rotationDegrees(0));
 
-                    poseStack.translate(0, -0.43, -0.72);
+                    poseStack.translate(0, -0.4474, -0.72);
                     ImageUtils.renderImageFromURL(
                             poseStack,
                             bufferSource,
@@ -132,7 +132,7 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             packedOverlay,
                             partialTick,
                             1.0f,
-                            1.55f,
+                            1.56f,
                             blockEntity.getImageLocation()
                     );
                     break;
@@ -141,7 +141,7 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                     poseStack.mulPose(XN.rotationDegrees(0));
                     poseStack.mulPose(YP.rotationDegrees(0));
 
-                    poseStack.translate(0, -0.43, -0.5);
+                    poseStack.translate(0, -0.4474, -0.5);
                     ImageUtils.renderImageFromURL(
                             poseStack,
                             bufferSource,
@@ -158,7 +158,7 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                     poseStack.mulPose(XN.rotationDegrees(0));
                     poseStack.mulPose(YP.rotationDegrees(0));
 
-                    poseStack.translate(0, -0.43, -0.5);
+                    poseStack.translate(0, -0.4572, -0.5);
                     ImageUtils.renderImageFromURL(
                             poseStack,
                             bufferSource,
