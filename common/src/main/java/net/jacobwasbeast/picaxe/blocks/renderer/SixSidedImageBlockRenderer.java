@@ -60,7 +60,11 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
             if (imageUrl != null && !imageUrl.isBlank()) {
                 poseStack.pushPose();
 
-                int faceLight = LevelRenderer.getLightColor(level, blockEntity.getBlockPos().relative(dir));
+                int faceLight = fullBrightLightLevel;
+                if (level != null) {
+                    LevelRenderer.getLightColor(level, blockEntity.getBlockPos().relative(dir));
+                }
+
                 poseStack.mulPose(dir.getRotation());
                 poseStack.mulPose(YP.rotationDegrees(180));
                 switch (dir) {
