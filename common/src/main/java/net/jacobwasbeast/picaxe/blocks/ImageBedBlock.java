@@ -2,6 +2,8 @@ package net.jacobwasbeast.picaxe.blocks;
 
 // Add these new imports
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
@@ -58,5 +60,10 @@ public class ImageBedBlock extends BedBlock {
         }
 
         return Collections.emptyList();
+    }
+
+    @Override
+    protected void spawnDestroyParticles(Level level, Player player, BlockPos blockPos, BlockState blockState) {
+        level.levelEvent(player, 2001, blockPos, getId(Blocks.WHITE_BED.defaultBlockState()));
     }
 }

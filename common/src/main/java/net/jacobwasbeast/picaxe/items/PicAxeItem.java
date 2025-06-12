@@ -166,6 +166,23 @@ public class PicAxeItem extends AxeItem {
                         player.displayClientMessage(Component.translatable("picaxe.image_banner.set", imageUrl), true);
                     }
                 }
+                if (level.getBlockEntity(clickedPos) instanceof ImageWallBannerBlockEntity imageBannerEntity) {
+                    String imageUrl = getURL(heldStack);
+                    if (imageBannerEntity.getImageLocation().equals(imageUrl)) {
+                        int max = BannerRenderTypes.values().length;
+                        if (max > 0) {
+                            int currentIndex = imageBannerEntity.getRenderTypes().ordinal();
+                            int nextIndex = (currentIndex + 1) % max;
+                            imageBannerEntity.setRenderTypes(BannerRenderTypes.values()[nextIndex]);
+                            player.displayClientMessage(Component.translatable("picaxe.image_banner.render_type", imageBannerEntity.getRenderTypes().name().toLowerCase()), true);
+                        } else {
+                            player.displayClientMessage(Component.translatable("picaxe.image_banner.already_set"), true);
+                        }
+                    } else {
+                        imageBannerEntity.setImageLocation(imageUrl);
+                        player.displayClientMessage(Component.translatable("picaxe.image_banner.set", imageUrl), true);
+                    }
+                }
             } else {
                 updateBannerEntity(blockState, clickedPos, level, heldStack);
                 player.displayClientMessage(Component.translatable("picaxe.image_banner.set", getURL(heldStack)), true);
