@@ -5,7 +5,6 @@ import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -93,8 +92,8 @@ public class ImageWallBannerBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
-        super.saveAdditional(compoundTag, provider);
+    public void saveAdditional(CompoundTag compoundTag) {
+        super.saveAdditional(compoundTag);
         compoundTag.putString("imageLocation", imageLocation);
         compoundTag.putString("color", this.color.getName());
         compoundTag.putString("id", Main.MOD_ID + ":image_banner");
@@ -106,8 +105,8 @@ public class ImageWallBannerBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
-        super.loadAdditional(compoundTag, provider);
+    public void load(CompoundTag compoundTag) {
+        super.load(compoundTag);
         this.imageLocation = compoundTag.getString("imageLocation");
         if (!compoundTag.contains("imageLocation")) {
             this.imageLocation = "picaxe:blocks/banner";
@@ -132,7 +131,7 @@ public class ImageWallBannerBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
-        return saveWithoutMetadata(provider);
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 }

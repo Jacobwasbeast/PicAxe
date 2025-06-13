@@ -1,29 +1,28 @@
 package net.jacobwasbeast.picaxe.blocks;
 
-import com.mojang.serialization.MapCodec;
-import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
-import net.jacobwasbeast.picaxe.items.ImageBannerItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.text.html.BlockView;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,11 +31,6 @@ public class ImageFrameBlock extends DirectionalBlock implements EntityBlock {
     public ImageFrameBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
-    }
-
-    @Override
-    protected MapCodec<? extends DirectionalBlock> codec() {
-        return MapCodec.unit(this);
     }
 
     @Override
@@ -61,12 +55,12 @@ public class ImageFrameBlock extends DirectionalBlock implements EntityBlock {
     }
 
     @Override
-    protected VoxelShape getOcclusionShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos) {
+    public VoxelShape getOcclusionShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos) {
         return Block.box(0, 0, 0, 0, 0, 0);
     }
 
     @Override
-    protected VoxelShape getShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, CollisionContext collisionContext) {
+    public VoxelShape getShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, CollisionContext collisionContext) {
         Direction facing = blockState.getValue(FACING);
 
         float frameWidthScale = 1.0f;
@@ -100,12 +94,12 @@ public class ImageFrameBlock extends DirectionalBlock implements EntityBlock {
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, CollisionContext collisionContext) {
+    public VoxelShape getCollisionShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos, CollisionContext collisionContext) {
         return this.getShape(blockState, blockGetter, blockPos, collisionContext);
     }
 
     @Override
-    protected void onPlace(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
+    public void onPlace(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
         BlockEntity adjacentBlockEntity = level.getBlockEntity(blockPos.relative(blockState.getValue(FACING).getOpposite()));
 
         if (adjacentBlockEntity instanceof SixSidedImageBlockEntity) {
@@ -121,18 +115,13 @@ public class ImageFrameBlock extends DirectionalBlock implements EntityBlock {
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
+    public List<ItemStack> getDrops(BlockState blockState, LootParams.Builder builder) {
         BlockEntity blockEntity = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if (blockEntity instanceof ImageFrameBlockEntity frameEntity) {
             ItemStack itemStackToDrop = new ItemStack(frameEntity.getBlockState().getBlock());
             return Collections.singletonList(itemStackToDrop);
         }
 
-        return super.getDrops(state, builder);
-    }
-
-    @Override
-    protected void spawnDestroyParticles(Level level, Player player, BlockPos blockPos, BlockState blockState) {
-        level.levelEvent(player, 2001, blockPos, getId(Blocks.OAK_PLANKS.defaultBlockState()));
+        return super.getDrops(blockState, builder);
     }
 }

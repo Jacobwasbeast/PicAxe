@@ -1,9 +1,8 @@
-package net.jacobwasbeast.picaxe.neoforge.client;
+package net.jacobwasbeast.picaxe.forge.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.jacobwasbeast.picaxe.ModBlocks;
-import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageBedBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -12,20 +11,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-public class ImageBedItemRendererNeoForge extends BlockEntityWithoutLevelRenderer {
+public class ImageBedItemRendererForge extends BlockEntityWithoutLevelRenderer {
 
     private final ImageBedBlockEntity dummyBed = new ImageBedBlockEntity(
             BlockPos.ZERO,
             ModBlocks.IMAGE_BED_BLOCK.get().defaultBlockState()
     );
 
-    public ImageBedItemRendererNeoForge() {
+    public ImageBedItemRendererForge() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
     }
 
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        dummyBed.loadFromItemStackComponents(stack.copy());
+        dummyBed.loadFromItemStack(stack.copy());
         if (displayContext.firstPerson()) {
             poseStack.mulPose(Axis.YP.rotationDegrees(180));
             poseStack.translate(-1, -0.1, -2);

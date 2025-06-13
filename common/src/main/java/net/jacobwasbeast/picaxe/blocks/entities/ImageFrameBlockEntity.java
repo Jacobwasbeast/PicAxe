@@ -3,13 +3,11 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 
 public class ImageFrameBlockEntity extends BlockEntity {
 
@@ -40,8 +38,8 @@ public class ImageFrameBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         tag.putString("id", Main.MOD_ID + ":image_frame");
         tag.putString("imageUrl", this.imageUrl);
         tag.putInt("frameWidth", this.frameWidth);
@@ -50,8 +48,8 @@ public class ImageFrameBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    public void load(CompoundTag tag) {
+        super.load(tag);
         this.imageUrl = tag.getString("imageUrl");
         this.frameWidth = tag.getInt("frameWidth");
         this.frameHeight = tag.getInt("frameHeight");
@@ -64,7 +62,7 @@ public class ImageFrameBlockEntity extends BlockEntity {
     }
 
     @Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return this.saveWithoutMetadata(registries);
+    public CompoundTag getUpdateTag() {
+        return this.saveWithoutMetadata();
     }
 }

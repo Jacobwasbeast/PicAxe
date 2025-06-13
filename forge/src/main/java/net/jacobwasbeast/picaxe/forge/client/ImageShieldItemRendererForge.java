@@ -1,10 +1,8 @@
-package net.jacobwasbeast.picaxe.neoforge.client;
+package net.jacobwasbeast.picaxe.forge.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.jacobwasbeast.picaxe.Main;
-import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -15,16 +13,13 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.Nullable;
 
-public class ImageShieldItemRendererNeoForge extends BlockEntityWithoutLevelRenderer {
+public class ImageShieldItemRendererForge extends BlockEntityWithoutLevelRenderer {
 
     private static final Material SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base"));
     private static final Material SHIELD_BASE_NOPATTEN = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base_nopattern"));
@@ -34,7 +29,7 @@ public class ImageShieldItemRendererNeoForge extends BlockEntityWithoutLevelRend
     @Nullable
     private ModelPart handle;
 
-    public ImageShieldItemRendererNeoForge() {
+    public ImageShieldItemRendererForge() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
     }
 
@@ -88,9 +83,8 @@ public class ImageShieldItemRendererNeoForge extends BlockEntityWithoutLevelRend
         this.handle.render(poseStack, baseConsumer, packedLight, packedOverlay);
         this.plate.render(poseStack, baseConsumer, packedLight, packedOverlay);
 
-        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-        if (customData != null) {
-            CompoundTag tag = customData.copyTag();
+        CompoundTag tag = stack.getTagElement("BlockEntityTag");
+        if (tag != null) {
             String imageUrl = tag.getString("imageLocation");
 
             if (!imageUrl.isBlank()) {

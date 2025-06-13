@@ -2,7 +2,6 @@ package net.jacobwasbeast.picaxe.blocks.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -14,7 +13,6 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -22,12 +20,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.WallBannerBlock;
-import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.RotationSegment;
 
+import static com.mojang.math.Axis.XP;
 import static com.mojang.math.Axis.YP;
-import static net.minecraft.client.renderer.blockentity.BannerRenderer.renderPatterns;
 
 public class ImageBannerBlockRenderer implements BlockEntityRenderer<ImageBannerBlockEntity> {
 
@@ -61,7 +57,7 @@ public class ImageBannerBlockRenderer implements BlockEntityRenderer<ImageBanner
         BlockState blockState = blockEntity.getBlockState();
         if (blockState.getBlock() instanceof BannerBlock) {
             poseStack.translate(0.5, 0.5, 0.5);
-            float rotation = -RotationSegment.convertToDegrees(blockState.getValue(BannerBlock.ROTATION));
+            float rotation = -(blockState.getValue(BannerBlock.ROTATION) * 360) / 16.0f;
             poseStack.mulPose(YP.rotationDegrees(rotation));
             this.pole.visible = true;
         } else {
@@ -85,14 +81,17 @@ public class ImageBannerBlockRenderer implements BlockEntityRenderer<ImageBanner
 
         this.flag.xRot = xRot;
         this.flag.y = -32.0F;
-        BannerRenderer.renderPatterns(poseStack, bufferSource, packedLight, packedOverlay, this.flag, ModelBakery.BANNER_BASE, true, blockEntity.getColor(), BannerPatternLayers.EMPTY);
+
+        VertexConsumer flagConsumer = ModelBakery.BANNER_BASE.buffer(bufferSource, RenderType::entitySolid);
+        float[] colors = blockEntity.getColor().getTextureDiffuseColors();
+        this.flag.render(poseStack, flagConsumer, packedLight, packedOverlay, colors[0], colors[1], colors[2], 1.0f);
 
         if (imageUrl != null && !imageUrl.equals("picaxe:blocks/banner") && !imageUrl.isBlank()) {
             poseStack.pushPose();
 
             this.flag.translateAndRotate(poseStack);
 
-            poseStack.mulPose(Axis.XP.rotationDegrees(-90));
+            poseStack.mulPose(XP.rotationDegrees(-90));
             poseStack.mulPose(YP.rotationDegrees(180));
             poseStack.translate(-0.5, -0.88, -1.75f);
             ImageUtils.renderImageFromURL(poseStack, bufferSource,packedLight, packedOverlay, partialTick,1.25f,2.5f, imageUrl);

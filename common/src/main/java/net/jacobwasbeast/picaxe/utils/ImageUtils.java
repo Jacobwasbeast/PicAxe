@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.w3c.dom.NodeList;
 
@@ -350,33 +351,39 @@ public class ImageUtils {
             }
         }
 
-        Vector3f nUp = p.transformNormal(0, 1, 0, new Vector3f());
-        Vector3f nDown = p.transformNormal(0, -1, 0, new Vector3f());
+        Matrix4f matrix = p.pose();
 
-        buf.addVertex(p.pose(), -hw, -hh, 0f)
-                .setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL)
-                .setNormal(nUp.x(), nUp.y(), nUp.z());
-        buf.addVertex(p.pose(), hw, -hh, 0f)
-                .setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL)
-                .setNormal(nUp.x(), nUp.y(), nUp.z());
-        buf.addVertex(p.pose(), hw, hh, 0f)
-                .setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL);
-        buf.addVertex(p.pose(), -hw, hh, 0f)
-                .setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL)
-                .setNormal(nUp.x(), nUp.y(), nUp.z());
+        Vector3f nUp = new Vector3f(0, 1, 0);
+        matrix.transformDirection(nUp);
+        Vector3f nDown = new Vector3f(0, -1, 0);
+        matrix.transformDirection(nDown);
 
-        buf.addVertex(p.pose(), -hw, hh, 0f)
-                .setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL)
-                .setNormal(nDown.x(), nDown.y(), nDown.z());
-        buf.addVertex(p.pose(), hw, hh, 0f)
-                .setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL)
-                .setNormal(nDown.x(), nDown.y(), nDown.z());
-        buf.addVertex(p.pose(), hw, -hh, 0f)
-                .setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL)
-                .setNormal(nDown.x(), nDown.y(), nDown.z());
-        buf.addVertex(p.pose(), -hw, -hh, 0f)
-                .setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL)
-                .setNormal(nDown.x(), nDown.y(), nDown.z());
+        buf.vertex(matrix, -hw, -hh, 0f)
+                .color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+        buf.vertex(matrix, hw, -hh, 0f)
+                .color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+        buf.vertex(matrix, hw, hh, 0f)
+                .color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+        buf.vertex(matrix, -hw, hh, 0f)
+                .color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+
+        buf.vertex(matrix, -hw, hh, 0f)
+                .color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+        buf.vertex(matrix, hw, hh, 0f)
+                .color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+        buf.vertex(matrix, hw, -hh, 0f)
+                .color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+        buf.vertex(matrix, -hw, -hh, 0f)
+                .color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+
         ps.popPose();
     }
 
@@ -525,17 +532,22 @@ public class ImageUtils {
             VertexConsumer buf = bufSrc.getBuffer(RenderType.text(topperTex));
             float hw = bedWidth / 2f, hl = bedLength / 2f;
             hw += 0.01f;
-            Vector3f nUp = p.transformNormal(0, 1, 0, new Vector3f());
-            Vector3f nDown = p.transformNormal(0, -1, 0, new Vector3f());
+            Matrix4f matrix = p.pose();
 
-            buf.addVertex(p.pose(), -hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), hw, hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), -hw, hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), -hw, hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
-            buf.addVertex(p.pose(), hw, hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
-            buf.addVertex(p.pose(), hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
-            buf.addVertex(p.pose(), -hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
+            Vector3f nUp = new Vector3f(0, 1, 0);
+            matrix.transformDirection(nUp);
+            Vector3f nDown = new Vector3f(0, -1, 0);
+            matrix.transformDirection(nDown);
+
+            buf.vertex(matrix, -hw, -hl, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+            buf.vertex(matrix, hw, -hl, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+            buf.vertex(matrix, hw, hl, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+            buf.vertex(matrix, -hw, hl, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+
+            buf.vertex(matrix, -hw, hl, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+            buf.vertex(matrix, hw, hl, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+            buf.vertex(matrix, hw, -hl, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+            buf.vertex(matrix, -hw, -hl, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
         }
         ps.popPose();
 
@@ -547,17 +559,22 @@ public class ImageUtils {
             PoseStack.Pose p = ps.last();
             VertexConsumer buf = bufSrc.getBuffer(RenderType.text(leftDrapeTex));
             float hl = bedLength / 2f, d = drapeDepth;
-            Vector3f fn = p.transformNormal(0, 0, 1, new Vector3f());
-            Vector3f bn = p.transformNormal(0, 0, -1, new Vector3f());
+            Matrix4f matrix = p.pose();
 
-            buf.addVertex(p.pose(), -hl, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), hl, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), hl, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), -hl, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), -hl, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), hl, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), hl, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), -hl, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
+            Vector3f fn = new Vector3f(0, 0, 1);
+            matrix.transformDirection(fn);
+            Vector3f bn = new Vector3f(0, 0, -1);
+            matrix.transformDirection(bn);
+
+            buf.vertex(matrix, -hl, -d, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, hl, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, hl, 0, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, -hl, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+
+            buf.vertex(matrix, -hl, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, hl, 0, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, hl, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, -hl, -d, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
         }
         ps.popPose();
 
@@ -568,17 +585,22 @@ public class ImageUtils {
             PoseStack.Pose p = ps.last();
             VertexConsumer buf = bufSrc.getBuffer(RenderType.text(rightDrapeTex));
             float hl = bedLength / 2f, d = drapeDepth;
-            Vector3f fn = p.transformNormal(0, 0, 1, new Vector3f());
-            Vector3f bn = p.transformNormal(0, 0, -1, new Vector3f());
+            Matrix4f matrix = p.pose();
 
-            buf.addVertex(p.pose(), -hl, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), hl, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), hl, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), -hl, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), -hl, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), hl, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), hl, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), -hl, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
+            Vector3f fn = new Vector3f(0, 0, 1);
+            matrix.transformDirection(fn);
+            Vector3f bn = new Vector3f(0, 0, -1);
+            matrix.transformDirection(bn);
+
+            buf.vertex(matrix, -hl, -d, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, hl, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, hl, 0, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, -hl, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+
+            buf.vertex(matrix, -hl, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, hl, 0, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, hl, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, -hl, -d, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
         }
         ps.popPose();
     }
@@ -732,16 +754,22 @@ public class ImageUtils {
             VertexConsumer buf = bufSrc.getBuffer(RenderType.text(topperTex));
             float hw = bedWidth / 2f, hl = bedLength / 2f;
             hl += 0.01f;
-            Vector3f nUp = p.transformNormal(0, 1, 0, new Vector3f());
-            Vector3f nDown = p.transformNormal(0, -1, 0, new Vector3f());
-            buf.addVertex(p.pose(), -hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), hw, hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), -hw, hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), -hw, hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
-            buf.addVertex(p.pose(), hw, hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
-            buf.addVertex(p.pose(), hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
-            buf.addVertex(p.pose(), -hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
+            Matrix4f matrix = p.pose();
+
+            Vector3f nUp = new Vector3f(0, 1, 0);
+            matrix.transformDirection(nUp);
+            Vector3f nDown = new Vector3f(0, -1, 0);
+            matrix.transformDirection(nDown);
+
+            buf.vertex(matrix, -hw, -hl, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+            buf.vertex(matrix, hw, -hl, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+            buf.vertex(matrix, hw, hl, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+            buf.vertex(matrix, -hw, hl, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+
+            buf.vertex(matrix, -hw, hl, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+            buf.vertex(matrix, hw, hl, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+            buf.vertex(matrix, hw, -hl, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+            buf.vertex(matrix, -hw, -hl, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
         }
         ps.popPose();
 
@@ -751,16 +779,22 @@ public class ImageUtils {
             PoseStack.Pose p = ps.last();
             VertexConsumer buf = bufSrc.getBuffer(RenderType.text(frontDrapeTex));
             float hw = bedWidth / 2f, d = drapeDepth;
-            Vector3f bn = p.transformNormal(0, 0, -1, new Vector3f());
-            Vector3f fn = p.transformNormal(0, 0, 1, new Vector3f());
-            buf.addVertex(p.pose(), -hw, -d, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), hw, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), hw, 0, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), -hw, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), -hw, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), hw, 0, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), hw, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), -hw, -d, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
+            Matrix4f matrix = p.pose();
+
+            Vector3f bn = new Vector3f(0, 0, -1);
+            matrix.transformDirection(bn);
+            Vector3f fn = new Vector3f(0, 0, 1);
+            matrix.transformDirection(fn);
+
+            buf.vertex(matrix, -hw, -d, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, hw, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, hw, 0, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, -hw, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+
+            buf.vertex(matrix, -hw, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, hw, 0, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, hw, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, -hw, -d, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
         }
         ps.popPose();
 
@@ -772,16 +806,22 @@ public class ImageUtils {
             PoseStack.Pose p = ps.last();
             VertexConsumer buf = bufSrc.getBuffer(RenderType.text(backDrapeTex));
             float hw = bedWidth / 2f, d = drapeDepth;
-            Vector3f fn = p.transformNormal(0, 0, 1, new Vector3f());
-            Vector3f bn = p.transformNormal(0, 0, -1, new Vector3f());
-            buf.addVertex(p.pose(), -hw, -d, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), hw, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), hw, 0, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), -hw, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(fn.x(), fn.y(), fn.z());
-            buf.addVertex(p.pose(), -hw, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), hw, 0, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), hw, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
-            buf.addVertex(p.pose(), -hw, -d, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(bn.x(), bn.y(), bn.z());
+            Matrix4f matrix = p.pose();
+
+            Vector3f fn = new Vector3f(0, 0, 1);
+            matrix.transformDirection(fn);
+            Vector3f bn = new Vector3f(0, 0, -1);
+            matrix.transformDirection(bn);
+
+            buf.vertex(matrix, -hw, -d, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, hw, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, hw, 0, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+            buf.vertex(matrix, -hw, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(fn.x(), fn.y(), fn.z()).endVertex();
+
+            buf.vertex(matrix, -hw, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, hw, 0, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, hw, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
+            buf.vertex(matrix, -hw, -d, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(bn.x(), bn.y(), bn.z()).endVertex();
         }
         ps.popPose();
     }
@@ -923,16 +963,22 @@ public class ImageUtils {
             VertexConsumer buf = bufSrc.getBuffer(RenderType.text(topperTex));
             float hw = bedWidth / 2f, hl = bedLength / 2f;
             hl += 0.01f;
-            Vector3f nUp = p.transformNormal(0, 1, 0, new Vector3f());
-            Vector3f nDown = p.transformNormal(0, -1, 0, new Vector3f());
-            buf.addVertex(p.pose(), -hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), hw, hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), -hw, hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nUp.x(), nUp.y(), nUp.z());
-            buf.addVertex(p.pose(), -hw, hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
-            buf.addVertex(p.pose(), hw, hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
-            buf.addVertex(p.pose(), hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
-            buf.addVertex(p.pose(), -hw, -hl, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nDown.x(), nDown.y(), nDown.z());
+            Matrix4f matrix = p.pose();
+
+            Vector3f nUp = new Vector3f(0, 1, 0);
+            matrix.transformDirection(nUp);
+            Vector3f nDown = new Vector3f(0, -1, 0);
+            matrix.transformDirection(nDown);
+
+            buf.vertex(matrix, -hw, -hl, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+            buf.vertex(matrix, hw, -hl, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+            buf.vertex(matrix, hw, hl, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+            buf.vertex(matrix, -hw, hl, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+
+            buf.vertex(matrix, -hw, hl, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+            buf.vertex(matrix, hw, hl, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+            buf.vertex(matrix, hw, -hl, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+            buf.vertex(matrix, -hw, -hl, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
         }
         ps.popPose();
 
@@ -942,17 +988,22 @@ public class ImageUtils {
             PoseStack.Pose p = ps.last();
             VertexConsumer buf = bufSrc.getBuffer(RenderType.text(frontDrapeTex));
             float hw = bedWidth / 2f, d = drapeDepth;
-            Vector3f nOut = p.transformNormal(0, 0, -1, new Vector3f());
-            Vector3f nIn = p.transformNormal(0, 0, 1, new Vector3f());
+            Matrix4f matrix = p.pose();
 
-            buf.addVertex(p.pose(), -hw, -d, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nOut.x(), nOut.y(), nOut.z());
-            buf.addVertex(p.pose(), hw, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nOut.x(), nOut.y(), nOut.z());
-            buf.addVertex(p.pose(), hw, 0, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nOut.x(), nOut.y(), nOut.z());
-            buf.addVertex(p.pose(), -hw, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nOut.x(), nOut.y(), nOut.z());
-            buf.addVertex(p.pose(), -hw, 0, 0f).setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nIn.x(), nIn.y(), nIn.z());
-            buf.addVertex(p.pose(), hw, 0, 0f).setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nIn.x(), nIn.y(), nIn.z());
-            buf.addVertex(p.pose(), hw, -d, 0f).setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nIn.x(), nIn.y(), nIn.z());
-            buf.addVertex(p.pose(), -hw, -d, 0f).setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL).setNormal(nIn.x(), nIn.y(), nIn.z());
+            Vector3f nOut = new Vector3f(0, 0, -1);
+            matrix.transformDirection(nOut);
+            Vector3f nIn = new Vector3f(0, 0, 1);
+            matrix.transformDirection(nIn);
+
+            buf.vertex(matrix, -hw, -d, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nOut.x(), nOut.y(), nOut.z()).endVertex();
+            buf.vertex(matrix, hw, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nOut.x(), nOut.y(), nOut.z()).endVertex();
+            buf.vertex(matrix, hw, 0, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nOut.x(), nOut.y(), nOut.z()).endVertex();
+            buf.vertex(matrix, -hw, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nOut.x(), nOut.y(), nOut.z()).endVertex();
+
+            buf.vertex(matrix, -hw, 0, 0f).color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nIn.x(), nIn.y(), nIn.z()).endVertex();
+            buf.vertex(matrix, hw, 0, 0f).color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL).normal(nIn.x(), nIn.y(), nIn.z()).endVertex();
+            buf.vertex(matrix, hw, -d, 0f).color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nIn.x(), nIn.y(), nIn.z()).endVertex();
+            buf.vertex(matrix, -hw, -d, 0f).color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL).normal(nIn.x(), nIn.y(), nIn.z()).endVertex();
         }
         ps.popPose();
     }

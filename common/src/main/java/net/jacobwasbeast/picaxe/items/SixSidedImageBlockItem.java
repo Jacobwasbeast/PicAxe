@@ -3,16 +3,11 @@ package net.jacobwasbeast.picaxe.items;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModItems;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Block;
 
 import java.util.Map;
@@ -34,14 +29,13 @@ public class SixSidedImageBlockItem extends BlockItem implements Equipable {
             tag.putString("image_url_" + entry.getKey().getName(), entry.getValue());
         }
 
-        stack.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(tag));
+        stack.getOrCreateTag().put("BlockEntityTag", tag);
         return stack;
     }
 
     public static Map<Direction, String> getImageUrls(ItemStack stack) {
-        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-        if (customData != null) {
-            CompoundTag tag = customData.copyTag();
+        CompoundTag tag = stack.getTagElement("BlockEntityTag");
+        if (tag != null) {
             Map<Direction, String> imageUrls = new java.util.EnumMap<>(Direction.class);
             for (Direction dir : Direction.values()) {
                 String url = tag.getString("image_url_" + dir.getName());
@@ -57,10 +51,5 @@ public class SixSidedImageBlockItem extends BlockItem implements Equipable {
     @Override
     public EquipmentSlot getEquipmentSlot() {
         return EquipmentSlot.HEAD;
-    }
-
-    @Override
-    public Holder<SoundEvent> getEquipSound() {
-        return SoundEvents.ARMOR_EQUIP_GENERIC;
     }
 }

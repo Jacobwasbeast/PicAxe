@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.gui;
 
 import dev.architectury.networking.NetworkManager;
+import io.netty.buffer.Unpooled;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
 import net.jacobwasbeast.picaxe.network.UpdateImageFramePayload;
 import net.minecraft.client.Minecraft;
@@ -9,6 +10,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 
 public class ImageFrameConfigScreen extends Screen {
@@ -64,7 +66,12 @@ public class ImageFrameConfigScreen extends Screen {
                 String url = this.urlInput.getValue();
                 BlockPos pos = this.blockEntity.getBlockPos();
 
-                NetworkManager.sendToServer(new UpdateImageFramePayload(pos, url, width, height, this.shouldStretch));
+
+                FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+                UpdateImageFramePayload payload = new UpdateImageFramePayload(
+                        pos, url, width, height, this.shouldStretch);
+                payload.write(buf);
+                NetworkManager.sendToServer(UpdateImageFramePayload.TYPE, buf);
                 this.minecraft.setScreen(null);
 
             } catch (NumberFormatException e) {
@@ -94,7 +101,7 @@ public class ImageFrameConfigScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 20, 0xFFFFFF);

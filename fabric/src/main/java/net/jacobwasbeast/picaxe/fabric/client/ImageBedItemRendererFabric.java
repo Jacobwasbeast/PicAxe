@@ -26,7 +26,7 @@ public class ImageBedItemRendererFabric implements BuiltinItemRendererRegistry.D
 
     @Override
     public void render(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        dummyBed.loadFromItemStackComponents(stack);
+        dummyBed.loadFromItemStack(stack);
         if (displayContext.firstPerson()) {
             poseStack.mulPose(Axis.YP.rotationDegrees(180));
             poseStack.translate(-1, -0.1, -2);

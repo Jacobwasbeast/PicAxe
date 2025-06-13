@@ -15,9 +15,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import static com.mojang.math.Axis.*;
 
 public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBlockEntity> {
 
@@ -42,21 +42,21 @@ public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBl
 
         switch (facing) {
             case DOWN:
-                poseStack.mulPose(XP.rotationDegrees(-90.0F));
+                poseStack.mulPose(new Quaternionf().fromAxisAngleRad(new Vector3f(1, 0, 0), (float) java.lang.Math.toRadians(-90.0)));
                 break;
             case UP:
-                poseStack.mulPose(XP.rotationDegrees(90.0F));
+                poseStack.mulPose(new Quaternionf().fromAxisAngleRad(new Vector3f(1, 0, 0), (float) java.lang.Math.toRadians(90.0)));
                 break;
             case NORTH:
                 break;
             case SOUTH:
-                poseStack.mulPose(YP.rotationDegrees(180.0F));
+                poseStack.mulPose(new Quaternionf().fromAxisAngleRad(new Vector3f(0, 1, 0), (float) java.lang.Math.toRadians(180.0)));
                 break;
             case WEST:
-                poseStack.mulPose(YP.rotationDegrees(90.0F));
+                poseStack.mulPose(new Quaternionf().fromAxisAngleRad(new Vector3f(0, 1, 0), (float) java.lang.Math.toRadians(90.0)));
                 break;
             case EAST:
-                poseStack.mulPose(YP.rotationDegrees(-90.0F));
+                poseStack.mulPose(new Quaternionf().fromAxisAngleRad(new Vector3f(0, 1, 0), (float) java.lang.Math.toRadians(-90.0)));
                 break;
         }
 
@@ -64,12 +64,14 @@ public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBl
             poseStack.pushPose();
             poseStack.translate(0.0, 0.0, 0.49f);
             int light = LevelRenderer.getLightColor(level, blockEntity.getBlockPos().relative(facing));
-            renderDoubleSidedQuad(poseStack, bufferSource.getBuffer(RenderType.entitySolid(OAK_WALL_TEXTURE)), frameWidth, frameHeight, light, packedOverlay, 220, false);
+            renderDoubleSidedQuad(poseStack, bufferSource.getBuffer(RenderType.entitySolid(OAK_WALL_TEXTURE)), frameWidth, frameHeight, light, packedOverlay, 220);
             poseStack.popPose();
         }
 
-        poseStack.mulPose(XN.rotationDegrees(-90));
-        poseStack.mulPose(XN.rotationDegrees(-180));
+        // Original rotations converted to pure JOML
+        poseStack.mulPose(new Quaternionf().fromAxisAngleRad(new Vector3f(1, 0, 0), (float) java.lang.Math.toRadians(90.0)));
+        poseStack.mulPose(new Quaternionf().fromAxisAngleRad(new Vector3f(1, 0, 0), (float) java.lang.Math.toRadians(180.0)));
+
         poseStack.translate(0, -0.99, 0);
 
         String imageUrl = blockEntity.getImageUrl();
@@ -78,17 +80,9 @@ public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBl
             poseStack.translate(-0.5, -0.5, -0.5);
             int faceLight = LevelRenderer.getLightColor(level, blockEntity.getBlockPos().relative(facing));
 
-            boolean keepAspectRatio = !blockEntity.shouldStretchToFit();
             ImageUtils.renderImageFromURL(
-                    poseStack,
-                    bufferSource,
-                    faceLight,
-                    packedOverlay,
-                    partialTick,
-                    frameWidth,
-                    frameHeight,
-                    imageUrl,
-                    keepAspectRatio
+                    poseStack, bufferSource, faceLight, packedOverlay, partialTick,
+                    frameWidth, frameHeight, imageUrl, !blockEntity.shouldStretchToFit()
             );
 
             poseStack.popPose();
@@ -97,29 +91,35 @@ public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBl
         poseStack.popPose();
     }
 
-    private void renderDoubleSidedQuad(PoseStack poseStack, VertexConsumer vc, float width, float height, int light, int overlay, int color, boolean useNormalizedUV) {
+    private void renderDoubleSidedQuad(PoseStack poseStack, VertexConsumer vc, float width, float height, int light, int overlay, int color) {
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
-        Vector3f normalPositiveZ = pose.transformNormal(new Vector3f(0, 0, 1), new Vector3f());
-        Vector3f normalNegativeZ = pose.transformNormal(new Vector3f(0, 0, -1), new Vector3f());
+
+        Vector3f normalPositiveZ = new Vector3f(0, 0, 1);
+        matrix.transformDirection(normalPositiveZ);
+
+        Vector3f normalNegativeZ = new Vector3f(0, 0, -1);
+        matrix.transformDirection(normalNegativeZ);
 
         float x0 = -width / 2f, x1 = width / 2f;
         float y0 = -height / 2f, y1 = height / 2f;
-        float u0 = 0, v0 = 0, u1 = useNormalizedUV ? 1 : width * 16f, v1 = useNormalizedUV ? 1 : height * 16f;
+        float u0 = 0, v0 = 0, u1 = width * 16f, v1 = height * 16f;
 
-        Vector3f v_tl = new Vector3f(x0, y1, 0); matrix.transformPosition(v_tl);
-        Vector3f v_bl = new Vector3f(x0, y0, 0); matrix.transformPosition(v_bl);
-        Vector3f v_br = new Vector3f(x1, y0, 0); matrix.transformPosition(v_br);
-        Vector3f v_tr = new Vector3f(x1, y1, 0); matrix.transformPosition(v_tr);
+        Vector3f v_tl = new Vector3f(x0, y1, 0); v_tl.mulPosition(matrix);
+        Vector3f v_bl = new Vector3f(x0, y0, 0); v_bl.mulPosition(matrix);
+        Vector3f v_br = new Vector3f(x1, y0, 0); v_br.mulPosition(matrix);
+        Vector3f v_tr = new Vector3f(x1, y1, 0); v_tr.mulPosition(matrix);
 
-        vc.addVertex(v_tl.x(), v_tl.y(), v_tl.z()).setColor(color, color, color, 255).setUv(u0, v0).setOverlay(overlay).setLight(light).setNormal(normalPositiveZ.x(), normalPositiveZ.y(), normalPositiveZ.z());
-        vc.addVertex(v_bl.x(), v_bl.y(), v_bl.z()).setColor(color, color, color, 255).setUv(u0, v1).setOverlay(overlay).setLight(light).setNormal(normalPositiveZ.x(), normalPositiveZ.y(), normalPositiveZ.z());
-        vc.addVertex(v_br.x(), v_br.y(), v_br.z()).setColor(color, color, color, 255).setUv(u1, v1).setOverlay(overlay).setLight(light).setNormal(normalPositiveZ.x(), normalPositiveZ.y(), normalPositiveZ.z());
-        vc.addVertex(v_tr.x(), v_tr.y(), v_tr.z()).setColor(color, color, color, 255).setUv(u1, v0).setOverlay(overlay).setLight(light).setNormal(normalPositiveZ.x(), normalPositiveZ.y(), normalPositiveZ.z());
+        // Front Face
+        vc.vertex(v_tl.x(), v_tl.y(), v_tl.z()).color(color, color, color, 255).uv(u0, v0).overlayCoords(overlay).uv2(light).normal(normalPositiveZ.x(), normalPositiveZ.y(), normalPositiveZ.z()).endVertex();
+        vc.vertex(v_bl.x(), v_bl.y(), v_bl.z()).color(color, color, color, 255).uv(u0, v1).overlayCoords(overlay).uv2(light).normal(normalPositiveZ.x(), normalPositiveZ.y(), normalPositiveZ.z()).endVertex();
+        vc.vertex(v_br.x(), v_br.y(), v_br.z()).color(color, color, color, 255).uv(u1, v1).overlayCoords(overlay).uv2(light).normal(normalPositiveZ.x(), normalPositiveZ.y(), normalPositiveZ.z()).endVertex();
+        vc.vertex(v_tr.x(), v_tr.y(), v_tr.z()).color(color, color, color, 255).uv(u1, v0).overlayCoords(overlay).uv2(light).normal(normalPositiveZ.x(), normalPositiveZ.y(), normalPositiveZ.z()).endVertex();
 
-        vc.addVertex(v_tr.x(), v_tr.y(), v_tr.z()).setColor(color, color, color, 255).setUv(u1, v0).setOverlay(overlay).setLight(light).setNormal(normalNegativeZ.x(), normalNegativeZ.y(), normalNegativeZ.z());
-        vc.addVertex(v_br.x(), v_br.y(), v_br.z()).setColor(color, color, color, 255).setUv(u1, v1).setOverlay(overlay).setLight(light).setNormal(normalNegativeZ.x(), normalNegativeZ.y(), normalNegativeZ.z());
-        vc.addVertex(v_bl.x(), v_bl.y(), v_bl.z()).setColor(color, color, color, 255).setUv(u0, v1).setOverlay(overlay).setLight(light).setNormal(normalNegativeZ.x(), normalNegativeZ.y(), normalNegativeZ.z());
-        vc.addVertex(v_tl.x(), v_tl.y(), v_tl.z()).setColor(color, color, color, 255).setUv(u0, v0).setOverlay(overlay).setLight(light).setNormal(normalNegativeZ.x(), normalNegativeZ.y(), normalNegativeZ.z());
+        // Back Face
+        vc.vertex(v_tr.x(), v_tr.y(), v_tr.z()).color(color, color, color, 255).uv(u1, v0).overlayCoords(overlay).uv2(light).normal(normalNegativeZ.x(), normalNegativeZ.y(), normalNegativeZ.z()).endVertex();
+        vc.vertex(v_br.x(), v_br.y(), v_br.z()).color(color, color, color, 255).uv(u1, v1).overlayCoords(overlay).uv2(light).normal(normalNegativeZ.x(), normalNegativeZ.y(), normalNegativeZ.z()).endVertex();
+        vc.vertex(v_bl.x(), v_bl.y(), v_bl.z()).color(color, color, color, 255).uv(u0, v1).overlayCoords(overlay).uv2(light).normal(normalNegativeZ.x(), normalNegativeZ.y(), normalNegativeZ.z()).endVertex();
+        vc.vertex(v_tl.x(), v_tl.y(), v_tl.z()).color(color, color, color, 255).uv(u0, v0).overlayCoords(overlay).uv2(light).normal(normalNegativeZ.x(), normalNegativeZ.y(), normalNegativeZ.z()).endVertex();
     }
 }

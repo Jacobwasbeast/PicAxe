@@ -24,7 +24,7 @@ public class SixSidedImageBlockItemRendererFabric implements BuiltinItemRenderer
 
     @Override
     public void render(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        dummyBlockEntity.loadFromItemStackComponents(stack);
+        dummyBlockEntity.loadFromItemStack(stack);
         if (displayContext.equals(ItemDisplayContext.HEAD)) {
             poseStack.scale(0.9F, 0.9F, 0.9F);
             poseStack.translate(0.05, -1, 0.1);

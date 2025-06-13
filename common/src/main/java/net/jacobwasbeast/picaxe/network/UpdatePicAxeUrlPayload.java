@@ -1,28 +1,35 @@
 package net.jacobwasbeast.picaxe.network;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 
-public record UpdatePicAxeUrlPayload(String url, InteractionHand hand) implements CustomPacketPayload {
+public class UpdatePicAxeUrlPayload {
+    public static ResourceLocation TYPE = ResourceLocation.tryBuild("picaxe", "update_picaxe_url");
+    public final String url;
+    public final InteractionHand hand;
 
-    public static final Type<UpdatePicAxeUrlPayload> TYPE =
-            new Type<>(ResourceLocation.tryBuild("picaxe", "update_url"));
+    public UpdatePicAxeUrlPayload(String url, InteractionHand hand) {
+        this.url = url;
+        this.hand = hand;
+    }
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, UpdatePicAxeUrlPayload> CODEC =
-            StreamCodec.composite(
-                    ByteBufCodecs.STRING_UTF8,
-                    UpdatePicAxeUrlPayload::url,
-                    ByteBufCodecs.idMapper(i -> InteractionHand.values()[i], InteractionHand::ordinal),
-                    UpdatePicAxeUrlPayload::hand,
-                    UpdatePicAxeUrlPayload::new
-            );
+    public void write(FriendlyByteBuf buf) {
+        buf.writeUtf(url);
+        buf.writeEnum(hand);
+    }
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public static UpdatePicAxeUrlPayload read(FriendlyByteBuf buf) {
+        String url = buf.readUtf();
+        InteractionHand hand = buf.readEnum(InteractionHand.class);
+        return new UpdatePicAxeUrlPayload(url, hand);
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public InteractionHand getHand() {
+        return hand;
     }
 }

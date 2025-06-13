@@ -1,43 +1,57 @@
 package net.jacobwasbeast.picaxe.network;
 
 import dev.architectury.networking.NetworkManager;
-import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public record UpdateImageFramePayload(BlockPos pos, String url, int width, int height, boolean stretch) implements CustomPacketPayload {
-    public static final Type<UpdateImageFramePayload> TYPE = new Type<>(ResourceLocation.tryBuild(Main.MOD_ID, "update_image_frame"));
+import java.util.function.Supplier;
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, UpdateImageFramePayload> CODEC = StreamCodec.composite(
-            BlockPos.STREAM_CODEC, UpdateImageFramePayload::pos,
-            ByteBufCodecs.STRING_UTF8, UpdateImageFramePayload::url,
-            ByteBufCodecs.INT, UpdateImageFramePayload::width,
-            ByteBufCodecs.INT, UpdateImageFramePayload::height,
-            ByteBufCodecs.BOOL, UpdateImageFramePayload::stretch,
-            UpdateImageFramePayload::new
-    );
+public class UpdateImageFramePayload {
+    public static ResourceLocation TYPE = ResourceLocation.tryBuild("picaxe", "update_image_frame");
+    public final BlockPos pos;
+    public final String url;
+    public final int width;
+    public final int height;
+    public final boolean stretch;
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public UpdateImageFramePayload(BlockPos pos, String url, int width, int height, boolean stretch) {
+        this.pos = pos;
+        this.url = url;
+        this.width = width;
+        this.height = height;
+        this.stretch = stretch;
     }
 
-    public static void handle(UpdateImageFramePayload payload, NetworkManager.PacketContext context) {
+    public UpdateImageFramePayload(FriendlyByteBuf buf) {
+        this.pos = buf.readBlockPos();
+        this.url = buf.readUtf();
+        this.width = buf.readInt();
+        this.height = buf.readInt();
+        this.stretch = buf.readBoolean();
+    }
+
+    public void write(FriendlyByteBuf buf) {
+        buf.writeBlockPos(pos);
+        buf.writeUtf(url);
+        buf.writeInt(width);
+        buf.writeInt(height);
+        buf.writeBoolean(stretch);
+    }
+
+    public void handle(Supplier<NetworkManager.PacketContext> contextSupplier) {
+        NetworkManager.PacketContext context = contextSupplier.get();
         if (context.getPlayer() instanceof ServerPlayer player) {
             context.queue(() -> {
                 Level level = player.level();
-                if (level.isLoaded(payload.pos)) {
-                    BlockEntity be = level.getBlockEntity(payload.pos);
+                if (level.isLoaded(this.pos)) {
+                    BlockEntity be = level.getBlockEntity(this.pos);
                     if (be instanceof ImageFrameBlockEntity frameEntity) {
-                        frameEntity.setConfiguration(payload.url, payload.width, payload.height, payload.stretch);
+                        frameEntity.setConfiguration(this.url, this.width, this.height, this.stretch);
                     }
                 }
             });

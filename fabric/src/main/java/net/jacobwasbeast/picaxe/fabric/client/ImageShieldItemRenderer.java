@@ -13,18 +13,16 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.Nullable;
 
 public class ImageShieldItemRenderer implements BuiltinItemRendererRegistry.DynamicItemRenderer {
 
-    private static final Material SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base"));
-    private static final Material SHIELD_BASE_NOPATTEN = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base_nopattern"));
+    private static final Material SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, new ResourceLocation("entity/shield_base"));
+    private static final Material SHIELD_BASE_NOPATTEN = new Material(Sheets.SHIELD_SHEET, new ResourceLocation("entity/shield_base_nopattern"));
 
     @Nullable
     private ModelPart plate;
@@ -85,9 +83,8 @@ public class ImageShieldItemRenderer implements BuiltinItemRendererRegistry.Dyna
         this.handle.render(poseStack, baseConsumer, packedLight, packedOverlay);
         this.plate.render(poseStack, baseConsumer, packedLight, packedOverlay);
 
-        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-        if (customData != null) {
-            CompoundTag tag = customData.copyTag();
+        CompoundTag tag = stack.getTagElement("BlockEntityTag");
+        if (tag != null) {
             String imageUrl = tag.getString("imageLocation");
 
             if (!imageUrl.isBlank()) {

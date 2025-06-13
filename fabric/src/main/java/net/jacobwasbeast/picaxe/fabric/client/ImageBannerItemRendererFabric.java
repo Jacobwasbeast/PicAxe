@@ -23,7 +23,7 @@ public class ImageBannerItemRendererFabric implements BuiltinItemRendererRegistr
 
     @Override
     public void render(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        dummyBanner.loadFromItemStackComponents(stack);
+        dummyBanner.loadFromItemStack(stack);
         if (displayContext.equals(ItemDisplayContext.HEAD)) {
             poseStack.mulPose(Axis.YP.rotationDegrees(180));
             poseStack.translate(-1, -0.1, -1);

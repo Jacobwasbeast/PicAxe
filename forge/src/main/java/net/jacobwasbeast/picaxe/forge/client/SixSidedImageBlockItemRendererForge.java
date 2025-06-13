@@ -1,10 +1,8 @@
-package net.jacobwasbeast.picaxe.neoforge.client;
+package net.jacobwasbeast.picaxe.forge.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModBlocks;
-import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
+import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -12,24 +10,25 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-public class ImageBannerItemRendererNeoForge extends BlockEntityWithoutLevelRenderer {
+public class SixSidedImageBlockItemRendererForge extends BlockEntityWithoutLevelRenderer {
 
-    private final ImageBannerBlockEntity dummyBanner = new ImageBannerBlockEntity(
+    private final SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
             BlockPos.ZERO,
-            ModBlocks.IMAGE_BANNER_BLOCK.get().defaultBlockState()
+            ModBlocks.SIX_SIDED_IMAGE_BLOCK.get().defaultBlockState()
     );
 
-    public ImageBannerItemRendererNeoForge() {
+    public SixSidedImageBlockItemRendererForge() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
     }
 
+
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        dummyBanner.loadFromItemStackComponents(stack.copy());
+        dummyBlockEntity.loadFromItemStack(stack);
         if (displayContext.equals(ItemDisplayContext.HEAD)) {
-            poseStack.mulPose(Axis.YP.rotationDegrees(180));
-            poseStack.translate(-1, -0.1, -1);
+            poseStack.scale(0.9F, 0.9F, 0.9F);
+            poseStack.translate(0.05, -1, 0.1);
         }
-        Minecraft.getInstance().getBlockEntityRenderDispatcher().renderItem(dummyBanner, poseStack, buffer, packedLight, packedOverlay);
+        Minecraft.getInstance().getBlockEntityRenderDispatcher().renderItem(dummyBlockEntity, poseStack, buffer, packedLight, packedOverlay);
     }
 }

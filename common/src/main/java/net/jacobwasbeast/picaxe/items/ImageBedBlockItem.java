@@ -3,13 +3,11 @@ package net.jacobwasbeast.picaxe.items;
 import net.jacobwasbeast.picaxe.ModItems;
 import net.jacobwasbeast.picaxe.api.BedRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Block;
 
 public class ImageBedBlockItem extends BlockItem {
@@ -26,12 +24,9 @@ public class ImageBedBlockItem extends BlockItem {
     }
 
     public static DyeColor getColor(ItemStack stack) {
-        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-        if (customData != null) {
-            CompoundTag tag = customData.copyTag();
-            if (tag.contains("color")) {
-                return DyeColor.byName(tag.getString("color"), DyeColor.WHITE);
-            }
+        CompoundTag tag = stack.getTagElement("BlockEntityTag");
+        if (tag != null && tag.contains("color")) {
+            return DyeColor.byName(tag.getString("color"), DyeColor.WHITE);
         }
         return DyeColor.WHITE;
     }
@@ -46,7 +41,7 @@ public class ImageBedBlockItem extends BlockItem {
         tag.putString("imageLocation", imageUrl);
         tag.putString("renderTypes", renderType.name());
 
-        stack.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(tag));
+        stack.getOrCreateTag().put("BlockEntityTag", tag);
         return stack;
     }
 }

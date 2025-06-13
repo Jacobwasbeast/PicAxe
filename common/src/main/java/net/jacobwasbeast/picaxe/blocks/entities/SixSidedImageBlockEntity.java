@@ -5,15 +5,11 @@ import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -24,10 +20,7 @@ public class SixSidedImageBlockEntity extends BlockEntity {
 
     public SixSidedImageBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SIX_SIDED_IMAGE_BLOCK_ENTITY.get(), pos, state);
-        for (Direction dir : Direction.Plane.HORIZONTAL) {
-            imageUrls.put(dir, "");
-        }
-        for (Direction dir : Direction.Plane.VERTICAL) {
+        for (Direction dir : Direction.values()) {
             imageUrls.put(dir, "");
         }
     }
@@ -45,17 +38,10 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         tag.putString("id", Main.MOD_ID + ":four_sided_image_block");
-        for (Direction dir : Direction.Plane.HORIZONTAL) {
-            if (imageUrls.containsKey(dir)) {
-                tag.putString("image_url_" + dir.getName(), imageUrls.get(dir));
-            } else {
-                tag.putString("image_url_" + dir.getName(), "");
-            }
-        }
-        for (Direction dir : Direction.Plane.VERTICAL) {
+        for (Direction dir : Direction.values()) {
             if (imageUrls.containsKey(dir)) {
                 tag.putString("image_url_" + dir.getName(), imageUrls.get(dir));
             } else {
@@ -65,16 +51,9 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        for (Direction dir : Direction.Plane.HORIZONTAL) {
-            if (tag.contains("image_url_" + dir.getName())) {
-                imageUrls.put(dir, tag.getString("image_url_" + dir.getName()));
-            } else {
-                imageUrls.put(dir, "");
-            }
-        }
-        for (Direction dir : Direction.Plane.VERTICAL) {
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        for (Direction dir : Direction.values()) {
             if (tag.contains("image_url_" + dir.getName())) {
                 imageUrls.put(dir, tag.getString("image_url_" + dir.getName()));
             } else {
@@ -89,19 +68,16 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     }
 
     @Override
-    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return this.saveWithoutMetadata(registries);
+    public CompoundTag getUpdateTag() {
+        return this.saveWithoutMetadata();
     }
 
-    public void loadFromItemStackComponents(ItemStack stack) {
-        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-        if (customData != null) {
-            this.loadAdditional(customData.copyTag(), null);
+    public void loadFromItemStack(ItemStack stack) {
+        CompoundTag tag = stack.getTagElement("BlockEntityTag");
+        if (tag != null) {
+            this.load(tag);
         } else {
-            for (Direction dir : Direction.Plane.HORIZONTAL) {
-                this.imageUrls.put(dir, "");
-            }
-            for (Direction dir : Direction.Plane.VERTICAL) {
+            for (Direction dir : Direction.values()) {
                 this.imageUrls.put(dir, "");
             }
         }
@@ -109,11 +85,8 @@ public class SixSidedImageBlockEntity extends BlockEntity {
 
     public ItemStack createItemStack() {
         ItemStack itemStack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
-        CompoundTag tag = this.saveWithoutMetadata(this.level.registryAccess());
-
-        CustomData customData = CustomData.of(tag);
-
-        itemStack.set(DataComponents.BLOCK_ENTITY_DATA, customData);
+        CompoundTag blockEntityTag = saveWithoutMetadata();
+        itemStack.getOrCreateTag().put("BlockEntityTag", blockEntityTag);
         return itemStack;
     }
 }

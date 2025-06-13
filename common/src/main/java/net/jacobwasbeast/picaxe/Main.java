@@ -4,7 +4,6 @@ import com.google.common.base.Suppliers;
 import dev.architectury.registry.registries.RegistrarManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.jacobwasbeast.picaxe.component.ModDataComponents;
 import net.jacobwasbeast.picaxe.network.PacketHandler;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +17,6 @@ public final class Main {
     public static final Supplier<RegistrarManager> MANAGER = Suppliers.memoize(() -> RegistrarManager.get(MOD_ID));
 
     public static void init() {
-        ModDataComponents.register();
         ModBlocks.register();
         ModItems.register();
         ModBlockEntities.register();

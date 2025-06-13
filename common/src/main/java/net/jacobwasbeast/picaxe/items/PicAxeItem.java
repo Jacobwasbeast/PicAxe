@@ -6,13 +6,13 @@ import net.jacobwasbeast.picaxe.api.BedRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.blocks.*;
 import net.jacobwasbeast.picaxe.blocks.entities.*;
-import net.jacobwasbeast.picaxe.component.ModDataComponents;
 import net.jacobwasbeast.picaxe.gui.ImageFrameConfigScreen;
 import net.jacobwasbeast.picaxe.gui.URLInputScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -34,22 +34,26 @@ import static net.jacobwasbeast.picaxe.ModCreativeTabs.PICAXE_TAB;
 public class PicAxeItem extends AxeItem {
 
     public static final String DEFAULT_URL = "picaxe:blocks/bed";
+    private static final String URL_KEY = "image_url";
 
     public PicAxeItem() {
-        super(Tiers.IRON,new Item.Properties()
+        super(Tiers.IRON,6.0F, -3.1F,new Item.Properties()
                 .stacksTo(1)
                 .durability(100)
-                .component(ModDataComponents.IMAGE_URL.get(), DEFAULT_URL).arch$tab(PICAXE_TAB)
+                .arch$tab(PICAXE_TAB)
         );
     }
 
     public static void setURL(ItemStack stack, String url) {
         if (stack.getItem() instanceof PicAxeItem) {
-            stack.set(ModDataComponents.IMAGE_URL.get(), url);
+            stack.getOrCreateTag().putString(URL_KEY, url);
         }
     }
     public static String getURL(ItemStack stack) {
-        return stack.getOrDefault(ModDataComponents.IMAGE_URL.get(), DEFAULT_URL);
+        if (stack.hasTag() && stack.getTag().contains(URL_KEY)) {
+            return stack.getTag().getString(URL_KEY);
+        }
+        return DEFAULT_URL;
     }
 
     @Override
@@ -261,8 +265,8 @@ public class PicAxeItem extends AxeItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext tooltipContext, List<Component> tooltip, TooltipFlag tooltipFlag) {
-        super.appendHoverText(stack, tooltipContext, tooltip, tooltipFlag);
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, level, tooltip, flag);
 
         tooltip.add(Component.literal("URL: ").withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(getURL(stack)).withStyle(ChatFormatting.AQUA)));

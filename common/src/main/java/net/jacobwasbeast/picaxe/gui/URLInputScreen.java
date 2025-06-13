@@ -1,12 +1,14 @@
 package net.jacobwasbeast.picaxe.gui;
 
 import dev.architectury.networking.NetworkManager;
+import io.netty.buffer.Unpooled;
 import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.jacobwasbeast.picaxe.network.UpdatePicAxeUrlPayload;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -39,7 +41,10 @@ public class URLInputScreen extends Screen {
         this.setInitialFocus(this.urlInput);
 
         this.addRenderableWidget(Button.builder(Component.translatable("picaxe.screen.url_input.confirm"), (button) -> {
-                    NetworkManager.sendToServer(new UpdatePicAxeUrlPayload(this.urlInput.getValue(), this.hand));
+                    FriendlyByteBuf payloadBuffer = new FriendlyByteBuf(Unpooled.buffer());
+                    UpdatePicAxeUrlPayload payload = new UpdatePicAxeUrlPayload(this.urlInput.getValue(), this.hand);
+                    payload.write(payloadBuffer);
+                    NetworkManager.sendToServer(UpdatePicAxeUrlPayload.TYPE, payloadBuffer);
                     this.minecraft.setScreen(null);
                 })
                 .bounds(centerX - 100, centerY, 98, 20)
@@ -66,7 +71,7 @@ public class URLInputScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        this.renderBackground(guiGraphics);
 
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 

@@ -31,7 +31,7 @@ import static com.mojang.math.Axis.YP;
 
 public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedImageBlockEntity> {
 
-    private static final ResourceLocation OAK_PLANKS_TEXTURE = ResourceLocation.withDefaultNamespace("block/oak_planks");
+    private static final ResourceLocation OAK_PLANKS_TEXTURE = new ResourceLocation("block/oak_planks");
 
     public SixSidedImageBlockRenderer(BlockEntityRendererProvider.Context context) {
     }

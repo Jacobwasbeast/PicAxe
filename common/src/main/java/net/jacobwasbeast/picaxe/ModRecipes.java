@@ -13,7 +13,9 @@ public class ModRecipes {
 
     public static final RegistrySupplier<RecipeSerializer<ImageShieldDecorationRecipe>> IMAGE_SHIELD_RECIPE_SERIALIZER = RECIPE_SERIALIZERS.register(
             "crafting_special_imageshielddecoration",
-            () -> new SimpleCraftingRecipeSerializer<>(ImageShieldDecorationRecipe::new)
+            () -> {
+                return new SimpleCraftingRecipeSerializer<>(ImageShieldDecorationRecipe::new);
+            }
     );
 
     public static void register() {

@@ -3,21 +3,13 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class ImageBannerBlockEntity extends BlockEntity {
 
@@ -74,8 +66,8 @@ public class ImageBannerBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
-        super.saveAdditional(compoundTag, provider);
+    public void saveAdditional(CompoundTag compoundTag) {
+        super.saveAdditional(compoundTag);
         compoundTag.putString("imageLocation", imageLocation);
         compoundTag.putString("color", this.color.getName());
         compoundTag.putString("id", Main.MOD_ID + ":image_banner");
@@ -87,8 +79,8 @@ public class ImageBannerBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
-        super.loadAdditional(compoundTag, provider);
+    public void load(CompoundTag compoundTag) {
+        super.load(compoundTag);
         this.imageLocation = compoundTag.getString("imageLocation");
         if (!compoundTag.contains("imageLocation")) {
             this.imageLocation = "picaxe:blocks/banner";
@@ -113,14 +105,14 @@ public class ImageBannerBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
-        return saveWithoutMetadata(provider);
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
-    public void loadFromItemStackComponents(ItemStack stack) {
-        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-        if (customData != null) {
-            this.loadAdditional(customData.copyTag(), null);
+    public void loadFromItemStack(ItemStack stack) {
+        CompoundTag compoundTag = stack.getTagElement("BlockEntityTag");
+        if (compoundTag != null) {
+            this.load(compoundTag);
         } else {
             this.setColor(DyeColor.WHITE);
             this.setImageLocation("");

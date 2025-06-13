@@ -1,16 +1,12 @@
 package net.jacobwasbeast.picaxe.items;
 
-import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModItems;
-import net.jacobwasbeast.picaxe.component.ModDataComponents;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,12 +19,11 @@ public class ImageShieldItem extends ShieldItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        super.appendHoverText(stack, context, tooltip, flag);
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, level, tooltip, flag);
 
-        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-        if (customData != null) {
-            CompoundTag tag = customData.copyTag();
+        CompoundTag tag = stack.getTagElement("BlockEntityTag");
+        if (tag != null) {
             String imageUrl = tag.getString("imageLocation");
             if (!imageUrl.isBlank()) {
                 tooltip.add(Component.literal("URL: ").withStyle(ChatFormatting.GRAY)
@@ -40,12 +35,16 @@ public class ImageShieldItem extends ShieldItem {
     public static ItemStack createFromBanner(ItemStack bannerStack) {
         ItemStack shieldStack = new ItemStack(ModItems.IMAGE_SHIELD.get());
 
-        CustomData bannerData = bannerStack.get(DataComponents.BLOCK_ENTITY_DATA);
-        if (bannerData != null) {
-            CompoundTag newTag = bannerData.copyTag();
-            shieldStack.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(newTag));
+        CompoundTag bannerTag = bannerStack.getTagElement("BlockEntityTag");
+        if (bannerTag != null) {
+            shieldStack.getOrCreateTag().put("BlockEntityTag", bannerTag.copy());
         }
 
         return shieldStack;
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        return Component.translatable(this.getDescriptionId());
     }
 }
