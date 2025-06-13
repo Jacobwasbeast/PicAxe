@@ -26,7 +26,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,6 +42,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ImageUtils {
     private static final Minecraft mc = Minecraft.getInstance();
     private static final int MAX_LOAD_TRIES = 3;
+    private static final HttpClient httpClient = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_2)
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
 
     private static final ExecutorService executor = Executors.newFixedThreadPool(Math.max(2, Runtime.getRuntime().availableProcessors()));
 
@@ -179,21 +189,49 @@ public class ImageUtils {
     }
 
     private static void processUrl(String url) {
-        for (int i = 1; i <= MAX_LOAD_TRIES; i++) {
-            try (InputStream in = new URL(url).openStream()) {
-                byte[] imageBytes = in.readAllBytes();
-                rawDataCache.put(url, new SoftReference<>(imageBytes));
+        HttpRequest request;
+        try {
+            request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 10.0; WOW64) AppleWebKit/537.50 (KHTML, like Gecko) Chrome/49.0.1164.162 Safari/536")
+                    .timeout(Duration.ofSeconds(20))
+                    .build();
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid URL, adding to blacklist: " + url);
+            blacklist.add(url);
+            return;
+        }
 
-                if (isGif(imageBytes)) {
-                    loadAnimatedGif(url, imageBytes);
+        for (int i = 1; i <= MAX_LOAD_TRIES; i++) {
+            try {
+                HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+
+                if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                    byte[] imageBytes = response.body();
+                    rawDataCache.put(url, new SoftReference<>(imageBytes));
+
+                    if (isGif(imageBytes)) {
+                        loadAnimatedGif(url, imageBytes);
+                    } else {
+                        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
+                            BufferedImage image = ImageIO.read(is);
+                            if (image == null) {
+                                throw new IOException("ImageIO.read returned null. Unsupported format or corrupt data.");
+                            }
+                            mc.execute(() -> registerTextureFromImage(url, image, true));
+                        }
+                    }
+                    return; // Success
                 } else {
-                    BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
-                    if (image == null) throw new IOException("ImageIO.read returned null");
-                    mc.execute(() -> registerTextureFromImage(url, image, true));
+                    throw new IOException("HTTP request failed with status code: " + response.statusCode());
                 }
-                return;
             } catch (Exception e) {
                 System.err.println("Attempt " + i + "/" + MAX_LOAD_TRIES + " failed to load " + url + ": " + e.getMessage());
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                    System.err.println("Image loading interrupted for " + url);
+                    break;
+                }
             }
         }
         System.err.println("Gave up loading image, adding to blacklist: " + url);
