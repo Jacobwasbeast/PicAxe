@@ -116,19 +116,32 @@ Simply combine a **Shield** and an **Image Banner** in a crafting grid (shapeles
 
 ## Installation
 
-This mod requires the **Architectury API**. Please install the correct version for your mod loader.
+This mod requires the **Architectury API** or **Balm API**. Please install the correct version for your mod loader and version.
 
-### For Fabric:
+### For Fabric 1.20 - 1.21:
 
 1.  Install the [Fabric Loader](https://fabricmc.net/use/installer/).
 2.  Install the [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api).
 3.  Install the [Architectury API](https://www.curseforge.com/minecraft/mc-mods/architectury-api).
 4.  Place the PicAxe mod `.jar` file into your `mods` folder.
 
-### For NeoForge:
+### For NeoForge 1.20 - 1.21:
 
 1.  Install the latest version of [NeoForge](https://neoforged.net/).
 2.  Install the [Architectury API](https://www.curseforge.com/minecraft/mc-mods/architectury-api).
+3.  Place the PicAxe mod `.jar` file into your `mods` folder.
+
+### For Fabric 1.21.5+:
+
+1.  Install the [Fabric Loader](https://fabricmc.net/use/installer/).
+2.  Install the [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api).
+3.  Install the [Balm API](https://www.curseforge.com/minecraft/mc-mods/balm).
+4.  Place the PicAxe mod `.jar` file into your `mods` folder.
+
+### For NeoForge 1.21.5+:
+
+1.  Install the latest version of [NeoForge](https://neoforged.net/).
+2.  Install the [Balm API](https://www.curseforge.com/minecraft/mc-mods/balm).
 3.  Place the PicAxe mod `.jar` file into your `mods` folder.
 
 
