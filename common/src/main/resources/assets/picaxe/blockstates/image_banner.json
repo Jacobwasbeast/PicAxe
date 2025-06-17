@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "picaxe:block/image_banner"
+    }
+  }
+}

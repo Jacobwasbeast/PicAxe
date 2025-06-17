@@ -4,6 +4,7 @@ package net.jacobwasbeast.picaxe.blocks;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
@@ -24,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class ImageBedBlock extends BedBlock {
     public ImageBedBlock(DyeColor dyeColor, Properties properties) {
-        super(dyeColor, properties);
+        super(dyeColor, properties.strength(0.5f));
     }
 
     @Override
@@ -65,5 +66,10 @@ public class ImageBedBlock extends BedBlock {
     @Override
     protected void spawnDestroyParticles(Level level, Player player, BlockPos blockPos, BlockState blockState) {
         level.levelEvent(player, 2001, blockPos, getId(Blocks.WHITE_BED.defaultBlockState()));
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
     }
 }

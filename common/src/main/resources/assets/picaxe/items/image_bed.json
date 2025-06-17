@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "picaxe:item/image_bed",
+    "model": {
+      "type": "picaxe:image_bed"
+    }
+  }
+}

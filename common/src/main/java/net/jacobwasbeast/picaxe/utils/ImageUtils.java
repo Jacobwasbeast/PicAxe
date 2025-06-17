@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Vector3f;
 import org.w3c.dom.NodeList;
@@ -32,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 public class ImageUtils {
     private static final Minecraft mc = Minecraft.getInstance();
@@ -70,6 +72,17 @@ public class ImageUtils {
 
     private static final ResourceLocation NOT_FOUND_TEXTURE;
     private static final ResourceLocation LOADING_TEXTURE;
+
+    public static RenderType getRenderType(String imageUrl) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return RenderType.text(NOT_FOUND_TEXTURE);
+        }
+        ResourceLocation tex = getOrLoadTexture(imageUrl);
+        if (tex == null) {
+            tex = NOT_FOUND_TEXTURE;
+        }
+        return RenderType.text(tex);
+    }
 
     private record AnimatedTexture(ResourceLocation[] frames, int[] delays, int totalDuration) {
         public ResourceLocation getCurrentFrame() {
@@ -146,7 +159,7 @@ public class ImageUtils {
                 int g = (argb >> 8) & 0xFF;
                 int b = argb & 0xFF;
                 int abgr = (a << 24) | (b << 16) | (g << 8) | r;
-                ni.setPixelRGBA(x, y, abgr);
+                ni.setPixelABGR(x, y, abgr);
             }
         }
         return ni;
@@ -165,8 +178,9 @@ public class ImageUtils {
             NativeImage ni = toNativeImage(img);
             if (ni == null) return NOT_FOUND_TEXTURE;
 
-            DynamicTexture dyn = new DynamicTexture(ni);
-            ResourceLocation loc = mc.getTextureManager().register("dynamic/" + sanitize(key), dyn);
+            ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(key));
+            DynamicTexture dyn = new DynamicTexture(() -> loc.toString(),ni);
+            mc.getTextureManager().register(loc, dyn);
             if (shouldCache) {
                 cachedTextures.put(key, loc);
             }
@@ -261,8 +275,10 @@ public class ImageUtils {
             for (int j = 0; j < nativeFrames.size(); j++) {
                 NativeImage ni = nativeFrames.get(j);
                 if (ni != null) {
-                    DynamicTexture dyn = new DynamicTexture(ni);
-                    frameLocations[j] = mc.getTextureManager().register("dynamic/" + sanitize(url + "_frame_" + j), dyn);
+                    ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(url + "_frame_" + j));
+                    DynamicTexture dyn = new DynamicTexture(() -> loc.toString(),ni);
+                    mc.getTextureManager().register(loc, dyn);
+                    frameLocations[j] = loc;
                 } else {
                     frameLocations[j] = NOT_FOUND_TEXTURE;
                 }
@@ -470,11 +486,35 @@ public class ImageUtils {
 
                             mc.execute(() -> {
                                 AtomicInteger index = new AtomicInteger(0);
-                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
+                                TextureManager textureManager = mc.getTextureManager();
+
+                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> {
+                                    // 1. Create the ResourceLocation
+                                    ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()));
+
+                                    // 2. Register the texture using the correct constructor you originally had
+                                    textureManager.register(loc, new DynamicTexture(() -> loc.toString(), ni));
+
+                                    // 3. Return the location for the .map() function
+                                    return loc;
+                                }).toArray(ResourceLocation[]::new);
+
+// Reset the index as you had it
                                 index.set(0);
-                                ResourceLocation[] leftLocs = nativeLefts.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_left_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
+
+                                ResourceLocation[] leftLocs = nativeLefts.stream().map(ni -> {
+                                    ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(key + "_left_" + index.getAndIncrement()));
+                                    textureManager.register(loc, new DynamicTexture(() -> loc.toString(), ni));
+                                    return loc;
+                                }).toArray(ResourceLocation[]::new);
+
                                 index.set(0);
-                                ResourceLocation[] rightLocs = nativeRights.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_right_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
+
+                                ResourceLocation[] rightLocs = nativeRights.stream().map(ni -> {
+                                    ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(key + "_right_" + index.getAndIncrement()));
+                                    textureManager.register(loc, new DynamicTexture(() -> loc.toString(), ni));
+                                    return loc;
+                                }).toArray(ResourceLocation[]::new);
 
                                 cachedAnimatedSideTopper.put(key, new AnimatedTexture(topperLocs, delays, totalDuration));
                                 cachedAnimatedSideDrapeLeft.put(key, new AnimatedTexture(leftLocs, delays, totalDuration));
@@ -672,12 +712,32 @@ public class ImageUtils {
                             }
 
                             mc.execute(() -> {
+                                TextureManager textureManager = mc.getTextureManager();
                                 AtomicInteger index = new AtomicInteger(0);
-                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
+
+                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> {
+                                    ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()));
+
+                                    textureManager.register(loc, new DynamicTexture(() -> loc.toString(), ni));
+
+                                    return loc;
+                                }).toArray(ResourceLocation[]::new);
+
                                 index.set(0);
-                                ResourceLocation[] frontLocs = nativeFronts.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_front_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
+
+                                ResourceLocation[] frontLocs = nativeFronts.stream().map(ni -> {
+                                    ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(key + "_front_" + index.getAndIncrement()));
+                                    textureManager.register(loc, new DynamicTexture(() -> loc.toString(), ni));
+                                    return loc;
+                                }).toArray(ResourceLocation[]::new);
+
                                 index.set(0);
-                                ResourceLocation[] backLocs = nativeBacks.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_back_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
+
+                                ResourceLocation[] backLocs = nativeBacks.stream().map(ni -> {
+                                    ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(key + "_back_" + index.getAndIncrement()));
+                                    textureManager.register(loc, new DynamicTexture(() -> loc.toString(), ni));
+                                    return loc;
+                                }).toArray(ResourceLocation[]::new);
 
                                 cachedAnimatedFrontBackTopper.put(key, new AnimatedTexture(topperLocs, delays, totalDuration));
                                 cachedAnimatedFrontDrape.put(key, new AnimatedTexture(frontLocs, delays, totalDuration));
@@ -871,10 +931,24 @@ public class ImageUtils {
                                 if (g != null) g.dispose();
                             }
                             mc.execute(() -> {
+                                TextureManager textureManager = mc.getTextureManager();
                                 AtomicInteger index = new AtomicInteger(0);
-                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
+
+                                ResourceLocation[] topperLocs = nativeToppers.stream().map(ni -> {
+                                    ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(key + "_topper_" + index.getAndIncrement()));
+
+                                    textureManager.register(loc, new DynamicTexture(() -> loc.toString(), ni));
+
+                                    return loc;
+                                }).toArray(ResourceLocation[]::new);
+
                                 index.set(0);
-                                ResourceLocation[] drapeLocs = nativeDrapes.stream().map(ni -> mc.getTextureManager().register("dynamic/" + sanitize(key + "_drape_" + index.getAndIncrement()), new DynamicTexture(ni))).toArray(ResourceLocation[]::new);
+
+                                ResourceLocation[] drapeLocs = nativeDrapes.stream().map(ni -> {
+                                    ResourceLocation loc = ResourceLocation.tryBuild("picaxe", "dynamic/" + sanitize(key + "_drape_" + index.getAndIncrement()));
+                                    textureManager.register(loc, new DynamicTexture(() -> loc.toString(), ni));
+                                    return loc;
+                                }).toArray(ResourceLocation[]::new);
 
                                 cachedAnimatedSingleTopper.put(key, new AnimatedTexture(topperLocs, delays, totalDuration));
                                 cachedAnimatedSingleFrontDrape.put(key, new AnimatedTexture(drapeLocs, delays, totalDuration));

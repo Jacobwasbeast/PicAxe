@@ -1,37 +1,41 @@
 {
   "schemaVersion": 1,
-  "id": "picaxe",
+  "id": "${mod_id}",
   "version": "${version}",
-  "name": "PicAxe",
-  "description": "Use a Picture Axe to put internet images onto your shields, banners and even your beds.",
+
+  "name": "${mod_name}",
+  "description": "${description}",
   "authors": [
-    "Jacobwasbeast"
+    "${mod_author}"
   ],
   "contact": {
-    "homepage": "https://jacobwasbeast.net/mods/picaxe"
+    "homepage": "${homepage}",
+    "sources": "${sources}",
+    "issues": "${issues}"
   },
-  "license": "MIT",
-  "icon": "assets/picaxe/icon.png",
+
+  "license": "${license}",
+  "icon": "${mod_id}.png",
+
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.jacobwasbeast.picaxe.fabric.MainFabric"
+      "${group}.${mod_id}.fabric.Fabric${mod_main}"
     ],
     "client": [
-      "net.jacobwasbeast.picaxe.fabric.client.MainFabricClient"
+      "${group}.${mod_id}.fabric.client.Fabric${mod_main}Client"
     ]
   },
   "mixins": [
-    "picaxe.mixins.json"
+    "${mod_id}.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.14",
-    "minecraft": "~1.21.1",
-    "java": ">=21",
-    "architectury": ">=13.0.8",
-    "fabric-api": "*"
+    "java": ">=${java_version}",
+    "minecraft": ">=${minimum_minecraft_version}",
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": ">=${fabric_version}",
+    "balm-fabric": ">=${minimum_balm_version}"
   },
   "suggests": {
-    "another-mod": "*"
   }
 }

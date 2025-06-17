@@ -1,38 +1,33 @@
-modLoader = "javafml"
-loaderVersion = "[2,)"
-#issueTrackerURL = ""
-license = "MIT"
-
+modLoader="javafml"
+loaderVersion="${neoforge_loader_version_range}"
+license="${license}"
+issueTrackerURL="${issues}"
 [[mods]]
-modId = "picaxe"
-version = "${version}"
-displayName = "PicAxe"
-authors = "Jacobwasbeast"
-description = '''
-Use a Picture Axe to put internet images onto your shields, banners and even your beds.
-'''
-#logoFile = ""
-
-[[dependencies.picaxe]]
-modId = "neoforge"
-type = "required"
-versionRange = "[21,)"
-ordering = "NONE"
-side = "BOTH"
-
-[[dependencies.picaxe]]
-modId = "minecraft"
-type = "required"
-versionRange = "[1.21.1,)"
-ordering = "NONE"
-side = "BOTH"
-
-[[dependencies.picaxe]]
-modId = "architectury"
-type = "required"
-versionRange = "[13.0.8,)"
-ordering = "AFTER"
-side = "BOTH"
-
+modId="${mod_id}"
+version="${version}"
+displayName="${mod_name}"
+displayURL="${homepage}"
+logoFile="${mod_id}.png"
+credits="${credits}"
+authors="${mod_author}"
+description='''${description}'''
 [[mixins]]
-config = "picaxe.mixins.json"
+config = "${mod_id}.mixins.json"
+[[dependencies.${mod_id}]]
+modId="neoforge"
+type="required"
+versionRange="${neoforge_version_range}"
+ordering="NONE"
+side="BOTH"
+[[dependencies.${mod_id}]]
+modId="minecraft"
+type="required"
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"
+[[dependencies.${mod_id}]]
+modId="balm"
+type="required"
+versionRange="${balm_version_range}"
+ordering="NONE"
+side="BOTH"

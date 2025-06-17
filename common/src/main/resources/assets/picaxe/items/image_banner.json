@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "picaxe:item/image_banner",
+    "model": {
+      "type": "picaxe:image_banner"
+    }
+  }
+}

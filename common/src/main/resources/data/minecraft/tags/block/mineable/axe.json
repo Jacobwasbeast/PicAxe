@@ -1,0 +1,9 @@
+{
+  "values": [
+    "picaxe:image_frame",
+    "picaxe:image_bed",
+    "picaxe:image_banner",
+    "picaxe:image_wall_banner",
+    "picaxe:six_sided_image_block"
+  ]
+}

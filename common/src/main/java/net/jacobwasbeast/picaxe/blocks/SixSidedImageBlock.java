@@ -2,6 +2,7 @@ package net.jacobwasbeast.picaxe.blocks;
 
 import com.mojang.serialization.MapCodec;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
+import net.jacobwasbeast.picaxe.items.SixSidedImageBlockItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -24,7 +25,7 @@ public class SixSidedImageBlock extends BaseEntityBlock {
     public static final MapCodec<SixSidedImageBlock> CODEC = simpleCodec(SixSidedImageBlock::new);
 
     public SixSidedImageBlock(Properties properties) {
-        super(properties);
+        super(properties.strength(3));
     }
 
     @Override
@@ -40,14 +41,16 @@ public class SixSidedImageBlock extends BaseEntityBlock {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+        return RenderShape.INVISIBLE;
     }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
         BlockEntity blockEntity = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if (blockEntity instanceof SixSidedImageBlockEntity fourSided) {
-            ItemStack itemStackToDrop = fourSided.createItemStack();
+            ItemStack itemStackToDrop = SixSidedImageBlockItem.create(
+                    fourSided.getImages()
+            );
             return Collections.singletonList(itemStackToDrop);
         }
 

@@ -1,8 +1,7 @@
 package net.jacobwasbeast.picaxe.items;
 
-import net.jacobwasbeast.picaxe.ModItems;
+import net.jacobwasbeast.picaxe.PictureAxe;
 import net.jacobwasbeast.picaxe.api.BedRenderTypes;
-import net.jacobwasbeast.picaxe.Main;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -30,17 +29,17 @@ public class ImageBedBlockItem extends BlockItem {
         if (customData != null) {
             CompoundTag tag = customData.copyTag();
             if (tag.contains("color")) {
-                return DyeColor.byName(tag.getString("color"), DyeColor.WHITE);
+                return DyeColor.byName(tag.getString("color").get(), DyeColor.WHITE);
             }
         }
         return DyeColor.WHITE;
     }
 
     public static ItemStack create(DyeColor color, String imageUrl, BedRenderTypes renderType) {
-        ItemStack stack = new ItemStack(ModItems.IMAGE_BED_ITEM.get());
+        ItemStack stack = new ItemStack(ModItems.IMAGE_BED_ITEM);
 
         CompoundTag tag = new CompoundTag();
-        tag.putString("id", Main.MOD_ID + ":image_bed");
+        tag.putString("id", PictureAxe.MOD_ID + ":image_bed");
 
         tag.putString("color", color.getName());
         tag.putString("imageLocation", imageUrl);

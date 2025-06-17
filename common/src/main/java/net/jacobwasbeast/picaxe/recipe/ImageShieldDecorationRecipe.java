@@ -1,13 +1,9 @@
 package net.jacobwasbeast.picaxe.recipe;
 
-import net.jacobwasbeast.picaxe.Main;
-import net.jacobwasbeast.picaxe.ModRecipes;
 import net.jacobwasbeast.picaxe.items.ImageBannerItem;
 import net.jacobwasbeast.picaxe.items.ImageShieldItem;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -19,6 +15,11 @@ public class ImageShieldDecorationRecipe extends CustomRecipe {
 
     public ImageShieldDecorationRecipe(CraftingBookCategory category) {
         super(category);
+    }
+
+    @Override
+    public RecipeSerializer<? extends CustomRecipe> getSerializer() {
+        return ModRecipes.IMAGE_SHIELD_RECIPE_SERIALIZER;
     }
 
     @Override
@@ -58,15 +59,5 @@ public class ImageShieldDecorationRecipe extends CustomRecipe {
         }
 
         return ImageShieldItem.createFromBanner(bannerStack);
-    }
-
-    @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return width * height >= 2;
-    }
-
-    @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.IMAGE_SHIELD_RECIPE_SERIALIZER.get();
     }
 }

@@ -1,8 +1,7 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
-import net.jacobwasbeast.picaxe.Main;
-import net.jacobwasbeast.picaxe.ModBlockEntities;
-import net.jacobwasbeast.picaxe.ModItems;
+import net.jacobwasbeast.picaxe.items.ModItems;
+import net.jacobwasbeast.picaxe.PictureAxe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -47,7 +46,7 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.putString("id", Main.MOD_ID + ":four_sided_image_block");
+        tag.putString("id", PictureAxe.MOD_ID + ":four_sided_image_block");
         for (Direction dir : Direction.Plane.HORIZONTAL) {
             if (imageUrls.containsKey(dir)) {
                 tag.putString("image_url_" + dir.getName(), imageUrls.get(dir));
@@ -69,14 +68,14 @@ public class SixSidedImageBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         for (Direction dir : Direction.Plane.HORIZONTAL) {
             if (tag.contains("image_url_" + dir.getName())) {
-                imageUrls.put(dir, tag.getString("image_url_" + dir.getName()));
+                imageUrls.put(dir, tag.getString("image_url_" + dir.getName()).get());
             } else {
                 imageUrls.put(dir, "");
             }
         }
         for (Direction dir : Direction.Plane.VERTICAL) {
             if (tag.contains("image_url_" + dir.getName())) {
-                imageUrls.put(dir, tag.getString("image_url_" + dir.getName()));
+                imageUrls.put(dir, tag.getString("image_url_" + dir.getName()).get());
             } else {
                 imageUrls.put(dir, "");
             }
@@ -107,13 +106,7 @@ public class SixSidedImageBlockEntity extends BlockEntity {
         }
     }
 
-    public ItemStack createItemStack() {
-        ItemStack itemStack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
-        CompoundTag tag = this.saveWithoutMetadata(this.level.registryAccess());
-
-        CustomData customData = CustomData.of(tag);
-
-        itemStack.set(DataComponents.BLOCK_ENTITY_DATA, customData);
-        return itemStack;
+    public Map<Direction, String> getImages() {
+        return Map.copyOf(imageUrls);
     }
 }

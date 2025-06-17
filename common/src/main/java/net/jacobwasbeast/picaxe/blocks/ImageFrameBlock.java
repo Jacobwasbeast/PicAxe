@@ -30,7 +30,7 @@ import java.util.List;
 public class ImageFrameBlock extends DirectionalBlock implements EntityBlock {
 
     public ImageFrameBlock(Properties properties) {
-        super(properties);
+        super(properties.strength(1.5f));
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
@@ -60,8 +60,9 @@ public class ImageFrameBlock extends DirectionalBlock implements EntityBlock {
         return new ImageFrameBlockEntity(pos, state);
     }
 
+
     @Override
-    protected VoxelShape getOcclusionShape(BlockState blockState, BlockGetter blockGetter, BlockPos blockPos) {
+    protected VoxelShape getOcclusionShape(BlockState blockState) {
         return Block.box(0, 0, 0, 0, 0, 0);
     }
 

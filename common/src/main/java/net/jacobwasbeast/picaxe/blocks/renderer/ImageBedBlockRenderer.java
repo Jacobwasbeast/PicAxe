@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.phys.Vec3;
 
 import static com.mojang.math.Axis.XN;
 import static com.mojang.math.Axis.YP;
@@ -20,7 +21,7 @@ import static com.mojang.math.Axis.YP;
 public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockEntity> {
 
     @Override
-    public void render(ImageBedBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+    public void render(ImageBedBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 vec3) {
         var minecraft = Minecraft.getInstance();
         var customState = blockEntity.getBlockState();
 

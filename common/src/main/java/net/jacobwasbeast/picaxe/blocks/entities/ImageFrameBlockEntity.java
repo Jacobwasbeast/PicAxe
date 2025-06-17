@@ -1,7 +1,6 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
-import net.jacobwasbeast.picaxe.Main;
-import net.jacobwasbeast.picaxe.ModBlockEntities;
+import net.jacobwasbeast.picaxe.PictureAxe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -42,7 +41,7 @@ public class ImageFrameBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.putString("id", Main.MOD_ID + ":image_frame");
+        tag.putString("id", PictureAxe.MOD_ID + ":image_frame");
         tag.putString("imageUrl", this.imageUrl);
         tag.putInt("frameWidth", this.frameWidth);
         tag.putInt("frameHeight", this.frameHeight);
@@ -52,10 +51,10 @@ public class ImageFrameBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        this.imageUrl = tag.getString("imageUrl");
-        this.frameWidth = tag.getInt("frameWidth");
-        this.frameHeight = tag.getInt("frameHeight");
-        this.stretchToFit = tag.getBoolean("stretchToFit");
+        this.imageUrl = tag.getString("imageUrl").get();
+        this.frameWidth = tag.getInt("frameWidth").get();
+        this.frameHeight = tag.getInt("frameHeight").get();
+        this.stretchToFit = tag.getBoolean("stretchToFit").get();
     }
 
     @Override

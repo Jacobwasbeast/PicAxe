@@ -1,46 +1,43 @@
 package net.jacobwasbeast.picaxe.component;
 
 import com.mojang.serialization.Codec;
-import dev.architectury.registry.registries.DeferredRegister;
-import dev.architectury.registry.registries.RegistrySupplier;
+import net.blay09.mods.balm.api.DeferredObject;
+import net.blay09.mods.balm.api.component.BalmComponents;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceLocation;
 
+import static net.jacobwasbeast.picaxe.PictureAxe.id;
+
 public class ModDataComponents {
-    public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES =
-            DeferredRegister.create("picaxe", Registries.DATA_COMPONENT_TYPE);
+    public static DeferredObject<DataComponentType<String>> IMAGE_URL;
+    public static DeferredObject<DataComponentType<String>> BANNER_COLOR;
+    public static DeferredObject<DataComponentType<String>> BANNER_RENDER_TYPE;
 
-    public static final RegistrySupplier<DataComponentType<String>> IMAGE_URL =
-            DATA_COMPONENT_TYPES.register(
-                    ResourceLocation.tryBuild("picaxe", "image_url"),
-                    () -> DataComponentType.<String>builder()
-                            .persistent(Codec.STRING)
-                            .networkSynchronized(ByteBufCodecs.STRING_UTF8)
-                            .build()
-            );
+    public static void initialize(BalmComponents components) {
+        IMAGE_URL = components.registerComponent(
+                () -> DataComponentType.<String>builder()
+                        .persistent(Codec.STRING)
+                        .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                        .build(),
+                id("image_url")
+        );
 
-    public static final RegistrySupplier<DataComponentType<String>> BANNER_COLOR =
-            DATA_COMPONENT_TYPES.register(
-                    ResourceLocation.tryBuild("picaxe", "banner_color"),
-                    () -> DataComponentType.<String>builder()
-                            .persistent(Codec.STRING)
-                            .networkSynchronized(ByteBufCodecs.STRING_UTF8)
-                            .build()
-            );
+        BANNER_COLOR = components.registerComponent(
+                () -> DataComponentType.<String>builder()
+                        .persistent(Codec.STRING)
+                        .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                        .build(),
+                id("banner_color")
+        );
 
-    public static final RegistrySupplier<DataComponentType<String>> BANNER_RENDER_TYPE =
-            DATA_COMPONENT_TYPES.register(
-                    ResourceLocation.tryBuild("picaxe", "banner_render_type"),
-                    () -> DataComponentType.<String>builder()
-                            .persistent(Codec.STRING)
-                            .networkSynchronized(ByteBufCodecs.STRING_UTF8)
-                            .build()
-            );
-
-
-    public static void register() {
-        DATA_COMPONENT_TYPES.register();
+        BANNER_RENDER_TYPE = components.registerComponent(
+                () -> DataComponentType.<String>builder()
+                        .persistent(Codec.STRING)
+                        .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                        .build(),
+                id("banner_render_type")
+        );
     }
 }

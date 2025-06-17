@@ -1,24 +1,17 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
-import net.jacobwasbeast.picaxe.ModBlockEntities;
-import net.jacobwasbeast.picaxe.ModBlocks;
+import net.jacobwasbeast.picaxe.blocks.ModBlocks;
 import net.jacobwasbeast.picaxe.api.BedRenderTypes;
-import net.jacobwasbeast.picaxe.Main;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class ImageBedBlockEntity extends BlockEntity {
     public DyeColor color;
@@ -40,7 +33,7 @@ public class ImageBedBlockEntity extends BlockEntity {
     }
 
     public ImageBedBlockEntity(BlockEntityRendererProvider.Context context) {
-        super(ModBlockEntities.IMAGE_BED_BLOCK_ENTITY.get(), BlockPos.ZERO, ModBlocks.IMAGE_BED_BLOCK.get().defaultBlockState());
+        super(ModBlockEntities.IMAGE_BED_BLOCK_ENTITY.get(), BlockPos.ZERO, ModBlocks.IMAGE_BED_BLOCK.defaultBlockState());
     }
 
     public String getImageLocation() {
@@ -62,17 +55,17 @@ public class ImageBedBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
         super.loadAdditional(compoundTag, provider);
-        imageLocation = compoundTag.getString("imageLocation");
+        imageLocation = compoundTag.getString("imageLocation").get();
         if (!compoundTag.contains("imageLocation")) {
             imageLocation = "picaxe:blocks/bed";
         }
-        this.color = DyeColor.byName(compoundTag.getString("color"), DyeColor.WHITE);
+        this.color = DyeColor.byName(compoundTag.getString("color").get(), DyeColor.WHITE);
         if (!compoundTag.contains("color")) {
             this.color = DyeColor.WHITE;
         }
         if (compoundTag.contains("renderTypes")) {
             try {
-                this.renderTypes = BedRenderTypes.valueOf(compoundTag.getString("renderTypes"));
+                this.renderTypes = BedRenderTypes.valueOf(compoundTag.getString("renderTypes").get());
             } catch (IllegalArgumentException e) {
                 this.renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
             }
@@ -127,14 +120,14 @@ public class ImageBedBlockEntity extends BlockEntity {
         if (copy.has(DataComponents.BLOCK_ENTITY_DATA)) {
             CompoundTag tag = copy.get(DataComponents.BLOCK_ENTITY_DATA).copyTag();
             if (tag.contains("imageLocation")) {
-                this.imageLocation = tag.getString("imageLocation");
+                this.imageLocation = tag.getString("imageLocation").get();
             }
             if (tag.contains("color")) {
-                this.color = DyeColor.byName(tag.getString("color"), DyeColor.WHITE);
+                this.color = DyeColor.byName(tag.getString("color").get(), DyeColor.WHITE);
             }
             if (tag.contains("renderTypes")) {
                 try {
-                    this.renderTypes = BedRenderTypes.valueOf(tag.getString("renderTypes"));
+                    this.renderTypes = BedRenderTypes.valueOf(tag.getString("renderTypes").get());
                 } catch (IllegalArgumentException e) {
                     this.renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
                 }

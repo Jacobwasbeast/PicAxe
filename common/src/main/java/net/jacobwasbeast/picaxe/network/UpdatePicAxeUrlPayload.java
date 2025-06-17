@@ -1,11 +1,14 @@
 package net.jacobwasbeast.picaxe.network;
 
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 
 public record UpdatePicAxeUrlPayload(String url, InteractionHand hand) implements CustomPacketPayload {
 
@@ -24,5 +27,14 @@ public record UpdatePicAxeUrlPayload(String url, InteractionHand hand) implement
     @Override
     public Type<? extends CustomPacketPayload> type() {
         return TYPE;
+    }
+
+    public static void handle(final ServerPlayer player, UpdatePicAxeUrlPayload payload) {
+        if (player != null) {
+            ItemStack stack = player.getItemInHand(payload.hand());
+            if (stack.getItem() instanceof PicAxeItem) {
+                PicAxeItem.setURL(stack, payload.url());
+            }
+        }
     }
 }

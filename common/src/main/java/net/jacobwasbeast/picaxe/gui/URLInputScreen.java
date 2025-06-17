@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.gui;
 
-import dev.architectury.networking.NetworkManager;
+import net.blay09.mods.balm.api.Balm;
+import net.blay09.mods.balm.api.network.BalmNetworking;
 import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.jacobwasbeast.picaxe.network.UpdatePicAxeUrlPayload;
 import net.minecraft.client.gui.GuiGraphics;
@@ -39,7 +40,7 @@ public class URLInputScreen extends Screen {
         this.setInitialFocus(this.urlInput);
 
         this.addRenderableWidget(Button.builder(Component.translatable("picaxe.screen.url_input.confirm"), (button) -> {
-                    NetworkManager.sendToServer(new UpdatePicAxeUrlPayload(this.urlInput.getValue(), this.hand));
+                    Balm.getNetworking().sendToServer(new UpdatePicAxeUrlPayload(this.urlInput.getValue(), this.hand));
                     this.minecraft.setScreen(null);
                 })
                 .bounds(centerX - 100, centerY, 98, 20)

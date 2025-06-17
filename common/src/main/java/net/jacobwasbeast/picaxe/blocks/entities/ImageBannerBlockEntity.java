@@ -1,23 +1,18 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
-import net.jacobwasbeast.picaxe.ModBlockEntities;
+import net.jacobwasbeast.picaxe.PictureAxe;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
-import net.jacobwasbeast.picaxe.Main;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class ImageBannerBlockEntity extends BlockEntity {
 
@@ -78,7 +73,7 @@ public class ImageBannerBlockEntity extends BlockEntity {
         super.saveAdditional(compoundTag, provider);
         compoundTag.putString("imageLocation", imageLocation);
         compoundTag.putString("color", this.color.getName());
-        compoundTag.putString("id", Main.MOD_ID + ":image_banner");
+        compoundTag.putString("id", PictureAxe.MOD_ID + ":image_banner");
         if (renderTypes != null) {
             compoundTag.putString("renderTypes", renderTypes.name());
         } else {
@@ -89,16 +84,16 @@ public class ImageBannerBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
         super.loadAdditional(compoundTag, provider);
-        this.imageLocation = compoundTag.getString("imageLocation");
+        this.imageLocation = compoundTag.getString("imageLocation").get();
         if (!compoundTag.contains("imageLocation")) {
             this.imageLocation = "picaxe:blocks/banner";
         }
 
-        this.color = DyeColor.byName(compoundTag.getString("color"), DyeColor.WHITE);
+        this.color = DyeColor.byName(compoundTag.getString("color").get(), DyeColor.WHITE);
 
         if (compoundTag.contains("renderTypes")) {
             try {
-                this.renderTypes = BannerRenderTypes.valueOf(compoundTag.getString("renderTypes"));
+                this.renderTypes = BannerRenderTypes.valueOf(compoundTag.getString("renderTypes").get());
             } catch (IllegalArgumentException e) {
                 this.renderTypes = BannerRenderTypes.OVER_BANNER;
             }

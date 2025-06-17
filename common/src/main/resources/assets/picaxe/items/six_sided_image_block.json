@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "picaxe:item/six_sided_image_block",
+    "model": {
+      "type": "picaxe:six_sided_image_block"
+    }
+  }
+}

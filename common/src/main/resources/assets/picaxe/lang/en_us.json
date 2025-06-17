@@ -2,6 +2,11 @@
   "item.picaxe.pic_axe": "Picture Axe",
   "item.picaxe.pixel_dust": "Pixel Dust",
   "item.picaxe.image_shield": "Image Shield",
+  "item.picaxe.image_banner": "Image Banner",
+  "item.picaxe.image_bed": "Image Bed",
+  "item.picaxe.image_frame": "Image Frame",
+  "item.picaxe.six_sided_image_block": "Six-Sided Image Block",
+
   "tooltip.picaxe.url": "URL: %s",
   "tooltip.picaxe.when_used": "When used:",
   "tooltip.picaxe.use_action": "▶ Sneak + Right-click: Set image URL",

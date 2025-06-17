@@ -1,6 +1,6 @@
 package net.jacobwasbeast.picaxe.gui;
 
-import dev.architectury.networking.NetworkManager;
+import net.blay09.mods.balm.api.Balm;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
 import net.jacobwasbeast.picaxe.network.UpdateImageFramePayload;
 import net.minecraft.client.Minecraft;
@@ -64,7 +64,7 @@ public class ImageFrameConfigScreen extends Screen {
                 String url = this.urlInput.getValue();
                 BlockPos pos = this.blockEntity.getBlockPos();
 
-                NetworkManager.sendToServer(new UpdateImageFramePayload(pos, url, width, height, this.shouldStretch));
+                Balm.getNetworking().sendToServer(new UpdateImageFramePayload(pos, url, width, height, this.shouldStretch));
                 this.minecraft.setScreen(null);
 
             } catch (NumberFormatException e) {

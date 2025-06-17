@@ -1,15 +1,11 @@
 package net.jacobwasbeast.picaxe.items;
 
-import net.jacobwasbeast.picaxe.ModItems;
+import net.jacobwasbeast.picaxe.PictureAxe;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
-import net.jacobwasbeast.picaxe.Main;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomData;
@@ -17,11 +13,11 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class ImageBannerItem extends StandingAndWallBlockItem implements Equipable {
+public class ImageBannerItem extends StandingAndWallBlockItem {
 
 
-    public ImageBannerItem(Block block, Block block2, Properties properties, Direction direction) {
-        super(block, block2, properties, direction);
+    public ImageBannerItem(Block block, Block block2, Direction direction, Properties properties) {
+        super(block, block2, direction, properties.equippable(EquipmentSlot.HEAD));
     }
 
     @Override
@@ -36,17 +32,17 @@ public class ImageBannerItem extends StandingAndWallBlockItem implements Equipab
         if (customData != null) {
             CompoundTag tag = customData.copyTag();
             if (tag.contains("color")) {
-                return DyeColor.byName(tag.getString("color"), DyeColor.WHITE);
+                return DyeColor.byName(tag.getString("color").get(), DyeColor.WHITE);
             }
         }
         return DyeColor.WHITE;
     }
 
     public static ItemStack create(DyeColor color, String imageUrl, BannerRenderTypes renderType) {
-        ItemStack stack = new ItemStack(ModItems.IMAGE_BANNER_ITEM.get());
+        ItemStack stack = new ItemStack(ModItems.IMAGE_BANNER_ITEM);
         CompoundTag tag = new CompoundTag();
 
-        tag.putString("id", Main.MOD_ID + ":image_banner");
+        tag.putString("id", PictureAxe.MOD_ID + ":image_banner");
 
         tag.putString("color", color.getName());
         tag.putString("imageLocation", imageUrl);
@@ -66,15 +62,5 @@ public class ImageBannerItem extends StandingAndWallBlockItem implements Equipab
         }
 
         return super.getPlacementState(context);
-    }
-
-    @Override
-    public EquipmentSlot getEquipmentSlot() {
-        return EquipmentSlot.HEAD;
-    }
-
-    @Override
-    public Holder<SoundEvent> getEquipSound() {
-        return SoundEvents.ARMOR_EQUIP_GENERIC;
     }
 }

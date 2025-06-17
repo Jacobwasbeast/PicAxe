@@ -3,15 +3,12 @@ package net.jacobwasbeast.picaxe.blocks.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.jacobwasbeast.picaxe.blocks.ImageBannerBlock;
+import net.jacobwasbeast.picaxe.blocks.ImageWallBannerBlock;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
@@ -25,77 +22,131 @@ import net.minecraft.world.level.block.WallBannerBlock;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
-
-import static com.mojang.math.Axis.YP;
-import static net.minecraft.client.renderer.blockentity.BannerRenderer.renderPatterns;
+import net.minecraft.world.phys.Vec3;
 
 public class ImageBannerBlockRenderer implements BlockEntityRenderer<ImageBannerBlockEntity> {
 
-    private final ModelPart flag;
-    private final ModelPart pole;
-    private final ModelPart bar;
+    private final ModelPart standingPole;
+    private final ModelPart standingBar;
+    private final ModelPart standingFlag;
+    private final ModelPart wallBar;
+    private final ModelPart wallFlag;
 
     public ImageBannerBlockRenderer(BlockEntityRendererProvider.Context context) {
-        ModelPart modelPart = context.bakeLayer(ModelLayers.BANNER);
-        this.flag = modelPart.getChild("flag");
-        this.pole = modelPart.getChild("pole");
-        this.bar = modelPart.getChild("bar");
-    }
+        ModelPart standingModelRoot = context.bakeLayer(ModelLayers.STANDING_BANNER);
+        this.standingPole = standingModelRoot.getChild("pole");
+        this.standingBar = standingModelRoot.getChild("bar");
 
-    public static LayerDefinition createBodyLayer() {
-        MeshDefinition meshDefinition = new MeshDefinition();
-        PartDefinition partDefinition = meshDefinition.getRoot();
-        partDefinition.addOrReplaceChild("flag", CubeListBuilder.create().texOffs(0, 0).addBox(-10.0F, 0.0F, -2.0F, 20.0F, 40.0F, 1.0F), PartPose.ZERO);
-        partDefinition.addOrReplaceChild("pole", CubeListBuilder.create().texOffs(44, 0).addBox(-1.0F, -30.0F, -1.0F, 2.0F, 42.0F, 2.0F), PartPose.ZERO);
-        partDefinition.addOrReplaceChild("bar", CubeListBuilder.create().texOffs(0, 42).addBox(-10.0F, -32.0F, -1.0F, 20.0F, 2.0F, 2.0F), PartPose.ZERO);
-        return LayerDefinition.create(meshDefinition, 64, 64);
+        ModelPart flagModelRoot = context.bakeLayer(ModelLayers.STANDING_BANNER_FLAG);
+        this.standingFlag = flagModelRoot.getChild("flag");
+
+        ModelPart modelRoot2 = context.bakeLayer(ModelLayers.WALL_BANNER);
+        this.wallBar = modelRoot2.getChild("bar");
+        ModelPart flagModelRoot2 = context.bakeLayer(ModelLayers.STANDING_BANNER_FLAG);
+        this.wallFlag = flagModelRoot2.getChild("flag");
+
     }
 
     @Override
-    public void render(ImageBannerBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+    public void render(ImageBannerBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 vec3) {
+        boolean isWallBanner = blockEntity.getBlockState().getBlock() instanceof ImageWallBannerBlock && blockEntity.getLevel() != null;
+        if (isWallBanner) {
+            this.renderWallBanner(blockEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay, vec3);
+        } else if (blockEntity.getBlockState().getBlock() instanceof ImageBannerBlock) {
+            this.renderStanding(blockEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay, vec3);
+        }
+    }
+
+    public void renderStanding(ImageBannerBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 vec3) {
         String imageUrl = blockEntity.getImageLocation();
+        BlockState blockState = blockEntity.getBlockState();
 
         poseStack.pushPose();
 
-        long gameTime = blockEntity.hasLevel() ? blockEntity.getLevel().getGameTime() : 0L;
-        BlockState blockState = blockEntity.getBlockState();
-        if (blockState.getBlock() instanceof BannerBlock) {
-            poseStack.translate(0.5, 0.5, 0.5);
-            float rotation = -RotationSegment.convertToDegrees(blockState.getValue(BannerBlock.ROTATION));
-            poseStack.mulPose(YP.rotationDegrees(rotation));
-            this.pole.visible = true;
-        } else {
-            poseStack.translate(0.5, -0.16666667, 0.5);
-            float rotation = -blockState.getValue(WallBannerBlock.FACING).toYRot();
-            poseStack.mulPose(YP.rotationDegrees(rotation));
-            poseStack.translate(0.0, -0.3125, -0.4375);
-            this.pole.visible = false;
-        }
+        poseStack.translate(0.5, 0.0, 0.5);
+        float yRotation = -RotationSegment.convertToDegrees(blockState.getValue(BannerBlock.ROTATION));
+        poseStack.mulPose(Axis.YP.rotationDegrees(yRotation));
 
         poseStack.pushPose();
         poseStack.scale(0.6666667F, -0.6666667F, -0.6666667F);
 
         VertexConsumer poleAndBarConsumer = ModelBakery.BANNER_BASE.buffer(bufferSource, RenderType::entitySolid);
-        this.pole.render(poseStack, poleAndBarConsumer, packedLight, packedOverlay);
-        this.bar.render(poseStack, poleAndBarConsumer, packedLight, packedOverlay);
+        this.standingPole.render(poseStack, poleAndBarConsumer, packedLight, packedOverlay);
+        this.standingBar.render(poseStack, poleAndBarConsumer, packedLight, packedOverlay);
 
+        long gameTime = 0;
+        if (blockEntity.getLevel() != null) {
+            gameTime = blockEntity.getLevel().getGameTime();
+        }
         BlockPos blockPos = blockEntity.getBlockPos();
-        float windAnimation = ((float)Math.floorMod((long)(blockPos.getX() * 7 + blockPos.getY() * 9 + blockPos.getZ() * 13) + gameTime, 100L) + partialTick) / 100.0F;
-        float xRot = (-0.0125F + 0.01F * Mth.cos(6.2831855F * windAnimation)) * (float)Math.PI;
+        float f1 = ((float)Math.floorMod((long)(blockPos.getX() * 7 + blockPos.getY() * 9 + blockPos.getZ() * 13) + gameTime, 100L) + partialTick) / 100.0F;
 
-        this.flag.xRot = xRot;
-        this.flag.y = -32.0F;
-        BannerRenderer.renderPatterns(poseStack, bufferSource, packedLight, packedOverlay, this.flag, ModelBakery.BANNER_BASE, true, blockEntity.getColor(), BannerPatternLayers.EMPTY);
+        this.standingFlag.xRot = (-0.0125F + 0.01F * Mth.cos(6.2831855F * f1)) * (float)Math.PI;
+
+        BannerRenderer.renderPatterns(poseStack, bufferSource, packedLight, packedOverlay, this.standingFlag, ModelBakery.BANNER_BASE, true, blockEntity.getColor(), BannerPatternLayers.EMPTY);
 
         if (imageUrl != null && !imageUrl.equals("picaxe:blocks/banner") && !imageUrl.isBlank()) {
             poseStack.pushPose();
 
-            this.flag.translateAndRotate(poseStack);
+            this.standingFlag.translateAndRotate(poseStack);
+            poseStack.scale(-1f,1f,1f);
+            poseStack.scale(0.1f,0.1f,0.1f);
+            poseStack.scale(0.625f,0.625f,0.625f);
+            poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+            poseStack.translate(-0.5f, -3.05f, -20.48f);
 
-            poseStack.mulPose(Axis.XP.rotationDegrees(-90));
-            poseStack.mulPose(YP.rotationDegrees(180));
-            poseStack.translate(-0.5, -0.88, -1.75f);
-            ImageUtils.renderImageFromURL(poseStack, bufferSource,packedLight, packedOverlay, partialTick,1.25f,2.5f, imageUrl);
+            ImageUtils.renderImageFromURL(poseStack, bufferSource, packedLight, packedOverlay, partialTick, 20f, 40f, imageUrl);
+
+            poseStack.popPose();
+        }
+
+        poseStack.popPose();
+        poseStack.popPose();
+    }
+
+    public void renderWallBanner(ImageBannerBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 vec3) {
+        String imageUrl = blockEntity.getImageLocation();
+        BlockState blockState = blockEntity.getBlockState();
+
+        poseStack.pushPose();
+
+        poseStack.translate(0.5, 0.0, 0.5);
+        float degrees = 0;
+        switch (blockState.getValue(WallBannerBlock.FACING)) {
+            case NORTH -> degrees = 180.0F;
+            case SOUTH -> degrees = 0.0F;
+            case WEST -> degrees = -90.0F;
+            case EAST -> degrees = 90.0F;
+        }
+        poseStack.mulPose(Axis.YP.rotationDegrees(degrees));
+
+        poseStack.pushPose();
+        poseStack.scale(0.6666667F, -0.6666667F, -0.6666667F);
+
+        VertexConsumer poleAndBarConsumer = ModelBakery.BANNER_BASE.buffer(bufferSource, RenderType::entitySolid);
+        this.wallBar.render(poseStack, poleAndBarConsumer, packedLight, packedOverlay);
+
+        long gameTime = blockEntity.getLevel().getGameTime();
+        BlockPos blockPos = blockEntity.getBlockPos();
+        float f1 = ((float)Math.floorMod((long)(blockPos.getX() * 7 + blockPos.getY() * 9 + blockPos.getZ() * 13) + gameTime, 100L) + partialTick) / 100.0F;
+
+        this.wallFlag.xRot = (-0.0125F + 0.01F * Mth.cos(6.2831855F * f1)) * (float)Math.PI;
+        this.wallFlag.z = 10.5f;
+        this.wallFlag.y = -20.5f;
+
+        BannerRenderer.renderPatterns(poseStack, bufferSource, packedLight, packedOverlay, this.wallFlag, ModelBakery.BANNER_BASE, true, blockEntity.getColor(), BannerPatternLayers.EMPTY);
+
+        if (imageUrl != null && !imageUrl.equals("picaxe:blocks/banner") && !imageUrl.isBlank()) {
+            poseStack.pushPose();
+
+            this.wallFlag.translateAndRotate(poseStack);
+            poseStack.scale(-1f,1f,1f);
+            poseStack.scale(0.1f,0.1f,0.1f);
+            poseStack.scale(0.625f,0.625f,0.625f);
+            poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+            poseStack.translate(-0.5f, -3.05f, -20.48f);
+
+            ImageUtils.renderImageFromURL(poseStack, bufferSource, packedLight, packedOverlay, partialTick, 20f, 40f, imageUrl);
 
             poseStack.popPose();
         }

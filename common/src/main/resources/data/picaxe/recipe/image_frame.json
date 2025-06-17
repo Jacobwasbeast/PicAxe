@@ -7,15 +7,9 @@
     "GPG"
   ],
   "key": {
-    "G": {
-      "item": "minecraft:glass_pane"
-    },
-    "P": {
-      "item": "picaxe:pixel_dust"
-    },
-    "L": {
-      "tag": "minecraft:logs"
-    }
+    "G": "minecraft:glass_pane",
+    "P": "picaxe:pixel_dust",
+    "L": "#minecraft:logs"
   },
   "result": {
     "count": 1,
