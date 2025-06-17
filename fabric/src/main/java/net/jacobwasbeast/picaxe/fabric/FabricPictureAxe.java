@@ -22,15 +22,9 @@ public class FabricPictureAxe implements ModInitializer {
     public static CreativeModeTab MAIN_GROUP;
     @Override
     public void onInitialize() {
-        Balm.getRegistries().register(
-                BuiltInRegistries.CREATIVE_MODE_TAB,
-                (identifier) -> MAIN_GROUP = FabricItemGroup.builder()
-                        .icon(() -> new ItemStack(ModItems.PIC_AXE_ITEM))
-                        .title(Component.translatable("category.picaxe"))
-                        .displayItems((itemDisplayParameters, output) -> {
-                            ModItems.getAllItems().forEach(item -> output.accept(new ItemStack(item)));
-                        }).build(),
-                ResourceLocation.fromNamespaceAndPath(PictureAxe.MOD_ID, "picaxe"));
+        PictureAxe.MAIN_TAB = FabricItemGroup.builder()
+                .icon(() -> new ItemStack(ModItems.PIC_AXE_ITEM))
+                .title(Component.translatable("category.picaxe"));
         Balm.initializeMod(PictureAxe.MOD_ID, EmptyLoadContext.INSTANCE, new PictureAxe());
     }
 }

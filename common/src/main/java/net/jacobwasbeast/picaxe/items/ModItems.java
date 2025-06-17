@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 import java.util.Arrays;
@@ -33,15 +34,15 @@ public class ModItems {
         items.registerItem((identifier) -> IMAGE_FRAME_ITEM = new BlockItem(ModBlocks.IMAGE_FRAME_BLOCK, itemProperties(identifier)), id("image_frame"));
     }
 
-    public static List<Item> getAllItems() {
+    public static List<ItemStack> getAllItems() {
         return Arrays.asList(
-                PIC_AXE_ITEM,
-                PIXEL_DUST,
-                IMAGE_SHIELD,
-                IMAGE_BED_ITEM,
-                IMAGE_BANNER_ITEM,
-                SIX_SIDED_IMAGE_BLOCK_ITEM,
-                IMAGE_FRAME_ITEM
+                new ItemStack(PIC_AXE_ITEM),
+                new ItemStack(PIXEL_DUST),
+                new ItemStack(IMAGE_SHIELD),
+                new ItemStack(IMAGE_BED_ITEM),
+                new ItemStack(IMAGE_BANNER_ITEM),
+                new ItemStack( SIX_SIDED_IMAGE_BLOCK_ITEM),
+                new ItemStack(IMAGE_FRAME_ITEM)
         );
     }
 }

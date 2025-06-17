@@ -7,8 +7,6 @@
   "mixins": [
   ],
   "client": [
-    "BedBlockMixin",
-    "SpecialModelRenderersAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

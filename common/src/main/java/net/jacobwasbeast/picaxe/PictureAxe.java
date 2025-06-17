@@ -17,6 +17,7 @@ import net.jacobwasbeast.picaxe.component.ModDataComponents;
 import net.jacobwasbeast.picaxe.items.ModItems;
 import net.jacobwasbeast.picaxe.network.ModNetworking;
 import net.jacobwasbeast.picaxe.recipe.ModRecipes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -26,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PictureAxe implements BalmModule {
+
+    public static CreativeModeTab.Builder MAIN_TAB;
 
     public static final Logger logger = LoggerFactory.getLogger(PictureAxe.class);
 
@@ -74,6 +77,16 @@ public class PictureAxe implements BalmModule {
     @Override
     public void registerComponents(BalmComponents components) {
         ModDataComponents.initialize(components);
+    }
+
+    @Override
+    public void registerAdditional(BalmRegistries registries) {
+        registries.register(
+                BuiltInRegistries.CREATIVE_MODE_TAB,
+                (identifier) -> MAIN_TAB.displayItems((itemDisplayParameters, output) -> {
+                    output.acceptAll(ModItems.getAllItems());
+                }).build(),
+                ResourceLocation.fromNamespaceAndPath(PictureAxe.MOD_ID, "main_tab"));
     }
 
     @Override
