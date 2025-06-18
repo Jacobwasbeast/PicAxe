@@ -5,6 +5,7 @@ import dev.architectury.registry.registries.RegistrarManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.jacobwasbeast.picaxe.network.PacketHandler;
+import net.jacobwasbeast.picaxe.utils.ClientUtils;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +29,7 @@ public final class Main {
 
     @Environment(EnvType.CLIENT)
     public static void initClient() {
-        ModBlockEntities.registerRenderers();
+        ClientUtils.registerRenderers();
     }
 
     /**

@@ -8,6 +8,7 @@ import net.jacobwasbeast.picaxe.blocks.*;
 import net.jacobwasbeast.picaxe.blocks.entities.*;
 import net.jacobwasbeast.picaxe.gui.ImageFrameConfigScreen;
 import net.jacobwasbeast.picaxe.gui.URLInputScreen;
+import net.jacobwasbeast.picaxe.utils.ClientUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -59,7 +60,7 @@ public class PicAxeItem extends AxeItem {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (level.isClientSide && player.isCrouching()) {
-            Minecraft.getInstance().setScreen(new URLInputScreen(player, hand));
+            ClientUtils.OpenURLInputScreen(player, hand);
         }
         return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
     }
@@ -111,7 +112,7 @@ public class PicAxeItem extends AxeItem {
                             imageFrameEntity.getFrameHeight(),
                             imageFrameEntity.shouldStretchToFit()
                     );
-                    Minecraft.getInstance().setScreen(new ImageFrameConfigScreen(imageFrameEntity));
+                    ClientUtils.OpenImageFrameConfig(player,imageFrameEntity);
                 }
             }
             return InteractionResult.sidedSuccess(level.isClientSide);

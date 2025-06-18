@@ -31,13 +31,4 @@ public class ModBlockEntities {
     public static void register() {
         BLOCK_ENTITIES.register();
     }
-
-    @Environment(EnvType.CLIENT)
-    public static void registerRenderers() {
-        BlockEntityRendererRegistry.register(IMAGE_BED_BLOCK_ENTITY.get(), (ctx) -> new ImageBedBlockRenderer());
-        BlockEntityRendererRegistry.register(IMAGE_BANNER_BLOCK_ENTITY.get(), ImageBannerBlockRenderer::new);
-        BlockEntityRendererRegistry.register(IMAGE_WALL_BANNER_BLOCK_ENTITY.get(), ImageWallBannerBlockRenderer::new);
-        BlockEntityRendererRegistry.register(SIX_SIDED_IMAGE_BLOCK_ENTITY.get(), SixSidedImageBlockRenderer::new);
-        BlockEntityRendererRegistry.register(IMAGE_FRAME_BLOCK_ENTITY.get(), ImageFrameBlockRenderer::new);
-    }
 }
