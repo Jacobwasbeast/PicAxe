@@ -3,14 +3,11 @@ package net.jacobwasbeast.picaxe.items;
 import net.jacobwasbeast.picaxe.ModBlocks;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
 import net.jacobwasbeast.picaxe.api.BedRenderTypes;
-import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.blocks.*;
 import net.jacobwasbeast.picaxe.blocks.entities.*;
 import net.jacobwasbeast.picaxe.component.ModDataComponents;
-import net.jacobwasbeast.picaxe.gui.ImageFrameConfigScreen;
-import net.jacobwasbeast.picaxe.gui.URLInputScreen;
+import net.jacobwasbeast.picaxe.utils.ClientUtils;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -25,7 +22,6 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BedBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -55,7 +51,7 @@ public class PicAxeItem extends AxeItem {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (level.isClientSide && player.isCrouching()) {
-            Minecraft.getInstance().setScreen(new URLInputScreen(player, hand));
+            ClientUtils.OpenURLInputScreen(player, hand);
         }
         return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
     }
@@ -107,7 +103,7 @@ public class PicAxeItem extends AxeItem {
                             imageFrameEntity.getFrameHeight(),
                             imageFrameEntity.shouldStretchToFit()
                     );
-                    Minecraft.getInstance().setScreen(new ImageFrameConfigScreen(imageFrameEntity));
+                    ClientUtils.OpenImageFrameConfig(player, imageFrameEntity);
                 }
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
@@ -273,6 +269,4 @@ public class PicAxeItem extends AxeItem {
         tooltip.add(Component.translatable("tooltip.picaxe.use_action").withStyle(ChatFormatting.YELLOW));
         tooltip.add(Component.translatable("tooltip.picaxe.sneak_use_action").withStyle(ChatFormatting.YELLOW));
     }
-
-
 }
