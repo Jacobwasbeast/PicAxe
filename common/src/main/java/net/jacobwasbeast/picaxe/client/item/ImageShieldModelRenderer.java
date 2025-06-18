@@ -22,6 +22,9 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
+
+import java.util.Set;
 
 public class ImageShieldModelRenderer implements SpecialModelRenderer<String> {
 
@@ -78,6 +81,11 @@ public class ImageShieldModelRenderer implements SpecialModelRenderer<String> {
         }
 
         poseStack.popPose();
+    }
+
+    @Override
+    public void getExtents(Set<Vector3f> set) {
+
     }
 
     public record Unbaked() implements SpecialModelRenderer.Unbaked {

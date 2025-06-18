@@ -2,6 +2,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.PictureAxe;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
+import net.jacobwasbeast.picaxe.utils.DataUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -13,6 +14,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import org.jetbrains.annotations.Nullable;
 
 public class ImageBannerBlockEntity extends BlockEntity {
 
@@ -69,8 +73,8 @@ public class ImageBannerBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
-        super.saveAdditional(compoundTag, provider);
+    protected void saveAdditional(ValueOutput compoundTag) {
+        super.saveAdditional(compoundTag);
         compoundTag.putString("imageLocation", imageLocation);
         compoundTag.putString("color", this.color.getName());
         compoundTag.putString("id", PictureAxe.MOD_ID + ":image_banner");
@@ -82,16 +86,16 @@ public class ImageBannerBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
-        super.loadAdditional(compoundTag, provider);
+    protected void loadAdditional(ValueInput compoundTag) {
+        super.loadAdditional(compoundTag);
         this.imageLocation = compoundTag.getString("imageLocation").get();
-        if (!compoundTag.contains("imageLocation")) {
+        if (compoundTag.getString("imageLocation").isEmpty()) {
             this.imageLocation = "picaxe:blocks/banner";
         }
 
         this.color = DyeColor.byName(compoundTag.getString("color").get(), DyeColor.WHITE);
 
-        if (compoundTag.contains("renderTypes")) {
+        if (compoundTag.getString("renderTypes").isPresent()) {
             try {
                 this.renderTypes = BannerRenderTypes.valueOf(compoundTag.getString("renderTypes").get());
             } catch (IllegalArgumentException e) {
@@ -115,7 +119,7 @@ public class ImageBannerBlockEntity extends BlockEntity {
     public void loadFromItemStackComponents(ItemStack stack) {
         CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
         if (customData != null) {
-            this.loadAdditional(customData.copyTag(), null);
+            this.loadAdditional(DataUtils.getValueInputFromCompoundTag(customData.copyTag()));
         } else {
             this.setColor(DyeColor.WHITE);
             this.setImageLocation("");

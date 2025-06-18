@@ -12,32 +12,27 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
-public class ImageBedModelRenderer implements SpecialModelRenderer<ImageBedBlockEntity> {
+import java.util.Set;
 
-    private final ImageBedBlockEntity dummyBed = new ImageBedBlockEntity(
-            BlockPos.ZERO,
-            ModBlocks.IMAGE_BED_BLOCK.defaultBlockState()
-    );
-
+public class ImageBedModelRenderer implements SpecialModelRenderer<ItemStack> {
     public ImageBedModelRenderer() {}
 
     @Override
-    public @Nullable ImageBedBlockEntity extractArgument(ItemStack stack) {
-        dummyBed.loadFromItemStackComponents(stack);
-        return dummyBed;
+    public @Nullable ItemStack extractArgument(@NotNull ItemStack stack) {
+        return stack;
     }
 
     @Override
-    public void render(@Nullable ImageBedBlockEntity bed, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
-        if (bed == null) {
-            return;
-        }
-
+    public void render(@Nullable ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
         if (displayContext.firstPerson()) {
             poseStack.mulPose(Axis.YP.rotationDegrees(180));
             poseStack.translate(-1, -0.1, -2);
@@ -51,12 +46,22 @@ public class ImageBedModelRenderer implements SpecialModelRenderer<ImageBedBlock
             poseStack.translate(0.6, 0.5, 0);
             poseStack.mulPose(Axis.YP.rotationDegrees(180));
         }
+        ImageBedBlockEntity dummyBed = new ImageBedBlockEntity(
+                BlockPos.ZERO,
+                ModBlocks.IMAGE_BED_BLOCK.defaultBlockState()
+        );
+        dummyBed.loadFromItemStackComponents(stack);
 
         BlockEntityRenderDispatcher dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
-        ImageBedBlockRenderer blockRenderer = (ImageBedBlockRenderer) dispatcher.getRenderer(bed);
+        ImageBedBlockRenderer blockRenderer = (ImageBedBlockRenderer) dispatcher.getRenderer(dummyBed);
         if (blockRenderer != null) {
-            blockRenderer.render(bed, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0, 0, 0));
+            blockRenderer.render(dummyBed, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0, 0, 0));
         }
+    }
+
+    @Override
+    public void getExtents(Set<Vector3f> set) {
+
     }
 
     public record Unbaked() implements SpecialModelRenderer.Unbaked {

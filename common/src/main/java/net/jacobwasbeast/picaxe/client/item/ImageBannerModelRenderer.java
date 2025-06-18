@@ -12,24 +12,29 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
+
+import java.util.Set;
 
 
-public class ImageBannerModelRenderer implements SpecialModelRenderer<ImageBannerBlockEntity> {
-    private final ImageBannerBlockEntity dummyBanner = new ImageBannerBlockEntity(
-            BlockPos.ZERO,
-            ModBlocks.IMAGE_BANNER_BLOCK.defaultBlockState()
-    );
-
+public class ImageBannerModelRenderer implements SpecialModelRenderer<ItemStack> {
     @Override
-    public void render(@Nullable ImageBannerBlockEntity banner, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
+    public void render(@Nullable ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
         if (displayContext.equals(ItemDisplayContext.HEAD)) {
             poseStack.translate(0.175, -0.1, 0.54);
             poseStack.scale(0.65F, 0.65F, 0.65F);
         }
+        ImageBannerBlockEntity dummyBanner = new ImageBannerBlockEntity(
+                BlockPos.ZERO,
+                ModBlocks.IMAGE_BANNER_BLOCK.defaultBlockState()
+        );
+        dummyBanner.loadFromItemStackComponents(stack);
         BlockEntityRenderDispatcher d = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         ImageBannerBlockRenderer blockRenderer = (ImageBannerBlockRenderer) d.getRenderer(dummyBanner);
         if (blockRenderer != null) {
@@ -38,9 +43,13 @@ public class ImageBannerModelRenderer implements SpecialModelRenderer<ImageBanne
     }
 
     @Override
-    public @Nullable ImageBannerBlockEntity  extractArgument(ItemStack stack) {
-        dummyBanner.loadFromItemStackComponents(stack);
-        return dummyBanner;
+    public void getExtents(Set<Vector3f> set) {
+
+    }
+
+    @Override
+    public @Nullable ItemStack  extractArgument(ItemStack stack) {
+        return stack;
     }
 
     public record Unbaked() implements SpecialModelRenderer.Unbaked {

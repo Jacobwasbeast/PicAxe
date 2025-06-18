@@ -10,8 +10,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import org.jetbrains.annotations.Nullable;
 
 public class ImageBedBlockEntity extends BlockEntity {
     public DyeColor color;
@@ -41,8 +45,8 @@ public class ImageBedBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
-        super.saveAdditional(compoundTag, provider);
+    protected void saveAdditional(ValueOutput compoundTag) {
+        super.saveAdditional(compoundTag);
         compoundTag.putString("imageLocation", imageLocation);
         compoundTag.putString("color", this.color.getName());
         if (renderTypes != null) {
@@ -53,17 +57,17 @@ public class ImageBedBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
-        super.loadAdditional(compoundTag, provider);
+    protected void loadAdditional(ValueInput compoundTag) {
+        super.loadAdditional(compoundTag);
         imageLocation = compoundTag.getString("imageLocation").get();
-        if (!compoundTag.contains("imageLocation")) {
+        if (compoundTag.getString("imageLocation").isEmpty()) {
             imageLocation = "picaxe:blocks/bed";
         }
         this.color = DyeColor.byName(compoundTag.getString("color").get(), DyeColor.WHITE);
-        if (!compoundTag.contains("color")) {
+        if (compoundTag.getString("color").isEmpty()) {
             this.color = DyeColor.WHITE;
         }
-        if (compoundTag.contains("renderTypes")) {
+        if (compoundTag.getString("renderTypes").isPresent()) {
             try {
                 this.renderTypes = BedRenderTypes.valueOf(compoundTag.getString("renderTypes").get());
             } catch (IllegalArgumentException e) {
@@ -132,7 +136,8 @@ public class ImageBedBlockEntity extends BlockEntity {
                     this.renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
                 }
             }
-        } else {
+        }
+        else {
             this.imageLocation = "picaxe:blocks/bed";
             this.color = DyeColor.WHITE;
             this.renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;

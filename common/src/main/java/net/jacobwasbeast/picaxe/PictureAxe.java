@@ -42,8 +42,6 @@ public class PictureAxe implements BalmModule {
         return Balm.getConfig().getActiveConfig(PictureAxeConfig.class);
     }
 
-    public static CreativeModeTab YOUR_CREATIVE_TAB;
-
     @Override
     public void registerConfig(BalmConfig config) {
         config.registerConfig(PictureAxeConfig.class);
