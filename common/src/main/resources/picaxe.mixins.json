@@ -5,9 +5,9 @@
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "BedBlockMixin"
   ],
   "client": [
-    "BedBlockMixin",
     "SpecialModelRenderersAccessor"
   ],
   "injectors": {
