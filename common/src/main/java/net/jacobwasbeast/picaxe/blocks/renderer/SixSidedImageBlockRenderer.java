@@ -2,6 +2,7 @@ package net.jacobwasbeast.picaxe.blocks.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.jacobwasbeast.picaxe.blocks.ModBlocks;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
 import net.jacobwasbeast.picaxe.utils.RenderUtils;
@@ -29,9 +30,6 @@ import static com.mojang.math.Axis.XP;
 import static com.mojang.math.Axis.YP;
 
 public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedImageBlockEntity> {
-
-    private static final ResourceLocation OAK_PLANKS_TEXTURE = ResourceLocation.withDefaultNamespace("block/oak_planks");
-
     public SixSidedImageBlockRenderer(BlockEntityRendererProvider.Context context) {
     }
 
@@ -39,18 +37,15 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
     public void render(SixSidedImageBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 vec3) {
         Level level = blockEntity.getLevel();
         if (level == null) {
-            level = Minecraft.getInstance().level;
+            SixSidedImageBlockEntity newSix = new SixSidedImageBlockEntity(
+                    Minecraft.getInstance().player.getOnPos().east(64),
+                    ModBlocks.SIX_SIDED_IMAGE_BLOCK.defaultBlockState()
+            );
+            blockEntity.getImages().forEach((direction, s) -> {
+                newSix.setImageUrl(direction, s);
+            });
+            blockEntity = newSix;
         }
-
-        // so we will basically get the block at full brightness
-        int fullBrightLightLevel = 0xF000F0;
-
-        poseStack.pushPose();
-        Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
-                Blocks.OAK_PLANKS.defaultBlockState(),
-                poseStack, bufferSource, fullBrightLightLevel, packedOverlay
-        );
-        poseStack.popPose();
 
         Player player = Minecraft.getInstance().player;
         float seemingOffset = RenderUtils.getSeamOffset(player, blockEntity.getBlockPos());
@@ -58,10 +53,12 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
             String imageUrl = blockEntity.getImageUrl(dir);
             if (imageUrl != null && !imageUrl.isBlank()) {
                 poseStack.pushPose();
-
-                int faceLight = fullBrightLightLevel;
-                if (level != null) {
-                    LevelRenderer.getLightColor(level, blockEntity.getBlockPos().relative(dir));
+                int faceLight;
+                if (level==null) {
+                    faceLight = packedLight;
+                }
+                else {
+                    faceLight = LevelRenderer.getLightColor(level, blockEntity.getBlockPos().relative(dir));
                 }
 
                 poseStack.mulPose(dir.getRotation());
@@ -92,7 +89,13 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
             String imageUrl = blockEntity.getImageUrl(dir);
             if (imageUrl != null && !imageUrl.isBlank()) {
                 poseStack.pushPose();
-                int faceLight = LevelRenderer.getLightColor(level, blockEntity.getBlockPos().relative(dir));
+                int faceLight;
+                if (level==null) {
+                    faceLight = packedLight;
+                }
+                else {
+                    faceLight = LevelRenderer.getLightColor(level, blockEntity.getBlockPos().relative(dir));
+                }
                 poseStack.translate(0.5, 0.5, 0.5);
                 if (dir == Direction.UP) {
                     poseStack.mulPose(YP.rotationDegrees(0));

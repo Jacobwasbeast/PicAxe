@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +45,13 @@ public class SixSidedImageBlockModelRenderer implements SpecialModelRenderer<Six
 
         BlockEntityRenderDispatcher dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         SixSidedImageBlockRenderer blockRenderer = (SixSidedImageBlockRenderer) dispatcher.getRenderer(blockEntity);
-
+        Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                Blocks.OAK_PLANKS.defaultBlockState(),
+                poseStack,
+                buffer,
+                packedLight,
+                packedOverlay
+        );
         if (blockRenderer != null) {
             blockRenderer.render(blockEntity, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0,0,0));
         }
