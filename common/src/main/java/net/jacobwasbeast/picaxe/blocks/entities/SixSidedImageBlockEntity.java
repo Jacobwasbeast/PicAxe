@@ -116,4 +116,8 @@ public class SixSidedImageBlockEntity extends BlockEntity {
         itemStack.set(DataComponents.BLOCK_ENTITY_DATA, customData);
         return itemStack;
     }
+
+    public  Map<Direction, String> getImages() {
+        return imageUrls;
+    }
 }

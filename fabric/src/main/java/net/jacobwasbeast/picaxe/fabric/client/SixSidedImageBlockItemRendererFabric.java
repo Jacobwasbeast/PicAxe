@@ -14,25 +14,28 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 
 public class SixSidedImageBlockItemRendererFabric implements BuiltinItemRendererRegistry.DynamicItemRenderer {
-
-    private final SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
-            BlockPos.ZERO,
-            ModBlocks.SIX_SIDED_IMAGE_BLOCK.get().defaultBlockState()
-    );
-
     @Override
     public void render(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
+        SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
+                BlockPos.ZERO,
+                ModBlocks.SIX_SIDED_IMAGE_BLOCK.get().defaultBlockState()
+        );
         dummyBlockEntity.loadFromItemStackComponents(stack);
         if (displayContext.equals(ItemDisplayContext.HEAD)) {
             poseStack.scale(0.9F, 0.9F, 0.9F);
             poseStack.translate(0.05, -1, 0.1);
         }
-        BlockEntityRenderDispatcher d = Minecraft.getInstance().getBlockEntityRenderDispatcher();
-        SixSidedImageBlockRenderer blockRenderer = (SixSidedImageBlockRenderer) d.getRenderer(dummyBlockEntity);
-        if (blockRenderer != null) {
-            blockRenderer.render(dummyBlockEntity, 0, poseStack, buffer, packedLight, packedOverlay);
-        }
+        Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                Blocks.OAK_PLANKS.defaultBlockState(),
+                poseStack,
+                buffer,
+                packedLight,
+                packedOverlay
+        );
+        Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(dummyBlockEntity)
+                .render(dummyBlockEntity, 0, poseStack, buffer, packedLight, packedOverlay);
     }
 }
