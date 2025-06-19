@@ -89,4 +89,8 @@ public class SixSidedImageBlockEntity extends BlockEntity {
         itemStack.getOrCreateTag().put("BlockEntityTag", blockEntityTag);
         return itemStack;
     }
+
+    public Map<Direction, String> getImages() {
+        return imageUrls;
+    }
 }
