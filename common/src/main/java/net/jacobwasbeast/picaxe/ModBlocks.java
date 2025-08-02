@@ -8,6 +8,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+
+import java.util.function.ToIntFunction;
 
 public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Main.MOD_ID, Registries.BLOCK);
@@ -22,12 +26,18 @@ public class ModBlocks {
             () -> new ImageWallBannerBlock(DyeColor.WHITE, Block.Properties.ofFullCopy(Blocks.WHITE_WALL_BANNER)));
 
     public static final RegistrySupplier<Block> SIX_SIDED_IMAGE_BLOCK = BLOCKS.register("six_sided_image_block",
-            () -> new SixSidedImageBlock(Block.Properties.ofFullCopy(Blocks.OAK_PLANKS)));
+            () -> new SixSidedImageBlock(Block.Properties.ofFullCopy(Blocks.OAK_PLANKS).lightLevel(litBlockEmission(15))));
 
     public static final RegistrySupplier<ImageFrameBlock> IMAGE_FRAME_BLOCK = BLOCKS.register("image_frame",
-            () -> new ImageFrameBlock(Block.Properties.ofFullCopy(Blocks.OAK_PLANKS)));
+            () -> new ImageFrameBlock(Block.Properties.ofFullCopy(Blocks.OAK_PLANKS).lightLevel(litBlockEmission(15))));
 
     public static void register() {
         BLOCKS.register();
+    }
+
+    private static ToIntFunction<BlockState> litBlockEmission(int i) {
+        return (blockState) -> {
+            return (Boolean)blockState.getValue(BlockStateProperties.LIT) ? i : 0;
+        };
     }
 }

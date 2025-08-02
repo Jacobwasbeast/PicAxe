@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.ModItems;
+import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -11,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.block.RedstoneTorchBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -110,9 +112,8 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     public ItemStack createItemStack() {
         ItemStack itemStack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
         CompoundTag tag = this.saveWithoutMetadata(this.level.registryAccess());
-
+        tag.putBoolean("lit", this.getBlockState().getValue(SixSidedImageBlock.LIT));
         CustomData customData = CustomData.of(tag);
-
         itemStack.set(DataComponents.BLOCK_ENTITY_DATA, customData);
         return itemStack;
     }

@@ -3,15 +3,17 @@ package net.jacobwasbeast.picaxe.blocks;
 import com.mojang.serialization.MapCodec;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import org.jetbrains.annotations.Nullable;
@@ -19,17 +21,17 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 
-public class SixSidedImageBlock extends BaseEntityBlock {
-
-    public static final MapCodec<SixSidedImageBlock> CODEC = simpleCodec(SixSidedImageBlock::new);
+public class SixSidedImageBlock extends DirectionalBlock implements EntityBlock {
+    public static final BooleanProperty LIT;
 
     public SixSidedImageBlock(Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
     }
 
     @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
+    protected MapCodec<? extends DirectionalBlock> codec() {
+        return MapCodec.unit(this);
     }
 
     @Nullable
@@ -41,8 +43,8 @@ public class SixSidedImageBlock extends BaseEntityBlock {
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
         BlockEntity blockEntity = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-        if (blockEntity instanceof SixSidedImageBlockEntity fourSided) {
-            ItemStack itemStackToDrop = fourSided.createItemStack();
+        if (blockEntity instanceof SixSidedImageBlockEntity sixSided) {
+            ItemStack itemStackToDrop = sixSided.createItemStack();
             return Collections.singletonList(itemStackToDrop);
         }
 
@@ -57,5 +59,19 @@ public class SixSidedImageBlock extends BaseEntityBlock {
     @Override
     protected RenderShape getRenderShape(BlockState blockState) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return this.defaultBlockState().setValue(FACING, context.getClickedFace());
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FACING).add(LIT);
+    }
+
+    static {
+        LIT = RedstoneTorchBlock.LIT;
     }
 }

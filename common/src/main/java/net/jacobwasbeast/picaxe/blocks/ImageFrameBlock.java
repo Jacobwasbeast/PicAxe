@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -28,10 +29,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class ImageFrameBlock extends DirectionalBlock implements EntityBlock {
-
+    public static final BooleanProperty LIT;
     public ImageFrameBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
     }
 
     @Override
@@ -46,7 +47,7 @@ public class ImageFrameBlock extends DirectionalBlock implements EntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING).add(LIT);
     }
 
     @Override
@@ -134,5 +135,9 @@ public class ImageFrameBlock extends DirectionalBlock implements EntityBlock {
     @Override
     protected void spawnDestroyParticles(Level level, Player player, BlockPos blockPos, BlockState blockState) {
         level.levelEvent(player, 2001, blockPos, getId(Blocks.OAK_PLANKS.defaultBlockState()));
+    }
+
+    static {
+        LIT = RedstoneTorchBlock.LIT;
     }
 }

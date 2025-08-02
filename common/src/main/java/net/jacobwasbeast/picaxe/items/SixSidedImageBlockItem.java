@@ -2,18 +2,25 @@ package net.jacobwasbeast.picaxe.items;
 
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModItems;
+import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
+import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RedstoneLampBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Map;
 
@@ -62,5 +69,16 @@ public class SixSidedImageBlockItem extends BlockItem implements Equipable {
     @Override
     public Holder<SoundEvent> getEquipSound() {
         return SoundEvents.ARMOR_EQUIP_GENERIC;
+    }
+
+    @Override
+    protected boolean placeBlock(BlockPlaceContext blockPlaceContext, BlockState blockState) {
+        boolean isLit = false;
+        try {
+            isLit = blockPlaceContext.getItemInHand().get(DataComponents.BLOCK_ENTITY_DATA).copyTag().getBoolean("lit");
+        }
+        catch (Exception e) {}
+        blockState = blockState.setValue(SixSidedImageBlock.LIT, isLit);
+        return super.placeBlock(blockPlaceContext, blockState);
     }
 }

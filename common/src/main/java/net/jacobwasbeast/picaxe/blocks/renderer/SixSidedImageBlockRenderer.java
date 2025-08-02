@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.blocks.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.jacobwasbeast.picaxe.ModBlocks;
+import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
 import net.jacobwasbeast.picaxe.utils.RenderUtils;
@@ -49,6 +50,7 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
         }
 
         Player player = Minecraft.getInstance().player;
+        Direction rotation = blockEntity.getBlockState().getValue(SixSidedImageBlock.FACING);
         float seemingOffset = RenderUtils.getSeamOffset(player, blockEntity.getBlockPos());
         for (Direction dir : Direction.Plane.HORIZONTAL) {
             String imageUrl = blockEntity.getImageUrl(dir);
@@ -79,7 +81,7 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
                         partialTick,
                         1.0f,
                         1.0f,
-                        imageUrl
+                        imageUrl,false, false, false
                 );
 
                 poseStack.popPose();
@@ -110,6 +112,8 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
                 poseStack.mulPose(YP.rotationDegrees(180));
                 poseStack.translate(-0.5, -0.5, 0);
 
+                boolean shouldYFlip = shouldFlipYImage(rotation,dir);
+                boolean shouldXFlip = shouldFlipXImage(rotation,dir);
                 ImageUtils.renderImageFromURL(poseStack,
                         bufferSource,
                         faceLight,
@@ -117,11 +121,45 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
                         partialTick,
                         1.0f,
                         1.0f,
-                        imageUrl
+                        imageUrl, false, shouldXFlip, shouldYFlip
                 );
-
                 poseStack.popPose();
             }
         }
+    }
+
+    /**
+     * Determines if the image should be flipped horizontally (left-to-right).
+     * This is used to distinguish EAST from WEST facing.
+     * @param rotation The direction the player was facing when placing the block.
+     * @param dir The face of the block being rendered (UP or DOWN).
+     * @return True if the image should be flipped on its X-axis.
+     */
+    private boolean shouldFlipXImage(Direction rotation, Direction dir) {
+        // Assume default (no flip) corresponds to EAST.
+        // Flip horizontally if the block was placed facing WEST.
+        // This logic is the same for UP and DOWN faces.
+        return rotation == Direction.WEST;
+    }
+
+    /**
+     * Determines if the image should be flipped vertically (upside-down).
+     * This is used to distinguish NORTH from SOUTH facing.
+     * @param rotation The direction the player was facing when placing the block.
+     * @param dir The face of the block being rendered (UP or DOWN).
+     * @return True if the image should be flipped on its Y-axis.
+     */
+    private boolean shouldFlipYImage(Direction rotation, Direction dir) {
+        if (dir == Direction.UP) {
+            // For the UP face, default is NORTH. Flip if rotation is SOUTH.
+            return rotation == Direction.SOUTH;
+        }
+        if (dir == Direction.DOWN) {
+            // For the DOWN face, the default view is already inverted (points SOUTH).
+            // Flip it if the rotation is NORTH to make it point NORTH.
+            return rotation == Direction.NORTH;
+        }
+        // Not a vertical face, no flip.
+        return false;
     }
 }
