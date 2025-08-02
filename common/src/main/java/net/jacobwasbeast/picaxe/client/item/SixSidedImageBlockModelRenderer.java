@@ -16,35 +16,26 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
-public class SixSidedImageBlockModelRenderer implements SpecialModelRenderer<SixSidedImageBlockEntity> {
+import java.util.Set;
 
-    private final SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
-            BlockPos.ZERO,
-            ModBlocks.SIX_SIDED_IMAGE_BLOCK.defaultBlockState()
-    );
-
+public class SixSidedImageBlockModelRenderer implements SpecialModelRenderer<ItemStack> {
     public SixSidedImageBlockModelRenderer() {}
 
     @Override
-    public @Nullable SixSidedImageBlockEntity extractArgument(ItemStack stack) {
+    public void render(@Nullable ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
+        SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
+                BlockPos.ZERO,
+                ModBlocks.SIX_SIDED_IMAGE_BLOCK.defaultBlockState()
+        );
         dummyBlockEntity.loadFromItemStackComponents(stack);
-        return dummyBlockEntity;
-    }
-
-    @Override
-    public void render(@Nullable SixSidedImageBlockEntity blockEntity, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
-        if (blockEntity == null) {
-            return;
-        }
-
         if (displayContext == ItemDisplayContext.HEAD) {
             poseStack.scale(0.9F, 0.9F, 0.9F);
             poseStack.translate(0.05, -1, 0.1);
         }
-
         BlockEntityRenderDispatcher dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
-        SixSidedImageBlockRenderer blockRenderer = (SixSidedImageBlockRenderer) dispatcher.getRenderer(blockEntity);
+        SixSidedImageBlockRenderer blockRenderer = (SixSidedImageBlockRenderer) dispatcher.getRenderer(dummyBlockEntity);
         Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
                 Blocks.OAK_PLANKS.defaultBlockState(),
                 poseStack,
@@ -53,12 +44,29 @@ public class SixSidedImageBlockModelRenderer implements SpecialModelRenderer<Six
                 packedOverlay
         );
         if (blockRenderer != null) {
-            blockRenderer.render(blockEntity, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0,0,0));
+            blockRenderer.render(dummyBlockEntity, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0,0,0));
         }
     }
 
+    @Override
+    public void getExtents(Set<Vector3f> extents) {
+        // Define the bounding box extents for the item
+        // This helps with culling, collision detection, and proper item display
+        extents.add(new Vector3f(-0.5F, -0.5F, -0.5F)); // Min corner
+        extents.add(new Vector3f(0.5F, 0.5F, 0.5F));    // Max corner
+
+        // Add slightly larger extents to account for transformations in different contexts
+        extents.add(new Vector3f(-0.6F, -0.6F, -0.6F));
+        extents.add(new Vector3f(0.6F, 0.6F, 0.6F));
+    }
+
+    @Override
+    public @Nullable ItemStack extractArgument(ItemStack itemStack) {
+        return itemStack;
+    }
+
     public record Unbaked() implements SpecialModelRenderer.Unbaked {
-        public static final MapCodec<Unbaked> CODEC = MapCodec.unit(new Unbaked());
+        public static final MapCodec<Unbaked> CODEC = MapCodec.unit(Unbaked::new);
 
         @Override
         public MapCodec<? extends SpecialModelRenderer.Unbaked> type() {

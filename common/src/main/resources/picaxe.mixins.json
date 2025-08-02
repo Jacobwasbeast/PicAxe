@@ -8,7 +8,9 @@
     "BedBlockMixin"
   ],
   "client": [
-    "SpecialModelRenderersAccessor"
+    "SpecialModelRenderersAccessor",
+    "ModelManagerInvoker",
+    "ModelManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

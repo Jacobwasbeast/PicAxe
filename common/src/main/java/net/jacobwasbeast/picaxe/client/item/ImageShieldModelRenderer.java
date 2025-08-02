@@ -22,6 +22,9 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
+
+import java.util.Set;
 
 public class ImageShieldModelRenderer implements SpecialModelRenderer<String> {
 
@@ -45,6 +48,18 @@ public class ImageShieldModelRenderer implements SpecialModelRenderer<String> {
             return tag.getString("imageLocation").get();
         }
         return null;
+    }
+
+    @Override
+    public void getExtents(Set<Vector3f> extents) {
+        // Define the bounding box extents for the item
+        // This helps with culling, collision detection, and proper item display
+        extents.add(new Vector3f(-0.5F, -0.5F, -0.5F)); // Min corner
+        extents.add(new Vector3f(0.5F, 0.5F, 0.5F));    // Max corner
+
+        // Add slightly larger extents to account for transformations in different contexts
+        extents.add(new Vector3f(-0.6F, -0.6F, -0.6F));
+        extents.add(new Vector3f(0.6F, 0.6F, 0.6F));
     }
 
     @Override
@@ -81,7 +96,7 @@ public class ImageShieldModelRenderer implements SpecialModelRenderer<String> {
     }
 
     public record Unbaked() implements SpecialModelRenderer.Unbaked {
-        public static final MapCodec<Unbaked> CODEC = MapCodec.unit(new Unbaked());
+        public static final MapCodec<Unbaked> CODEC = MapCodec.unit(Unbaked::new);
 
         @Override
         public MapCodec<? extends SpecialModelRenderer.Unbaked> type() {

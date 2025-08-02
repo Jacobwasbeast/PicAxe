@@ -2,6 +2,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.items.ModItems;
 import net.jacobwasbeast.picaxe.PictureAxe;
+import net.jacobwasbeast.picaxe.utils.DataUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -12,7 +13,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -44,9 +48,9 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.putString("id", PictureAxe.MOD_ID + ":four_sided_image_block");
+    protected void saveAdditional(@NotNull ValueOutput tag) {
+        super.saveAdditional(tag);
+        tag.putString("id", PictureAxe.MOD_ID + ":six_sided_image_block");
         for (Direction dir : Direction.Plane.HORIZONTAL) {
             if (imageUrls.containsKey(dir)) {
                 tag.putString("image_url_" + dir.getName(), imageUrls.get(dir));
@@ -64,17 +68,17 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    protected void loadAdditional(@NotNull ValueInput tag) {
+        super.loadAdditional(tag);
         for (Direction dir : Direction.Plane.HORIZONTAL) {
-            if (tag.contains("image_url_" + dir.getName())) {
+            if (tag.getString("image_url_" + dir.getName()).isPresent()) {
                 imageUrls.put(dir, tag.getString("image_url_" + dir.getName()).get());
             } else {
                 imageUrls.put(dir, "");
             }
         }
         for (Direction dir : Direction.Plane.VERTICAL) {
-            if (tag.contains("image_url_" + dir.getName())) {
+            if (tag.getString("image_url_" + dir.getName()).isPresent()) {
                 imageUrls.put(dir, tag.getString("image_url_" + dir.getName()).get());
             } else {
                 imageUrls.put(dir, "");
@@ -95,7 +99,7 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     public void loadFromItemStackComponents(ItemStack stack) {
         CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
         if (customData != null) {
-            this.loadAdditional(customData.copyTag(), null);
+            this.loadAdditional(DataUtils.getValueInputFromCompoundTag(customData.copyTag()));
         } else {
             for (Direction dir : Direction.Plane.HORIZONTAL) {
                 this.imageUrls.put(dir, "");
@@ -108,5 +112,18 @@ public class SixSidedImageBlockEntity extends BlockEntity {
 
     public Map<Direction, String> getImages() {
         return Map.copyOf(imageUrls);
+    }
+
+    public void setImageUrls(@Nullable Map<Direction, String> map) {
+        if (map != null) {
+            for (Direction dir : Direction.values()) {
+                String url = map.getOrDefault(dir, "");
+                this.imageUrls.put(dir, url);
+            }
+        } else {
+            for (Direction dir : Direction.values()) {
+                this.imageUrls.put(dir, "");
+            }
+        }
     }
 }

@@ -4,11 +4,18 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.jacobwasbeast.picaxe.PictureAxe;
+import net.jacobwasbeast.picaxe.api.interfaces.ModelManagerMixinInterface;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Vector3f;
 import org.w3c.dom.NodeList;
@@ -202,7 +209,10 @@ public class ImageUtils {
                 } else {
                     BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
                     if (image == null) throw new IOException("ImageIO.read returned null");
-                    mc.execute(() -> registerTextureFromImage(url, image, true));
+                    mc.execute(() -> {
+                        registerTextureFromImage(url, image, true);
+                        notifyImageLoaded();
+                    });
                 }
                 return;
             } catch (Exception e) {
@@ -285,6 +295,7 @@ public class ImageUtils {
             }
             nativeFrames.clear();
             cachedAnimatedTextures.put(url, new AnimatedTexture(frameLocations, finalDelays, finalTotalDuration));
+            notifyImageLoaded();
         });
     }
 
@@ -1030,4 +1041,63 @@ public class ImageUtils {
         }
         ps.popPose();
     }
+
+    public static boolean isImageLoaded(String url) {
+        if (url == null || url.isEmpty()) {
+            return true; // Empty URL is "loaded" (will show not found texture)
+        }
+
+        // Check if it's in our caches (either static or animated)
+        boolean inCache = cachedTextures.containsKey(url) || cachedAnimatedTextures.containsKey(url);
+
+        // Not loaded if it's currently loading or blacklisted
+        boolean notLoading = !loading.contains(url);
+        boolean notBlacklisted = !blacklist.contains(url);
+
+        return inCache && notLoading && notBlacklisted;
+    }
+
+    public static boolean areAllImagesLoaded(Collection<String> urls) {
+        if (urls == null || urls.isEmpty()) {
+            return true;
+        }
+
+        return urls.stream()
+                .filter(url -> url != null && !url.isBlank())
+                .allMatch(ImageUtils::isImageLoaded);
+    }
+
+    public static Thread ReloadThread;
+    public static boolean ToldPlayer = false;
+    public static void notifyImageLoaded() {
+        if (!ToldPlayer) {
+            ToldPlayer = true;
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null) {
+                mc.player.displayClientMessage(Component.translatable("picaxe.image.reload"), false);
+            }
+        }
+        if (ReloadThread != null) {
+            try {
+                ReloadThread.interrupt();
+            } catch (Exception e) {
+            }
+        }
+        ReloadThread = new Thread(() -> {
+            try {
+                Thread.sleep(7000);
+                ModelManager modelManager = Minecraft.getInstance().getModelManager();
+                if (modelManager instanceof ModelManagerMixinInterface mixinInterface) {
+                    mixinInterface.picAxe$invalidate();
+                }
+                ReloadThread = null;
+            } catch (Exception e) {
+                // Ignore
+            }
+        });
+        ReloadThread.setName("PicAxe Image Reload Thread");
+        ReloadThread.setDaemon(true);
+        ReloadThread.start();
+    }
+
 }

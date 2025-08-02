@@ -16,28 +16,38 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
-public class ImageBedModelRenderer implements SpecialModelRenderer<ImageBedBlockEntity> {
+import java.util.Set;
 
-    private final ImageBedBlockEntity dummyBed = new ImageBedBlockEntity(
-            BlockPos.ZERO,
-            ModBlocks.IMAGE_BED_BLOCK.defaultBlockState()
-    );
+public class ImageBedModelRenderer implements SpecialModelRenderer<ItemStack> {
 
     public ImageBedModelRenderer() {}
 
     @Override
-    public @Nullable ImageBedBlockEntity extractArgument(ItemStack stack) {
-        dummyBed.loadFromItemStackComponents(stack);
-        return dummyBed;
+    public void getExtents(Set<Vector3f> extents) {
+        // Define the bounding box extents for the item
+        // This helps with culling, collision detection, and proper item display
+        extents.add(new Vector3f(-0.5F, -0.5F, -0.5F)); // Min corner
+        extents.add(new Vector3f(0.5F, 0.5F, 0.5F));    // Max corner
+
+        // Add slightly larger extents to account for transformations in different contexts
+        extents.add(new Vector3f(-0.6F, -0.6F, -0.6F));
+        extents.add(new Vector3f(0.6F, 0.6F, 0.6F));
     }
 
     @Override
-    public void render(@Nullable ImageBedBlockEntity bed, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
-        if (bed == null) {
-            return;
-        }
+    public @Nullable ItemStack extractArgument(ItemStack itemStack) {
+        return itemStack;
+    }
 
+    @Override
+    public void render(@Nullable ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
+        ImageBedBlockEntity dummyBed = new ImageBedBlockEntity(
+                BlockPos.ZERO,
+                ModBlocks.IMAGE_BED_BLOCK.defaultBlockState()
+        );
+        dummyBed.loadFromItemStackComponents(stack);
         if (displayContext.firstPerson()) {
             poseStack.mulPose(Axis.YP.rotationDegrees(180));
             poseStack.translate(-1, -0.1, -2);
@@ -53,14 +63,14 @@ public class ImageBedModelRenderer implements SpecialModelRenderer<ImageBedBlock
         }
 
         BlockEntityRenderDispatcher dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
-        ImageBedBlockRenderer blockRenderer = (ImageBedBlockRenderer) dispatcher.getRenderer(bed);
+        ImageBedBlockRenderer blockRenderer = (ImageBedBlockRenderer) dispatcher.getRenderer(dummyBed);
         if (blockRenderer != null) {
-            blockRenderer.render(bed, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0, 0, 0));
+            blockRenderer.render(dummyBed, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0, 0, 0));
         }
     }
 
     public record Unbaked() implements SpecialModelRenderer.Unbaked {
-        public static final MapCodec<Unbaked> CODEC = MapCodec.unit(new Unbaked());
+        public static final MapCodec<Unbaked> CODEC = MapCodec.unit(Unbaked::new);
 
         @Override
         public MapCodec<? extends SpecialModelRenderer.Unbaked> type() {

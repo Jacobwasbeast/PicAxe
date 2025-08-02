@@ -41,6 +41,6 @@
   "picaxe.screen.image_frame.stretch_off": "Off",
   "picaxe.screen.image_frame.url_label": "Image URL",
 
-  "category.picaxe": "Picture Axe Items"
-
+  "category.picaxe": "Picture Axe Items",
+  "picaxe.image.reload": "Due to changes in version 1.21.6, item models in the inventory will automatically reload 7 seconds after a new image is loaded. Please be aware that some models may briefly appear as the purple and black \"missing texture\" block during this process."
 }

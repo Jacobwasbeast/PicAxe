@@ -8,6 +8,8 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 
 public class ImageFrameBlockEntity extends BlockEntity {
@@ -39,8 +41,8 @@ public class ImageFrameBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    protected void saveAdditional(@NotNull ValueOutput tag) {
+        super.saveAdditional(tag);
         tag.putString("id", PictureAxe.MOD_ID + ":image_frame");
         tag.putString("imageUrl", this.imageUrl);
         tag.putInt("frameWidth", this.frameWidth);
@@ -49,12 +51,12 @@ public class ImageFrameBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    protected void loadAdditional(@NotNull ValueInput tag) {
+        super.loadAdditional(tag);
         this.imageUrl = tag.getString("imageUrl").get();
         this.frameWidth = tag.getInt("frameWidth").get();
         this.frameHeight = tag.getInt("frameHeight").get();
-        this.stretchToFit = tag.getBoolean("stretchToFit").get();
+        this.stretchToFit = tag.getBooleanOr("stretchToFit",false);
     }
 
     @Override

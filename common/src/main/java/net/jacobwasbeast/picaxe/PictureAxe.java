@@ -18,11 +18,8 @@ import net.jacobwasbeast.picaxe.items.ModItems;
 import net.jacobwasbeast.picaxe.network.ModNetworking;
 import net.jacobwasbeast.picaxe.recipe.ModRecipes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

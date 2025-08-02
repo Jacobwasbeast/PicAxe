@@ -16,16 +16,20 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
+
+import java.util.Set;
 
 
-public class ImageBannerModelRenderer implements SpecialModelRenderer<ImageBannerBlockEntity> {
-    private final ImageBannerBlockEntity dummyBanner = new ImageBannerBlockEntity(
-            BlockPos.ZERO,
-            ModBlocks.IMAGE_BANNER_BLOCK.defaultBlockState()
-    );
+public class ImageBannerModelRenderer implements SpecialModelRenderer<ItemStack> {
 
     @Override
-    public void render(@Nullable ImageBannerBlockEntity banner, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
+    public void render(@Nullable ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, boolean hasFoilType) {
+        ImageBannerBlockEntity dummyBanner = new ImageBannerBlockEntity(
+                BlockPos.ZERO,
+                ModBlocks.IMAGE_BANNER_BLOCK.defaultBlockState()
+        );
+        dummyBanner.loadFromItemStackComponents(stack);
         if (displayContext.equals(ItemDisplayContext.HEAD)) {
             poseStack.translate(0.175, -0.1, 0.54);
             poseStack.scale(0.65F, 0.65F, 0.65F);
@@ -38,13 +42,24 @@ public class ImageBannerModelRenderer implements SpecialModelRenderer<ImageBanne
     }
 
     @Override
-    public @Nullable ImageBannerBlockEntity  extractArgument(ItemStack stack) {
-        dummyBanner.loadFromItemStackComponents(stack);
-        return dummyBanner;
+    public void getExtents(Set<Vector3f> extents) {
+        // Define the bounding box extents for the item
+        // This helps with culling, collision detection, and proper item display
+        extents.add(new Vector3f(-0.5F, -0.5F, -0.5F)); // Min corner
+        extents.add(new Vector3f(0.5F, 0.5F, 0.5F));    // Max corner
+
+        // Add slightly larger extents to account for transformations in different contexts
+        extents.add(new Vector3f(-0.6F, -0.6F, -0.6F));
+        extents.add(new Vector3f(0.6F, 0.6F, 0.6F));
+    }
+
+    @Override
+    public @Nullable ItemStack extractArgument(ItemStack itemStack) {
+        return itemStack;
     }
 
     public record Unbaked() implements SpecialModelRenderer.Unbaked {
-        public static final MapCodec<Unbaked> CODEC = MapCodec.unit(new Unbaked());
+        public static final MapCodec<Unbaked> CODEC = MapCodec.unit(Unbaked::new);
 
         @Override
         public @Nullable SpecialModelRenderer<?> bake(EntityModelSet modelSet) {
