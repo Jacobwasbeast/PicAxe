@@ -25,7 +25,7 @@ public abstract class ModelManagerMixin implements ModelManagerMixinInterface {
 
     /**
      * Removes all cached item‐models, then
-     * re‐bakes & re‐uploads *only* those models by calling ModelManager.reload(...)
+     * re‐bakes and re‐uploads *only* those models by calling ModelManager.reload(...)
      * directly, bypassing the textures‐loading screen entirely.
      */
     @Override
