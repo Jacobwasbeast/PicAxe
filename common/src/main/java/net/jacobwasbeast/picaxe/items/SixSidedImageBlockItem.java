@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.items;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModItems;
 import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
+import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -11,13 +12,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Equipable;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -109,6 +109,48 @@ public class SixSidedImageBlockItem extends BlockItem implements Equipable {
                                 Component.literal(url).withStyle(ChatFormatting.AQUA)
                         ).withStyle(ChatFormatting.GRAY)
                 );
+            }
+        }
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext useOnContext) {
+        boolean shouldRemove = false;
+
+        var level = useOnContext.getLevel();
+        var player = useOnContext.getPlayer();
+        var mainStack = player.getMainHandItem();
+        var offStack = player.getOffhandItem();
+        if (mainStack.is(this)&&offStack.is(Items.STICK)) {
+            boolean isLit = false;
+            try {
+                isLit = mainStack.get(DataComponents.BLOCK_ENTITY_DATA).copyTag().getBoolean("lit");
+            } catch (Exception e) {
+            }
+            if (!isLit) {
+            }
+            else {
+                shouldRemove = true;
+            }
+        }
+        if (!shouldRemove) {
+            return super.useOn(useOnContext);
+        }
+        else {
+            if (level.isClientSide) {
+                return InteractionResult.SUCCESS;
+            }
+            else {
+                var entity = SixSidedImageBlockEntity.fromItemStack(mainStack);
+                entity.setBlockState(entity.getBlockState().setValue(SixSidedImageBlock.LIT, false));
+                var newStack = entity.createItemStack(useOnContext.getLevel().registryAccess());
+                newStack.setCount(mainStack.getCount());
+                player.setItemInHand(useOnContext.getHand(), newStack);
+                var glowStone = new ItemStack(Items.GLOWSTONE, newStack.getCount());
+                if (!player.getInventory().add(glowStone)) {
+                    player.drop(glowStone, false);
+                }
+                return InteractionResult.SUCCESS;
             }
         }
     }

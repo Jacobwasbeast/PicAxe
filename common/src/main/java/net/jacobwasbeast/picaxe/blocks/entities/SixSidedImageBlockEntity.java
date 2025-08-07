@@ -126,6 +126,16 @@ public class SixSidedImageBlockEntity extends BlockEntity {
         return itemStack;
     }
 
+    public ItemStack createItemStack(HolderLookup.Provider regs) {
+        ItemStack itemStack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
+        CompoundTag tag = this.saveWithoutMetadata(regs);
+        tag.putBoolean("lit", this.getBlockState().getValue(SixSidedImageBlock.LIT));
+        CustomData customData = CustomData.of(tag);
+
+        itemStack.set(DataComponents.BLOCK_ENTITY_DATA, customData);
+        return itemStack;
+    }
+
     public static SixSidedImageBlockEntity fromItemStack(ItemStack stack) {
         BlockState blockState = ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get().getBlock().defaultBlockState();
         boolean isLit = isLitFromStack(stack);
@@ -141,15 +151,5 @@ public class SixSidedImageBlockEntity extends BlockEntity {
 
     public boolean isLit() {
         return this.getBlockState().getValue(SixSidedImageBlock.LIT);
-    }
-
-    public ItemStack createItemStack(HolderLookup.Provider regs) {
-        ItemStack itemStack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
-        CompoundTag tag = this.saveWithoutMetadata(regs);
-        tag.putBoolean("lit", this.getBlockState().getValue(SixSidedImageBlock.LIT));
-        CustomData customData = CustomData.of(tag);
-
-        itemStack.set(DataComponents.BLOCK_ENTITY_DATA, customData);
-        return itemStack;
     }
 }
