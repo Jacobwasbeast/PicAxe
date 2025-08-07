@@ -153,12 +153,6 @@ public class URLInputScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Render widgets
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-
-        // Render input field after widgets
-        this.urlInput.render(guiGraphics, mouseX, mouseY, partialTick);
-
         // Animated fade-in
         float alpha = Mth.lerp(partialTick, animationProgress - 0.1f, animationProgress);
 
@@ -218,6 +212,12 @@ public class URLInputScreen extends Screen {
             int errorColor = (errorAlpha << 24) | (ERROR_COLOR & 0x00FFFFFF);
             guiGraphics.drawCenteredString(this.font, errorMessage, centerX, panelY + 110, errorColor);
         }
+
+        // Render widgets
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+
+        // Render input field after widgets
+        this.urlInput.render(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     private void renderInputBackground(GuiGraphics guiGraphics, int x, int y, int width, int height, boolean focused) {
@@ -232,6 +232,10 @@ public class URLInputScreen extends Screen {
         guiGraphics.fill(x - 1, y + height, x + width + 1, y + height + 1, borderColor); // Bottom
         guiGraphics.fill(x - 1, y, x, y + height, borderColor); // Left
         guiGraphics.fill(x + width, y, x + width + 1, y + height, borderColor); // Right
+    }
+
+    @Override
+    protected void renderBlurredBackground() {
     }
 
     @Override

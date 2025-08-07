@@ -202,14 +202,6 @@ public class ImageFrameConfigScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Render widgets
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-
-        // Render input fields after widgets
-        this.urlInput.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.widthInput.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.heightInput.render(guiGraphics, mouseX, mouseY, partialTick);
-
         // Animated fade-in
         float alpha = Mth.lerp(partialTick, animationProgress - 0.1f, animationProgress);
 
@@ -275,6 +267,18 @@ public class ImageFrameConfigScreen extends Screen {
             int errorColor = (errorAlpha << 24) | (ERROR_COLOR & 0x00FFFFFF);
             guiGraphics.drawCenteredString(this.font, errorMessage, centerX, panelY + panelHeight - 15, errorColor);
         }
+
+        // Render input fields after widgets
+        this.urlInput.render(guiGraphics, mouseX, mouseY, partialTick);
+        this.widthInput.render(guiGraphics, mouseX, mouseY, partialTick);
+        this.heightInput.render(guiGraphics, mouseX, mouseY, partialTick);
+
+        // Render widgets
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    @Override
+    protected void renderBlurredBackground() {
     }
 
     private void renderInputBackground(GuiGraphics guiGraphics, int x, int y, int width, int height, boolean focused) {
