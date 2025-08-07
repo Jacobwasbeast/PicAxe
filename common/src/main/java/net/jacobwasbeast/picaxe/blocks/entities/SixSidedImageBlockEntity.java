@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.ModItems;
+import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -107,17 +108,38 @@ public class SixSidedImageBlockEntity extends BlockEntity {
         }
     }
 
+    public static boolean isLitFromStack(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+        if (customData != null) {
+            return customData.copyTag().getBoolean("lit");
+        }
+        return false;
+    }
+
     public ItemStack createItemStack() {
         ItemStack itemStack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
         CompoundTag tag = this.saveWithoutMetadata(this.level.registryAccess());
-
+        tag.putBoolean("lit", this.getBlockState().getValue(SixSidedImageBlock.LIT));
         CustomData customData = CustomData.of(tag);
 
         itemStack.set(DataComponents.BLOCK_ENTITY_DATA, customData);
         return itemStack;
     }
 
+    public static SixSidedImageBlockEntity fromItemStack(ItemStack stack) {
+        BlockState blockState = ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get().getBlock().defaultBlockState();
+        boolean isLit = isLitFromStack(stack);
+        blockState = blockState.setValue(SixSidedImageBlock.LIT, isLit);
+        SixSidedImageBlockEntity entity = new SixSidedImageBlockEntity(BlockPos.ZERO, blockState);
+        entity.loadFromItemStackComponents(stack);
+        return entity;
+    }
+
     public  Map<Direction, String> getImages() {
         return imageUrls;
+    }
+
+    public boolean isLit() {
+        return this.getBlockState().getValue(SixSidedImageBlock.LIT);
     }
 }

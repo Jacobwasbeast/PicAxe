@@ -380,6 +380,77 @@ public class ImageUtils {
         ps.popPose();
     }
 
+    public static void renderImageFromURL(
+            PoseStack ps, MultiBufferSource bufSrc,
+            int packedLight, int packedOverlay,
+            float partialTick, float width, float height,
+            String url, boolean keepAspectRatio, boolean flipX, boolean flipY
+    ) {
+        ResourceLocation tex = getOrLoadTexture(url);
+        if (tex == null) {
+            tex = NOT_FOUND_TEXTURE;
+        }
+
+        final float u0 = flipX ? 1.0f : 0.0f;
+        final float u1 = flipX ? 0.0f : 1.0f;
+        final float v0 = flipY ? 1.0f : 0.0f;
+        final float v1 = flipY ? 0.0f : 1.0f;
+
+        int uL = packedLight & 0xFFFF, vL = (packedLight >> 16) & 0xFFFF;
+        int uO = packedOverlay & 0xFFFF, vO = (packedOverlay >> 16) & 0xFFFF;
+
+        ps.pushPose();
+
+        ps.translate(0.5, 1.01, 0.5);
+        ps.mulPose(Axis.XP.rotationDegrees(90));
+
+        PoseStack.Pose p = ps.last();
+        VertexConsumer buf = bufSrc.getBuffer(RenderType.text(tex));
+
+        float hw = width / 2f;
+        float hh = height / 2f;
+        if (keepAspectRatio) {
+            float aspectRatio = width / height;
+            if (aspectRatio > 1) {
+                hh /= aspectRatio;
+            } else {
+                hw *= aspectRatio;
+            }
+        }
+
+        Vector3f nUp = p.transformNormal(0, 1, 0, new Vector3f());
+
+        buf.addVertex(p.pose(), -hw, -hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(u0, v1).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nUp.x(), nUp.y(), nUp.z());
+        buf.addVertex(p.pose(), hw, -hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(u1, v1).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nUp.x(), nUp.y(), nUp.z());
+        buf.addVertex(p.pose(), hw, hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(u1, v0).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nUp.x(), nUp.y(), nUp.z());
+        buf.addVertex(p.pose(), -hw, hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(u0, v0).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nUp.x(), nUp.y(), nUp.z());
+
+        Vector3f nDown = p.transformNormal(0, -1, 0, new Vector3f());
+
+        buf.addVertex(p.pose(), -hw, hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(u0, v0).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nDown.x(), nDown.y(), nDown.z());
+        buf.addVertex(p.pose(), hw, hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(u1, v0).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nDown.x(), nDown.y(), nDown.z());
+        buf.addVertex(p.pose(), hw, -hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(u1, v1).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nDown.x(), nDown.y(), nDown.z());
+        buf.addVertex(p.pose(), -hw, -hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(u0, v1).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nDown.x(), nDown.y(), nDown.z());
+
+        ps.popPose();
+    }
+
     public static void renderImageSideDrapesFromURL(
             PoseStack ps, MultiBufferSource bufSrc,
             int packedLight, int packedOverlay,
