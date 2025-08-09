@@ -76,5 +76,10 @@
   "picaxe.screen.image_frame.error.negative_dimensions": "Dimensions must be positive",
   "picaxe.screen.image_frame.error.dimensions_too_large": "Dimensions too large (max 6)",
 
+  "picaxe.screen.common.paste_icon": "⎘",
+  "picaxe.screen.common.paste_tooltip": "Paste from clipboard",
+  "picaxe.screen.common.plus_tooltip": "Increase",
+  "picaxe.screen.common.minus_tooltip": "Decrease",
+
   "category.picaxe": "Picture Axe Items"
 }
