@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -325,6 +326,66 @@ public class ImageUtils {
             int packedLight, int packedOverlay,
             float partialTick, float width, float height,
             String url, boolean keepAspectRatio
+    ) {
+        ResourceLocation tex = getOrLoadTexture(url);
+        if (tex == null) {
+            tex = NOT_FOUND_TEXTURE;
+        }
+
+        int uL = packedLight & 0xFFFF, vL = (packedLight >> 16) & 0xFFFF;
+        int uO = packedOverlay & 0xFFFF, vO = (packedOverlay >> 16) & 0xFFFF;
+
+        ps.pushPose();
+        ps.translate(0.5, 1.01, 0.5);
+        ps.mulPose(Axis.XP.rotationDegrees(90));
+        PoseStack.Pose p = ps.last();
+        VertexConsumer buf = bufSrc.getBuffer(RenderType.text(tex));
+
+        float hw = width / 2f, hh = height / 2f;
+        if (keepAspectRatio) {
+            float aspectRatio = width / height;
+            if (aspectRatio > 1) {
+                hh /= aspectRatio;
+            } else {
+                hw *= aspectRatio;
+            }
+        }
+
+        Vector3f nUp = p.transformNormal(0, 1, 0, new Vector3f());
+        Vector3f nDown = p.transformNormal(0, -1, 0, new Vector3f());
+
+        buf.addVertex(p.pose(), -hw, -hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nUp.x(), nUp.y(), nUp.z());
+        buf.addVertex(p.pose(), hw, -hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nUp.x(), nUp.y(), nUp.z());
+        buf.addVertex(p.pose(), hw, hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL);
+        buf.addVertex(p.pose(), -hw, hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nUp.x(), nUp.y(), nUp.z());
+
+        buf.addVertex(p.pose(), -hw, hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(0f, 0f).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nDown.x(), nDown.y(), nDown.z());
+        buf.addVertex(p.pose(), hw, hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(1f, 0f).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nDown.x(), nDown.y(), nDown.z());
+        buf.addVertex(p.pose(), hw, -hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(1f, 1f).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nDown.x(), nDown.y(), nDown.z());
+        buf.addVertex(p.pose(), -hw, -hh, 0f)
+                .setColor(255, 255, 255, 255).setUv(0f, 1f).setUv1(uO, vO).setUv2(uL, vL)
+                .setNormal(nDown.x(), nDown.y(), nDown.z());
+        ps.popPose();
+    }
+
+    public static void renderImageFromURL(
+            PoseStack ps, MultiBufferSource bufSrc,
+            int packedLight, int packedOverlay,
+            float partialTick, float width, float height,
+            String url, boolean keepAspectRatio, ImageFrameAlignment alignment, int offsetX, int offsetY, int offsetZ
     ) {
         ResourceLocation tex = getOrLoadTexture(url);
         if (tex == null) {
