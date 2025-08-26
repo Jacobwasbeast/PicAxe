@@ -51,31 +51,22 @@ jobs:
 
           if [ ${#JARS[@]} -eq 0 ]; then
             echo "No qualifying JARs found."
-            # provide an empty JSON array so the matrix won't run
             echo "jar_list=[]" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # Copy to staging with safe, unique names (encode path separators as __)
+          # Copy to staging, keep original filenames
           > staging/_list.txt
           for jar in "${JARS[@]}"; do
-            safe_name="$(echo "${jar#./}" | sed 's#/#__#g')"
-            cp "$jar" "staging/$safe_name"
-            echo "$safe_name" >> staging/_list.txt
+            filename=$(basename "$jar")
+            cp "$jar" "staging/$filename"
+            echo "$filename" >> staging/_list.txt
           done
 
           # Produce JSON array for matrix
           jar_json=$(jq -R -s -c 'split("\n")[:-1]' staging/_list.txt)
           echo "jar_list=$jar_json" >> "$GITHUB_OUTPUT"
 
-      # Upload the staging directory so the next job can re-publish each JAR separately
-      - name: Upload staging bundle (intermediate)
-        if: ${{ steps.collect.outputs.jar_list != '[]' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: staging-jars-${{ github.run_id }}
-          path: staging/*
-          if-no-files-found: error
 
   publish-each:
     needs: build
