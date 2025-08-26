@@ -118,6 +118,7 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     public ItemStack createItemStack() {
         ItemStack itemStack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
         CompoundTag blockEntityTag = saveWithoutMetadata();
+        blockEntityTag.putBoolean("lit", this.getBlockState().getValue(SixSidedImageBlock.LIT));
         itemStack.getOrCreateTag().put("BlockEntityTag", blockEntityTag);
         return itemStack;
     }

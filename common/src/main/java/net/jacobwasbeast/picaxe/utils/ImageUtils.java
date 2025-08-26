@@ -449,7 +449,7 @@ public class ImageUtils {
         VertexConsumer buf = bufSrc.getBuffer(RenderType.text(tex));
 
         float hw = width / 2f;
-        float hh = height
+        float hh = height / 2f;
 
         if (keepAspectRatio) {
             float aspectRatio = width / height;
