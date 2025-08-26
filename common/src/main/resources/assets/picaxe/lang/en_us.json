@@ -11,6 +11,10 @@
   "tooltip.picaxe.when_used": "When used:",
   "tooltip.picaxe.use_action": "▶ Sneak + Right-click: Set image URL",
   "tooltip.picaxe.sneak_use_action": "▶ Right-click on block: Apply image",
+  "tooltip.picaxe.six_sided.lit":     "Lit: %s",
+  "tooltip.picaxe.six_sided.image":   "%s: %s",
+  "tooltip.picaxe.state.true":        "Yes",
+  "tooltip.picaxe.state.false":       "No",
 
   "block.picaxe.image_banner": "Image Banner",
   "block.picaxe.image_bed": "Image Bed",
