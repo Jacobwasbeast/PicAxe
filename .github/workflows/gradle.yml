@@ -45,6 +45,7 @@ jobs:
           mapfile -t JARS < <(find . -type f -path "*/build/libs/*.jar" \
             ! -name "*transformProduction*.jar" \
             ! -name "*dev-shadow*.jar" \
+            ! -name "*staging-jars*" \
             ! -iname "*common*.jar" \
             | sort)
 
