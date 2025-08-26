@@ -1,13 +1,16 @@
 package net.jacobwasbeast.picaxe.recipe;
 
+import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.jacobwasbeast.picaxe.items.ModItems;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,32 +20,35 @@ public class SixSidedImageBlockCloneRecipe extends CustomRecipe {
         super(cat);
     }
 
-    private record RecipeAnalysis(int sourceSlot, ItemStack sourceStack, ItemStack targetStack) {
-    }
+    private record RecipeAnalysis(int sourceSlot, ItemStack sourceStack, ItemStack targetStack) {}
 
     @Nullable
     private RecipeAnalysis analyze(CraftingInput inv) {
         int sourceSlot = -1;
         ItemStack sourceStack = null;
         ItemStack targetStack = null;
-        int count = 0;
+        int nonEmpty = 0;
 
         for (int i = 0; i < inv.size(); i++) {
-            ItemStack stack = inv.getItem(i);
-            if (stack.isEmpty()) continue;
-            count++;
+            ItemStack s = inv.getItem(i);
+            if (s.isEmpty()) continue;
+            nonEmpty++;
 
-            if (!stack.is(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM)) return null;
+            if (!s.is(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM)) {
+                return null; // only our block items allowed
+            }
 
             if (sourceStack == null) {
+                // Template (must be exactly 1 so it's unambiguous and returned as remainder)
                 sourceSlot = i;
-                sourceStack = stack;
+                sourceStack = s;
             } else {
-                targetStack = stack;
+                // Destination (may be a stack; one will be consumed per craft)
+                targetStack = s;
             }
         }
 
-        if (count == 2 && sourceStack != null && targetStack != null && sourceStack.getCount() == 1) {
+        if (nonEmpty == 2 && sourceStack != null && targetStack != null && sourceStack.getCount() == 1) {
             return new RecipeAnalysis(sourceSlot, sourceStack, targetStack);
         }
         return null;
@@ -55,32 +61,41 @@ public class SixSidedImageBlockCloneRecipe extends CustomRecipe {
 
     @Override
     public ItemStack assemble(CraftingInput inv, HolderLookup.Provider lookup) {
-        RecipeAnalysis analysis = analyze(inv);
-        if (analysis == null) return ItemStack.EMPTY;
+        RecipeAnalysis a = analyze(inv);
+        if (a == null) return ItemStack.EMPTY;
 
-        SixSidedImageBlockEntity beSrc = SixSidedImageBlockEntity.fromItemStack(analysis.sourceStack);
-        ItemStack result = analysis.targetStack.copy();
-        SixSidedImageBlockEntity beResult = SixSidedImageBlockEntity.fromItemStack(result);
+        // Read images from the TEMPLATE (first/1-count stack)
+        SixSidedImageBlockEntity beSrc = SixSidedImageBlockEntity.fromItemStack(a.sourceStack);
 
+        // Build from the DESTINATION's current data (so we preserve its lit)
+        ItemStack baseTarget = a.targetStack.copy();
+        SixSidedImageBlockEntity beDst = SixSidedImageBlockEntity.fromItemStack(baseTarget);
+
+        // Copy images ONLY from src -> dst
         for (Direction d : Direction.values()) {
-            beResult.setImageUrl(d, beSrc.getImages().get(d));
+            String url = beSrc.getImages().getOrDefault(d, "");
+            beDst.setImageUrl(d, url);
         }
-        return beResult.createItemStack();
+
+        // Keep the destination's lit value
+        boolean litTarget = SixSidedImageBlockEntity.isLitFromStack(a.targetStack);
+        beDst.setBlockState(beDst.getBlockState().setValue(SixSidedImageBlock.LIT, litTarget));
+
+        // Output exactly 1 result; shift-click will mass-craft across the stack
+        ItemStack out = beDst.createItemStack();
+        out.setCount(1);
+        return out;
     }
 
     @Override
     public NonNullList<ItemStack> getRemainingItems(CraftingInput inv) {
-        RecipeAnalysis analysis = analyze(inv);
-        NonNullList<ItemStack> remainingItems = NonNullList.withSize(inv.size(), ItemStack.EMPTY);
-        if (analysis != null) {
-            remainingItems.set(analysis.sourceSlot, analysis.sourceStack.copy());
+        RecipeAnalysis a = analyze(inv);
+        NonNullList<ItemStack> remaining = NonNullList.withSize(inv.size(), ItemStack.EMPTY);
+        if (a != null) {
+            // Return the template unchanged; the destination is consumed by vanilla
+            remaining.set(a.sourceSlot, a.sourceStack.copy());
         }
-        return remainingItems;
-    }
-
-    @Override
-    public PlacementInfo placementInfo() {
-        return super.placementInfo();
+        return remaining;
     }
 
     @Override
