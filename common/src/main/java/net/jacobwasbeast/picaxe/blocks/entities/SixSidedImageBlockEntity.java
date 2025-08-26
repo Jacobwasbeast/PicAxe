@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.ModItems;
+import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -83,6 +84,37 @@ public class SixSidedImageBlockEntity extends BlockEntity {
         }
     }
 
+    public static boolean isLitFromStack(ItemStack stack) {
+        CompoundTag customData = stack.getTagElement("BlockEntityTag");
+        if (customData != null) {
+            return customData.getBoolean("lit");
+        }
+        return false;
+    }
+
+    public static SixSidedImageBlockEntity fromItemStack(ItemStack stack) {
+        BlockState blockState = ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get().getBlock().defaultBlockState();
+        boolean isLit = isLitFromStack(stack);
+        blockState = blockState.setValue(SixSidedImageBlock.LIT, isLit);
+        SixSidedImageBlockEntity entity = new SixSidedImageBlockEntity(BlockPos.ZERO, blockState);
+        entity.loadFromItemStackComponents(stack);
+        return entity;
+    }
+
+    public void loadFromItemStackComponents(ItemStack stack) {
+        CompoundTag customData = stack.getTagElement("BlockEntityTag");
+        if (customData != null) {
+            this.load(customData);
+        } else {
+            for (Direction dir : Direction.Plane.HORIZONTAL) {
+                this.imageUrls.put(dir, "");
+            }
+            for (Direction dir : Direction.Plane.VERTICAL) {
+                this.imageUrls.put(dir, "");
+            }
+        }
+    }
+
     public ItemStack createItemStack() {
         ItemStack itemStack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.get());
         CompoundTag blockEntityTag = saveWithoutMetadata();
@@ -92,5 +124,9 @@ public class SixSidedImageBlockEntity extends BlockEntity {
 
     public Map<Direction, String> getImages() {
         return imageUrls;
+    }
+
+    public boolean isLit() {
+        return this.getBlockState().getValue(SixSidedImageBlock.LIT);
     }
 }

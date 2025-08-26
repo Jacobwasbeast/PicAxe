@@ -19,22 +19,30 @@ public class SixSidedImageBlockItemRendererForge extends BlockEntityWithoutLevel
 
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
-                BlockPos.ZERO,
-                ModBlocks.SIX_SIDED_IMAGE_BLOCK.get().defaultBlockState()
-        );
-        dummyBlockEntity.loadFromItemStack(stack);
+        SixSidedImageBlockEntity dummyBlockEntity = SixSidedImageBlockEntity.fromItemStack(stack);
         if (displayContext.equals(ItemDisplayContext.HEAD)) {
             poseStack.scale(0.9F, 0.9F, 0.9F);
             poseStack.translate(0.05, -1, 0.1);
         }
-        Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
-                Blocks.OAK_PLANKS.defaultBlockState(),
-                poseStack,
-                buffer,
-                packedLight,
-                packedOverlay
-        );
+        boolean isLit = dummyBlockEntity.isLit();
+        if (isLit) {
+            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                    Blocks.GLOWSTONE.defaultBlockState(),
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    packedOverlay
+            );
+        }
+        else {
+            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                    Blocks.OAK_PLANKS.defaultBlockState(),
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    packedOverlay
+            );
+        }
         Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(dummyBlockEntity)
                 .render(dummyBlockEntity, 0, poseStack, buffer, packedLight, packedOverlay);
     }
