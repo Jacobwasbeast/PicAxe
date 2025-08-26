@@ -4,13 +4,9 @@ import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.jacobwasbeast.picaxe.items.ModItems;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
@@ -22,7 +18,7 @@ public class SixSidedImageBlockLightRecipe extends CustomRecipe {
         super(category);
     }
 
-    // looks for exactly one unlit image block + one glowstone
+    // Exactly one image block (must be unlit) + one glowstone, no extras
     @Override
     public boolean matches(CraftingInput inv, Level level) {
         boolean foundBlock = false;
@@ -36,40 +32,31 @@ public class SixSidedImageBlockLightRecipe extends CustomRecipe {
             if (item == Items.GLOWSTONE) {
                 if (foundGlow) return false;
                 foundGlow = true;
-            }
-            else if (item == ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM) {
+            } else if (s.is(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM)) {
                 if (foundBlock) return false;
-                // reject if already lit
-                CustomData data = s.get(DataComponents.BLOCK_ENTITY_DATA);
-                //boolean isLit = data != null && data.copyTag().getBoolean("lit").get();
-                boolean isLit = false;
-                if (data != null) {
-                    if (data.copyTag().contains("lit")) {
-                        isLit = data.copyTag().getBoolean("lit").get();
-                    }
-                }
-                if (isLit) return false;
+                // Reject if already lit (uses your static helper that reads NBT)
+                if (SixSidedImageBlockEntity.isLitFromStack(s)) return false;
                 foundBlock = true;
-            }
-            else {
-                return false;
+            } else {
+                return false; // no other ingredients allowed
             }
         }
         return foundBlock && foundGlow;
     }
 
-    // produce a new block‐item with lit=true and same image URLs
+    // Produce a new block-item with lit=true and same image URLs
     @Override
     public ItemStack assemble(CraftingInput inv, HolderLookup.Provider regs) {
         for (int i = 0; i < inv.size(); i++) {
             ItemStack s = inv.getItem(i);
-            if (s.getItem() == ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM) {
-                // load existing BE data & images
+            if (s.isEmpty()) continue;
+            if (s.is(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM)) {
                 SixSidedImageBlockEntity be = SixSidedImageBlockEntity.fromItemStack(s);
-                // flip the blockstate to lit
+                // Flip lit on the BE's blockstate; createItemStack() writes "lit" from isLit()
                 be.setBlockState(be.getBlockState().setValue(SixSidedImageBlock.LIT, true));
-                // now create an ItemStack with lit=true
-                return be.createItemStack();
+                ItemStack out = be.createItemStack();
+                out.setCount(1);
+                return out;
             }
         }
         return ItemStack.EMPTY;
