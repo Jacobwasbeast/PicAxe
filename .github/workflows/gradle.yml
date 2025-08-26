@@ -33,7 +33,7 @@ jobs:
       - name: Build all modules
         run: ./gradlew build --no-daemon
 
-      # Collect all qualifying JARs into a staging folder and emit a JSON list for the next job
+      # Collect all qualifying JARs into a staging folder (keep original filenames)
       - name: Collect JARs (exclude transformProduction/dev-shadow/common)
         id: collect
         shell: bash
@@ -45,7 +45,6 @@ jobs:
           mapfile -t JARS < <(find . -type f -path "*/build/libs/*.jar" \
             ! -name "*transformProduction*.jar" \
             ! -name "*dev-shadow*.jar" \
-            ! -name "*staging-jars*" \
             ! -iname "*common*.jar" \
             | sort)
 
@@ -55,7 +54,7 @@ jobs:
             exit 0
           fi
 
-          # Copy to staging, keep original filenames
+          # Copy to staging keeping original filenames EXACTLY
           > staging/_list.txt
           for jar in "${JARS[@]}"; do
             filename=$(basename "$jar")
@@ -67,6 +66,14 @@ jobs:
           jar_json=$(jq -R -s -c 'split("\n")[:-1]' staging/_list.txt)
           echo "jar_list=$jar_json" >> "$GITHUB_OUTPUT"
 
+      # Upload the staging directory so the next job can re-publish each JAR separately
+      - name: Upload staging bundle (intermediate)
+        if: ${{ steps.collect.outputs.jar_list != '[]' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-jars-${{ github.run_id }}
+          path: staging/*
+          if-no-files-found: error
 
   publish-each:
     needs: build
@@ -85,11 +92,10 @@ jobs:
           name: staging-jars-${{ github.run_id }}
           path: staging
 
-      # Re-upload each JAR as its own artifact (separate artifacts)
+      # Re-upload each JAR as its own artifact (separate artifacts) — filename unchanged
       - name: Upload ${{ matrix.file }}
         uses: actions/upload-artifact@v4
         with:
-          # artifact name includes branch for convenience
           name: ${{ github.ref_name }}-${{ matrix.file }}
           path: staging/${{ matrix.file }}
           if-no-files-found: error
