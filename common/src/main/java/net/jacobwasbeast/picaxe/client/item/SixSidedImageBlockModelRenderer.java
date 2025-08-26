@@ -17,43 +17,51 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-public class SixSidedImageBlockModelRenderer implements SpecialModelRenderer<SixSidedImageBlockEntity> {
-
-    private final SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
-            BlockPos.ZERO,
-            ModBlocks.SIX_SIDED_IMAGE_BLOCK.defaultBlockState()
-    );
+public class SixSidedImageBlockModelRenderer implements SpecialModelRenderer<ItemStack> {
 
     public SixSidedImageBlockModelRenderer() {}
 
     @Override
-    public @Nullable SixSidedImageBlockEntity extractArgument(ItemStack stack) {
-        dummyBlockEntity.loadFromItemStackComponents(stack);
-        return dummyBlockEntity;
+    public @Nullable ItemStack extractArgument(ItemStack stack) {
+        return stack;
     }
 
     @Override
-    public void render(@Nullable SixSidedImageBlockEntity blockEntity, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
-        if (blockEntity == null) {
-            return;
-        }
+    public void render(@Nullable ItemStack ItemStack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
+        SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
+                BlockPos.ZERO,
+                ModBlocks.SIX_SIDED_IMAGE_BLOCK.defaultBlockState()
+        );
 
+        dummyBlockEntity.loadFromItemStackComponents(ItemStack);
         if (displayContext == ItemDisplayContext.HEAD) {
             poseStack.scale(0.9F, 0.9F, 0.9F);
             poseStack.translate(0.05, -1, 0.1);
         }
 
         BlockEntityRenderDispatcher dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
-        SixSidedImageBlockRenderer blockRenderer = (SixSidedImageBlockRenderer) dispatcher.getRenderer(blockEntity);
-        Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
-                Blocks.OAK_PLANKS.defaultBlockState(),
-                poseStack,
-                buffer,
-                packedLight,
-                packedOverlay
-        );
+        SixSidedImageBlockRenderer blockRenderer = (SixSidedImageBlockRenderer) dispatcher.getRenderer(dummyBlockEntity);
+        boolean isLit = SixSidedImageBlockEntity.isLitFromStack(ItemStack);
+        if (isLit) {
+            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                    Blocks.GLOWSTONE.defaultBlockState(),
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    packedOverlay
+            );
+        }
+        else {
+            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                    Blocks.OAK_PLANKS.defaultBlockState(),
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    packedOverlay
+            );
+        }
         if (blockRenderer != null) {
-            blockRenderer.render(blockEntity, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0,0,0));
+            blockRenderer.render(dummyBlockEntity, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0,0,0));
         }
     }
 
