@@ -1,7 +1,6 @@
 {
   "variants": {
-    "": {
-      "model": "picaxe:block/six_sided_image_block"
-    }
+    "lit=false": { "model": "picaxe:block/six_sided_image_block" },
+    "lit=true":  { "model": "picaxe:block/six_sided_image_block_lit" }
   }
 }

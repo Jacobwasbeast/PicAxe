@@ -1,5 +1,6 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
+import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
 import net.jacobwasbeast.picaxe.items.ModItems;
 import net.jacobwasbeast.picaxe.PictureAxe;
 import net.jacobwasbeast.picaxe.utils.DataUtils;
@@ -125,5 +126,19 @@ public class SixSidedImageBlockEntity extends BlockEntity {
                 this.imageUrls.put(dir, "");
             }
         }
+    }
+
+    public static boolean isLitFromStack(ItemStack stack) {
+        CustomData customData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+        if (customData != null) {
+            if (customData.copyTag().contains("lit")) {
+                return customData.copyTag().getBoolean("lit").get();
+            }
+        }
+        return false;
+    }
+
+    public boolean isLit() {
+        return this.getBlockState().getValue(SixSidedImageBlock.LIT);
     }
 }

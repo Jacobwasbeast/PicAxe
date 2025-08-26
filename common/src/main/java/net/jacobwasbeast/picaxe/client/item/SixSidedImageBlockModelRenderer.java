@@ -21,28 +21,48 @@ import org.joml.Vector3f;
 import java.util.Set;
 
 public class SixSidedImageBlockModelRenderer implements SpecialModelRenderer<ItemStack> {
+
     public SixSidedImageBlockModelRenderer() {}
 
     @Override
-    public void render(@Nullable ItemStack stack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
+    public @Nullable ItemStack extractArgument(ItemStack stack) {
+        return stack;
+    }
+
+    @Override
+    public void render(@Nullable ItemStack ItemStack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay, boolean hasGlint) {
         SixSidedImageBlockEntity dummyBlockEntity = new SixSidedImageBlockEntity(
                 BlockPos.ZERO,
                 ModBlocks.SIX_SIDED_IMAGE_BLOCK.defaultBlockState()
         );
-        dummyBlockEntity.loadFromItemStackComponents(stack);
+
+        dummyBlockEntity.loadFromItemStackComponents(ItemStack);
         if (displayContext == ItemDisplayContext.HEAD) {
             poseStack.scale(0.9F, 0.9F, 0.9F);
             poseStack.translate(0.05, -1, 0.1);
         }
+
         BlockEntityRenderDispatcher dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         SixSidedImageBlockRenderer blockRenderer = (SixSidedImageBlockRenderer) dispatcher.getRenderer(dummyBlockEntity);
-        Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
-                Blocks.OAK_PLANKS.defaultBlockState(),
-                poseStack,
-                buffer,
-                packedLight,
-                packedOverlay
-        );
+        boolean isLit = SixSidedImageBlockEntity.isLitFromStack(ItemStack);
+        if (isLit) {
+            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                    Blocks.GLOWSTONE.defaultBlockState(),
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    packedOverlay
+            );
+        }
+        else {
+            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                    Blocks.OAK_PLANKS.defaultBlockState(),
+                    poseStack,
+                    buffer,
+                    packedLight,
+                    packedOverlay
+            );
+        }
         if (blockRenderer != null) {
             blockRenderer.render(dummyBlockEntity, 0, poseStack, buffer, packedLight, packedOverlay, new Vec3(0,0,0));
         }
@@ -60,10 +80,6 @@ public class SixSidedImageBlockModelRenderer implements SpecialModelRenderer<Ite
         extents.add(new Vector3f(0.6F, 0.6F, 0.6F));
     }
 
-    @Override
-    public @Nullable ItemStack extractArgument(ItemStack itemStack) {
-        return itemStack;
-    }
 
     public record Unbaked() implements SpecialModelRenderer.Unbaked {
         public static final MapCodec<Unbaked> CODEC = MapCodec.unit(Unbaked::new);

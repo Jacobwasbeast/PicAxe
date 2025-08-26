@@ -5,6 +5,10 @@ import net.jacobwasbeast.picaxe.items.ModItems;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+
+import java.util.function.ToIntFunction;
 
 import static net.blay09.mods.balm.api.block.BalmBlocks.blockProperties;
 import static net.jacobwasbeast.picaxe.PictureAxe.id;
@@ -34,7 +38,7 @@ public class ModBlocks {
         );
 
         blocks.registerBlock(
-                (identifier) -> SIX_SIDED_IMAGE_BLOCK = new SixSidedImageBlock(blockProperties(identifier)),
+                (identifier) -> SIX_SIDED_IMAGE_BLOCK = new SixSidedImageBlock(blockProperties(identifier).lightLevel(litBlockEmission(15))),
                 id("six_sided_image_block")
         );
 
@@ -44,4 +48,9 @@ public class ModBlocks {
         );
     }
 
+    private static ToIntFunction<BlockState> litBlockEmission(int i) {
+        return (blockState) -> {
+            return (Boolean)blockState.getValue(BlockStateProperties.LIT) ? i : 0;
+        };
+    }
 }
