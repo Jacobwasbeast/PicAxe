@@ -72,5 +72,11 @@
   "picaxe.screen.image_frame.error.negative_dimensions": "Dimensions must be positive",
   "picaxe.screen.image_frame.error.dimensions_too_large": "Dimensions too large (max 6)",
 
+
+  "tooltip.picaxe.six_sided.lit":     "Lit: %s",
+  "tooltip.picaxe.six_sided.image":   "%s: %s",
+  "tooltip.picaxe.state.true":        "Yes",
+  "tooltip.picaxe.state.false":       "No",
+
   "category.picaxe": "Picture Axe Items"
 }

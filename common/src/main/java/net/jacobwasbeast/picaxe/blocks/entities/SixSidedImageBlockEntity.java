@@ -32,6 +32,28 @@ public class SixSidedImageBlockEntity extends BlockEntity {
         }
     }
 
+    public static SixSidedImageBlockEntity fromItemStack(ItemStack sourceStack) {
+        SixSidedImageBlockEntity entity = new SixSidedImageBlockEntity(BlockPos.ZERO, ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM.getBlock().defaultBlockState());
+        entity.loadFromItemStackComponents(sourceStack);
+        return entity;
+    }
+
+    public ItemStack createItemStack() {
+        ItemStack stack = new ItemStack(ModItems.SIX_SIDED_IMAGE_BLOCK_ITEM);
+        CompoundTag tag = new CompoundTag();
+
+        tag.putString("id", PictureAxe.MOD_ID + ":six_sided_image_block");
+
+        for (Map.Entry<Direction, String> entry : imageUrls.entrySet()) {
+            tag.putString("image_url_" + entry.getKey().getName(), entry.getValue());
+        }
+
+        tag.putBoolean("lit", this.isLit());
+
+        stack.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(tag));
+        return stack;
+    }
+
     public String getImageUrl(Direction direction) {
         return imageUrls.getOrDefault(direction, "");
     }

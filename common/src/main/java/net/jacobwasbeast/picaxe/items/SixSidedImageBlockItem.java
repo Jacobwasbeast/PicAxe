@@ -2,18 +2,24 @@ package net.jacobwasbeast.picaxe.items;
 
 import net.jacobwasbeast.picaxe.PictureAxe;
 import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class SixSidedImageBlockItem extends BlockItem {
 
@@ -62,5 +68,38 @@ public class SixSidedImageBlockItem extends BlockItem {
             return imageUrls;
         }
         return java.util.Collections.emptyMap();
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltip, Consumer<Component> consumer, TooltipFlag flags) {
+        super.appendHoverText(stack, context, tooltip, consumer, flags);
+
+        boolean isLit = false;
+        CustomData custom = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+        if (custom != null) {
+            if (custom.copyTag().contains("lit")) {
+                isLit = custom.copyTag().getBoolean("lit").get();
+            }
+        }
+        consumer.accept(
+                Component.translatable("tooltip.picaxe.six_sided.lit",
+                        Component.translatable(isLit ? "tooltip.picaxe.state.true" : "tooltip.picaxe.state.false")
+                ).withStyle(isLit ? ChatFormatting.GREEN : ChatFormatting.RED)
+        );
+
+        Map<Direction, String> urls = getImageUrls(stack);
+        if (!urls.isEmpty()) {
+            consumer.accept(Component.empty());
+            for (Map.Entry<Direction, String> e : urls.entrySet()) {
+                Direction dir = e.getKey();
+                String url = e.getValue();
+                consumer.accept(
+                        Component.translatable("tooltip.picaxe.six_sided.image",
+                                dir.getName().toUpperCase(),
+                                Component.literal(url).withStyle(ChatFormatting.AQUA)
+                        ).withStyle(ChatFormatting.GRAY)
+                );
+            }
+        }
     }
 }
