@@ -2,26 +2,28 @@ name: Build, Compile, and Upload Artifacts
 
 on:
   push:
-    branches: ['**']        # run on every branch
+    branches: ['**']          # run on every branch
   pull_request:
-    branches: ['**']        # run for PRs from any branch
-  workflow_dispatch:         # manual trigger (optional)
+    branches: ['**']          # run for PRs from any branch
+  workflow_dispatch:           # manual trigger (optional)
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      jar_list: ${{ steps.collect.outputs.jar_list }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
-      # Setup Gradle w/ caching for wrapper & dependencies (recommended by Gradle)
+      # Recommended Gradle setup (cache wrapper & dependencies)
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
@@ -31,11 +33,71 @@ jobs:
       - name: Build all modules
         run: ./gradlew build --no-daemon
 
-      # Easiest and most reliable: upload every JAR under build/libs across modules
-      - name: Upload all module JARs
+      # Collect all qualifying JARs into a staging folder and emit a JSON list for the next job
+      - name: Collect JARs (exclude transformProduction/dev-shadow/common)
+        id: collect
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p staging
+
+          # Find jars and exclude unwanted ones by name
+          mapfile -t JARS < <(find . -type f -path "*/build/libs/*.jar" \
+            ! -name "*transformProduction*.jar" \
+            ! -name "*dev-shadow*.jar" \
+            ! -iname "*common*.jar" \
+            | sort)
+
+          if [ ${#JARS[@]} -eq 0 ]; then
+            echo "No qualifying JARs found."
+            # provide an empty JSON array so the matrix won't run
+            echo "jar_list=[]" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Copy to staging with safe, unique names (encode path separators as __)
+          > staging/_list.txt
+          for jar in "${JARS[@]}"; do
+            safe_name="$(echo "${jar#./}" | sed 's#/#__#g')"
+            cp "$jar" "staging/$safe_name"
+            echo "$safe_name" >> staging/_list.txt
+          done
+
+          # Produce JSON array for matrix
+          jar_json=$(jq -R -s -c 'split("\n")[:-1]' staging/_list.txt)
+          echo "jar_list=$jar_json" >> "$GITHUB_OUTPUT"
+
+      # Upload the staging directory so the next job can re-publish each JAR separately
+      - name: Upload staging bundle (intermediate)
+        if: ${{ steps.collect.outputs.jar_list != '[]' }}
         uses: actions/upload-artifact@v4
         with:
-          name: jars-${{ github.ref_name }}
-          path: |
-            **/build/libs/*.jar
+          name: staging-jars-${{ github.run_id }}
+          path: staging/*
+          if-no-files-found: error
+
+  publish-each:
+    needs: build
+    if: ${{ needs.build.outputs.jar_list != '[]' }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{ fromJson(needs.build.outputs.jar_list) }}
+
+    steps:
+      - name: Download staging bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: staging-jars-${{ github.run_id }}
+          path: staging
+
+      # Re-upload each JAR as its own artifact (separate artifacts)
+      - name: Upload ${{ matrix.file }}
+        uses: actions/upload-artifact@v4
+        with:
+          # artifact name includes branch for convenience
+          name: ${{ github.ref_name }}-${{ matrix.file }}
+          path: staging/${{ matrix.file }}
           if-no-files-found: error
