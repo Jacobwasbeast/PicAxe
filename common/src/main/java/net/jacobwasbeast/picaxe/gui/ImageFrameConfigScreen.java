@@ -5,298 +5,329 @@ import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
 import net.jacobwasbeast.picaxe.network.UpdateImageFramePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+
 public class ImageFrameConfigScreen extends Screen {
 
-    private static final int BACKGROUND_COLOR = 0xE6000000; // Dark semi-transparent
-    private static final int PANEL_COLOR = 0xCC1A1A1A; // Darker panel
-    private static final int ACCENT_COLOR = 0xFF3498DB; // Modern blue accent
-    private static final int TEXT_COLOR = 0xFFFFFFFF; // White text
-    private static final int SUBTITLE_COLOR = 0xFF888888; // Gray subtitle
-    private static final int ERROR_COLOR = 0xFFE74C3C; // Red for errors
-    private static final int SUCCESS_COLOR = 0xFF2ECC71; // Green for success
-    private static final int REMOVE_COLOR = 0xFFFF6B35; // Orange for remove mode
+    private static final int BACKGROUND_COLOR = 0xE6000000;
+    private static final int PANEL_COLOR = 0xCC161616;
+    private static final int ACCENT_COLOR = 0xFF4DA3FF;
+    private static final int TEXT_COLOR = 0xFFFFFFFF;
+    private static final int SUBTITLE_COLOR = 0xFF9AA0A6;
+    private static final int ERROR_COLOR = 0xFFFF5A6B;
+    private static final int SUCCESS_COLOR = 0xFF2ECC71;
+    private static final int REMOVE_COLOR = 0xFFFF9A4D;
 
     private final ImageFrameBlockEntity blockEntity;
+
     private EditBox urlInput;
     private EditBox widthInput;
     private EditBox heightInput;
-    private Button stretchButton;
-    private Button confirmButton;
-    private Button cancelButton;
-    private Button clearButton;
+    private Chip stretchChip;
+
     private boolean shouldStretch;
-    private String urlValue;
-    private String widthValue;
-    private String heightValue;
     private String errorMessage = "";
     private int errorTimer = 0;
     private float animationProgress = 0.0f;
     private boolean urlChanged = false;
 
+    // layout
+    private int panelX, panelY, panelWidth, panelHeight, inputWidth;
+
+    // lightweight clickable “chips”
+    private static class Chip {
+        int x, y, w, h;
+        Runnable action;
+        Component label;
+        int bg;
+        int bgHover;
+        int fg;
+        boolean primary;
+        Chip(int x, int y, int w, int h, Component label, int bg, int bgHover, int fg, boolean primary, Runnable action) {
+            this.x=x; this.y=y; this.w=w; this.h=h; this.label=label; this.bg=bg; this.bgHover=bgHover; this.fg=fg; this.primary=primary; this.action=action;
+        }
+        boolean hit(double mx, double my){ return mx>=x && my>=y && mx<=x+w && my<=y+h; }
+    }
+    private final List<Chip> chips = new ArrayList<>();
+    private int lastMouseX, lastMouseY;
+    private Component getStretchLabel() {
+        return (shouldStretch
+                ? Component.translatable("picaxe.screen.image_frame.stretch_icon_on")
+                : Component.translatable("picaxe.screen.image_frame.stretch_icon_off"))
+                .copy().append("  ")
+                .append(Component.translatable("picaxe.screen.image_frame.stretch_mode",
+                        shouldStretch
+                                ? Component.translatable("picaxe.screen.image_frame.stretch_on")
+                                : Component.translatable("picaxe.screen.image_frame.stretch_off")));
+    }
+
     public ImageFrameConfigScreen(ImageFrameBlockEntity be) {
         super(Component.translatable("picaxe.screen.image_frame.title"));
         this.blockEntity = be;
         this.shouldStretch = be.shouldStretchToFit();
-        this.urlValue = be.getImageUrl();
-        this.widthValue = String.valueOf(be.getFrameWidth());
-        this.heightValue = String.valueOf(be.getFrameHeight());
     }
 
     @Override
     protected void init() {
         super.init();
+        chips.clear();
+
         int centerX = this.width / 2;
         int centerY = this.height / 2;
-        int panelWidth = 360;
-        int panelHeight = 240;
-        int panelX = centerX - panelWidth / 2;
-        int panelY = centerY - panelHeight / 2;
+        panelWidth = 420;
+        panelHeight = 260;
+        panelX = centerX - panelWidth / 2;
+        panelY = centerY - panelHeight / 2;
 
-        // URL Input with modern styling
-        this.urlInput = new EditBox(this.font, panelX + 30, panelY + 65, panelWidth - 90, 20,
+        // URL
+        this.urlInput = new EditBox(this.font, panelX + 30, panelY + 65, panelWidth - 120, 22,
                 Component.translatable("picaxe.screen.url_input.url"));
         this.urlInput.setMaxLength(256);
-        this.urlInput.setValue(this.urlValue);
+        this.urlInput.setValue(this.blockEntity.getImageUrl());
         this.urlInput.setHint(Component.translatable("picaxe.screen.image_frame.url_hint"));
         this.urlInput.setBordered(false);
         this.urlInput.setResponder(text -> {
             this.urlChanged = !text.equals(this.blockEntity.getImageUrl());
+            refreshConfirmState();
         });
         this.addWidget(this.urlInput);
         this.setInitialFocus(this.urlInput);
 
-        // Clear button (small button next to input)
-        this.clearButton = this.addRenderableWidget(Button.builder(
-                        Component.translatable("picaxe.screen.image_frame.clear_icon"),
-                        (button) -> {
-                            this.urlInput.setValue("");
-                            this.urlChanged = true;
-                        })
-                .bounds(panelX + panelWidth - 55, panelY + 65, 20, 20)
-                .tooltip(Tooltip.create(Component.translatable("picaxe.screen.image_frame.clear_tooltip")))
-                .build());
+        // PASTE + CLEAR chips (flat; no vanilla textures)
+        addChip(panelX + panelWidth - 80, panelY + 65, 22, 22,
+                Component.literal("⎘"), true, () -> {
+                    String clip = Minecraft.getInstance().keyboardHandler.getClipboard();
+                    if (clip != null) {
+                        this.urlInput.setValue(clip.trim());
+                        this.urlChanged = !clip.trim().equals(this.blockEntity.getImageUrl());
+                        refreshConfirmState();
+                    }
+                });
+        addChip(panelX + panelWidth - 54, panelY + 65, 22, 22,
+                Component.literal("✕"), false, () -> {
+                    this.urlInput.setValue("");
+                    this.urlChanged = true;
+                    refreshConfirmState();
+                });
 
-        // Width and Height inputs with modern styling
-        int inputWidth = (panelWidth - 90) / 2;
-        this.widthInput = new EditBox(this.font, panelX + 30, panelY + 115, inputWidth, 20,
-                Component.translatable("picaxe.screen.image_frame.width"));
-        this.widthInput.setValue(this.widthValue);
-        this.widthInput.setHint(Component.translatable("picaxe.screen.image_frame.width_hint"));
+        // Dimensions (inline, clean)
+        inputWidth = (panelWidth - 90) / 2;
+
+        Predicate<String> dimFilter = s -> s.isEmpty() || s.matches("[1-6]{0,1}");
+
+        this.widthInput = new EditBox(this.font, panelX + 30, panelY + 120, inputWidth - 60, 22,
+                Component.literal("W"));
+        this.widthInput.setValue(String.valueOf(blockEntity.getFrameWidth()));
+        this.widthInput.setHint(Component.literal("W (1–6)"));
         this.widthInput.setBordered(false);
-        this.widthInput.setTooltip(Tooltip.create(Component.translatable("picaxe.screen.image_frame.width_tooltip")));
+        this.widthInput.setFilter(dimFilter);
+        this.widthInput.setResponder(s -> refreshConfirmState());
         this.addWidget(this.widthInput);
 
-        this.heightInput = new EditBox(this.font, panelX + 30 + inputWidth + 30, panelY + 115, inputWidth, 20,
-                Component.translatable("picaxe.screen.image_frame.height"));
-        this.heightInput.setValue(this.heightValue);
-        this.heightInput.setHint(Component.translatable("picaxe.screen.image_frame.height_hint"));
+        this.heightInput = new EditBox(this.font, panelX + 30 + inputWidth + 30, panelY + 120, inputWidth - 60, 22,
+                Component.literal("H"));
+        this.heightInput.setValue(String.valueOf(blockEntity.getFrameHeight()));
+        this.heightInput.setHint(Component.literal("H (1–6)"));
         this.heightInput.setBordered(false);
-        this.heightInput.setTooltip(Tooltip.create(Component.translatable("picaxe.screen.image_frame.height_tooltip")));
+        this.heightInput.setFilter(dimFilter);
+        this.heightInput.setResponder(s -> refreshConfirmState());
         this.addWidget(this.heightInput);
 
-        // Modern toggle button for stretch
-        this.stretchButton = this.addRenderableWidget(Button.builder(getStretchButtonText(), (button) -> {
-                    this.shouldStretch = !this.shouldStretch;
-                    button.setMessage(getStretchButtonText());
-                })
-                .bounds(panelX + 30, panelY + 155, panelWidth - 60, 20)
-                .tooltip(Tooltip.create(Component.translatable("picaxe.screen.image_frame.stretch_tooltip")))
-                .build());
+        // Tight, aligned steppers to the RIGHT of each field: [ – ][ + ]
+        int stepY = panelY + 120;
+        addChip(panelX + 30 + (inputWidth - 60) + 6, stepY, 22, 22, Component.literal("–"), false,
+                () -> adjust(widthInput, -1));
+        addChip(panelX + 30 + (inputWidth - 60) + 6 + 24, stepY, 22, 22, Component.literal("+"), true,
+                () -> adjust(widthInput, +1));
 
-        // Modern styled buttons
-        int buttonWidth = (panelWidth - 90) / 2;
-        this.confirmButton = this.addRenderableWidget(Button.builder(
-                        Component.translatable("picaxe.screen.image_frame.confirm_button"),
-                        (button) -> {
-                            if (validateInputs()) {
-                                try {
-                                    int width = Integer.parseInt(widthInput.getValue());
-                                    int height = Integer.parseInt(heightInput.getValue());
-                                    String url = this.urlInput.getValue();
-                                    BlockPos pos = this.blockEntity.getBlockPos();
+        int hx = panelX + 30 + inputWidth + 30 + (inputWidth - 60) + 6;
+        addChip(hx, stepY, 22, 22, Component.literal("–"), false, () -> adjust(heightInput, -1));
+        addChip(hx + 24, stepY, 22, 22, Component.literal("+"), true, () -> adjust(heightInput, +1));
 
-                                    Balm.getNetworking().sendToServer(new UpdateImageFramePayload(pos, url, width, height, this.shouldStretch));
-                                    this.minecraft.setScreen(null);
-                                } catch (NumberFormatException e) {
-                                    setError(Component.translatable("picaxe.screen.image_frame.error.invalid_dimensions").getString());
-                                }
-                            }
-                        })
-                .bounds(panelX + 30, panelY + 190, buttonWidth, 20)
-                .tooltip(Tooltip.create(Component.translatable("picaxe.screen.image_frame.confirm_tooltip")))
-                .build());
+        // Stretch toggle (chip)
+        stretchChip = new Chip(
+                panelX + 30, panelY + 160, panelWidth - 60, 24,
+                getStretchLabel(),
+                0xFF1F2329, 0xFF262B32, 0xFFFFFFFF, false,
+                () -> {
+                    shouldStretch = !shouldStretch;
+                    stretchChip.label = getStretchLabel();
+                }
+        );
+        chips.add(stretchChip);
 
-        this.cancelButton = this.addRenderableWidget(Button.builder(
-                        Component.translatable("picaxe.screen.image_frame.cancel_button"),
-                        (button) -> {
-                            this.minecraft.setScreen(null);
-                        })
-                .bounds(panelX + 30 + buttonWidth + 30, panelY + 190, buttonWidth, 20)
-                .build());
+        // Confirm / Cancel (chips)
+        int bw = (panelWidth - 90) / 2;
+        addChip(panelX + 30, panelY + 200, bw, 24,
+                Component.translatable("picaxe.screen.image_frame.confirm_button"), true, this::submitIfValid);
+        addChip(panelX + 30 + bw + 30, panelY + 200, bw, 24,
+                Component.translatable("picaxe.screen.image_frame.cancel_button"), false, () -> this.minecraft.setScreen(null));
     }
 
-    private boolean validateInputs() {
-        // Empty URL is valid - it removes the image
-        String url = urlInput.getValue().trim();
+    private void addChip(int x, int y, int w, int h, Component label, boolean primary, Runnable action) {
+        int bg = primary ? 0xFF2B60FF : 0xFF1F2329;
+        int bgHover = primary ? 0xFF3B6CFF : 0xFF262B32;
+        int fg = 0xFFFFFFFF;
+        chips.add(new Chip(x, y, w, h, label, bg, bgHover, fg, primary, action));
+    }
 
+    private void adjust(EditBox box, int delta) {
+        int cur = safeInt(box.getValue(), 1);
+        cur = Mth.clamp(cur + delta, 1, 6);
+        box.setValue(String.valueOf(cur));
+        refreshConfirmState();
+    }
+
+    private int safeInt(String s, int def) { try { return Integer.parseInt(s); } catch (Exception e) { return def; } }
+
+    private boolean inputsValid() {
         try {
-            int width = Integer.parseInt(widthInput.getValue());
-            int height = Integer.parseInt(heightInput.getValue());
-            if (width <= 0 || height <= 0) {
-                setError(Component.translatable("picaxe.screen.image_frame.error.negative_dimensions").getString());
-                return false;
-            }
-            if (width > 6 || height > 6) {
-                setError(Component.translatable("picaxe.screen.image_frame.error.dimensions_too_large").getString());
-                return false;
-            }
+            int w = Integer.parseInt(widthInput.getValue());
+            int h = Integer.parseInt(heightInput.getValue());
+            if (w < 1 || h < 1) { setEphemeralError("picaxe.screen.image_frame.error.negative_dimensions"); return false; }
+            if (w > 6 || h > 6) { setEphemeralError("picaxe.screen.image_frame.error.dimensions_too_large"); return false; }
         } catch (NumberFormatException e) {
-            setError(Component.translatable("picaxe.screen.image_frame.error.invalid_dimensions").getString());
-            return false;
+            setEphemeralError("picaxe.screen.image_frame.error.invalid_dimensions"); return false;
         }
+        errorMessage = "";
         return true;
     }
 
-    private void setError(String message) {
-        this.errorMessage = message;
-        this.errorTimer = 60; // 3 seconds at 20 tps
+    private void setEphemeralError(String key) {
+        this.errorMessage = Component.translatable(key).getString();
+        this.errorTimer = 50;
     }
 
-    private Component getStretchButtonText() {
-        Component icon = this.shouldStretch ?
-                Component.translatable("picaxe.screen.image_frame.stretch_icon_on") :
-                Component.translatable("picaxe.screen.image_frame.stretch_icon_off");
-        Component state = this.shouldStretch ?
-                Component.translatable("picaxe.screen.image_frame.stretch_on") :
-                Component.translatable("picaxe.screen.image_frame.stretch_off");
-        return icon.copy().append(Component.translatable("picaxe.screen.image_frame.stretch_mode", state));
+    private void refreshConfirmState() {
+        // chips are always clickable; validity message is shown instead
+        inputsValid();
+    }
+
+    private void submitIfValid() {
+        if (!inputsValid()) return;
+        try {
+            int width = Integer.parseInt(widthInput.getValue());
+            int height = Integer.parseInt(heightInput.getValue());
+            String url = this.urlInput.getValue().trim();
+            BlockPos pos = this.blockEntity.getBlockPos();
+            Balm.getNetworking().sendToServer(new UpdateImageFramePayload(pos, url, width, height, this.shouldStretch));
+            this.minecraft.setScreen(null);
+        } catch (NumberFormatException e) {
+            setEphemeralError("picaxe.screen.image_frame.error.invalid_dimensions");
+        }
     }
 
     @Override
-    public void resize(Minecraft minecraft, int width, int height) {
-        this.urlValue = this.urlInput.getValue();
-        this.widthValue = this.widthInput.getValue();
-        this.heightValue = this.heightInput.getValue();
-        boolean wasUrlChanged = this.urlChanged;
-        this.init(minecraft, width, height);
-        this.urlChanged = wasUrlChanged;
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        for (Chip c : chips) {
+            if (c.hit(mouseX, mouseY)) {
+                c.action.run();
+                return true;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == 257 || keyCode == 335) { submitIfValid(); return true; }        // Enter
+        if (keyCode == 256) { this.minecraft.setScreen(null); return true; }           // Esc
+        if ((modifiers & 0x2) != 0 && keyCode == 86) {                                  // Ctrl+V
+            String clip = Minecraft.getInstance().keyboardHandler.getClipboard();
+            if (clip != null) { this.urlInput.setValue(clip.trim()); this.urlChanged = true; refreshConfirmState(); return true; }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (errorTimer > 0) {
-            errorTimer--;
-        }
-        // Smooth animation
-        animationProgress = Math.min(1.0f, animationProgress + 0.1f);
+        if (errorTimer > 0) errorTimer--;
+        animationProgress = Math.min(1.0f, animationProgress + 0.12f);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Animated fade-in
-        float alpha = Mth.lerp(partialTick, animationProgress - 0.1f, animationProgress);
+    public void render(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
+        lastMouseX = mouseX; lastMouseY = mouseY;
 
-        // Dark overlay background
-        guiGraphics.fill(0, 0, this.width, this.height, BACKGROUND_COLOR);
+        gui.fill(0, 0, this.width, this.height, BACKGROUND_COLOR);
 
-        // Main panel with rounded corners effect
-        int centerX = this.width / 2;
-        int centerY = this.height / 2;
-        int panelWidth = 360;
-        int panelHeight = 240;
-        int panelX = centerX - panelWidth / 2;
-        int panelY = centerY - panelHeight / 2;
+        // panel & accent
+        gui.fill(panelX + 3, panelY + 3, panelX + panelWidth + 3, panelY + panelHeight + 3, 0x30000000);
+        gui.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, PANEL_COLOR);
+        gui.fill(panelX, panelY, panelX + panelWidth, panelY + 3, ACCENT_COLOR);
 
-        // Panel shadow
-        guiGraphics.fill(panelX + 2, panelY + 2, panelX + panelWidth + 2, panelY + panelHeight + 2, 0x44000000);
+        // Title + subtitle
+        gui.drawCenteredString(this.font, this.title, this.width / 2, panelY + 12, TEXT_COLOR);
+        gui.drawCenteredString(this.font, Component.translatable("picaxe.screen.image_frame.subtitle"),
+                this.width / 2, panelY + 28, SUBTITLE_COLOR);
 
-        // Main panel
-        guiGraphics.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, PANEL_COLOR);
+        // Divider
+        gui.fill(panelX + 30, panelY + 50, panelX + panelWidth - 30, panelY + 51, 0x36FFFFFF);
 
-        // Accent line at top
-        guiGraphics.fill(panelX, panelY, panelX + panelWidth, panelY + 3, ACCENT_COLOR);
+        // Inputs background
+        drawInput(gui, panelX + 30, panelY + 65, panelWidth - 120, 22, urlInput.isFocused());
+        drawInput(gui, panelX + 30, panelY + 120, inputWidth - 60, 22, widthInput.isFocused());
+        drawInput(gui, panelX + 30 + inputWidth + 30, panelY + 120, inputWidth - 60, 22, heightInput.isFocused());
 
-        // Title with modern font styling
-        guiGraphics.drawCenteredString(this.font, this.title, centerX, panelY + 15, TEXT_COLOR);
-        guiGraphics.drawCenteredString(this.font, Component.translatable("picaxe.screen.image_frame.subtitle"),
-                centerX, panelY + 30, SUBTITLE_COLOR);
+        // Labels (simple)
+        gui.drawString(this.font, Component.translatable("picaxe.screen.image_frame.url_label"), panelX + 30, panelY + 52, SUBTITLE_COLOR);
+        // inline hint: “W × H (1–6)”
+        gui.drawString(this.font, Component.literal("W × H (1–6)"), panelX + 30, panelY + 106, SUBTITLE_COLOR);
 
-        // Section dividers
-        guiGraphics.fill(panelX + 30, panelY + 50, panelX + panelWidth - 30, panelY + 51, 0x44FFFFFF);
-
-        // Input backgrounds with subtle borders
-        renderInputBackground(guiGraphics, panelX + 30, panelY + 65, panelWidth - 90, 20,
-                urlInput.isFocused());
-
-        int inputWidth = (panelWidth - 90) / 2;
-        renderInputBackground(guiGraphics, panelX + 30, panelY + 115, inputWidth, 20,
-                widthInput.isFocused());
-        renderInputBackground(guiGraphics, panelX + 30 + inputWidth + 30, panelY + 115, inputWidth, 20,
-                heightInput.isFocused());
-
-        // Labels with icons
-        guiGraphics.drawString(this.font, Component.translatable("picaxe.screen.image_frame.url_label"),
-                panelX + 30, panelY + 52, SUBTITLE_COLOR);
-        guiGraphics.drawString(this.font, Component.translatable("picaxe.screen.image_frame.dimensions_label"),
-                panelX + 30, panelY + 102, SUBTITLE_COLOR);
-
-        // Status indicator
+        // Mode indicator (left stripe)
         if (urlInput.getValue().trim().isEmpty()) {
-            // Remove mode indicator
-            guiGraphics.fill(panelX + 10, panelY + 65, panelX + 13, panelY + 85, REMOVE_COLOR);
-            Component removeMode = Component.translatable("picaxe.screen.image_frame.remove_mode");
-            guiGraphics.drawString(this.font, removeMode,
-                    panelX + 30, panelY + 90, REMOVE_COLOR);
+            gui.fill(panelX + 14, panelY + 65, panelX + 16, panelY + 87, REMOVE_COLOR);
+            gui.drawString(this.font, Component.translatable("picaxe.screen.image_frame.remove_mode"),
+                    panelX + 30, panelY + 92, REMOVE_COLOR);
         } else if (urlChanged) {
-            // Changed indicator
-            guiGraphics.fill(panelX + 10, panelY + 65, panelX + 13, panelY + 85, SUCCESS_COLOR);
+            gui.fill(panelX + 14, panelY + 65, panelX + 16, panelY + 87, SUCCESS_COLOR);
         }
 
-        // Error message with fade effect
+        // Chips
+        for (Chip c : chips) drawChip(gui, c, c.hit(mouseX, mouseY));
+
+        // Error toast
         if (errorTimer > 0 && !errorMessage.isEmpty()) {
-            int errorAlpha = Math.min(255, errorTimer * 255 / 60);
+            int errorAlpha = Math.min(255, errorTimer * 255 / 50);
             int errorColor = (errorAlpha << 24) | (ERROR_COLOR & 0x00FFFFFF);
-            guiGraphics.drawCenteredString(this.font, errorMessage, centerX, panelY + panelHeight - 15, errorColor);
+            gui.drawCenteredString(this.font, errorMessage, this.width / 2, panelY + panelHeight - 16, errorColor);
         }
 
-        // Render input fields after widgets
-        this.urlInput.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.widthInput.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.heightInput.render(guiGraphics, mouseX, mouseY, partialTick);
-
-        // Render widgets
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        // Widgets last
+        super.render(gui, mouseX, mouseY, partialTick);
+        urlInput.render(gui, mouseX, mouseY, partialTick);
+        widthInput.render(gui, mouseX, mouseY, partialTick);
+        heightInput.render(gui, mouseX, mouseY, partialTick);
     }
+
+    private void drawInput(GuiGraphics g, int x, int y, int w, int h, boolean focused) {
+        int bg = focused ? 0xFF222428 : 0xFF1A1B1E;
+        int bd = focused ? ACCENT_COLOR : 0xFF2A2C30;
+        g.fill(x, y, x + w, y + h, bg);
+        g.fill(x - 1, y - 1, x + w + 1, y, bd);
+        g.fill(x - 1, y + h, x + w + 1, y + h + 1, bd);
+        g.fill(x - 1, y, x, y + h, bd);
+        g.fill(x + w, y, x + w + 1, y + h, bd);
+    }
+
+    private void drawChip(GuiGraphics g, Chip c, boolean hover) {
+        int bg = hover ? c.bgHover : c.bg;
+        // fake rounded: two-layer
+        g.fill(c.x, c.y, c.x + c.w, c.y + c.h, bg);
+        g.drawCenteredString(this.font, c.label, c.x + c.w / 2, c.y + (c.h - 8) / 2, c.fg);
+    }
+
+    @Override public boolean isPauseScreen() { return false; }
 
     @Override
-    protected void renderBlurredBackground() {
-    }
-
-    private void renderInputBackground(GuiGraphics guiGraphics, int x, int y, int width, int height, boolean focused) {
-        int bgColor = focused ? 0xFF2A2A2A : 0xFF1F1F1F;
-        int borderColor = focused ? ACCENT_COLOR : 0xFF3A3A3A;
-
-        // Background
-        guiGraphics.fill(x, y, x + width, y + height, bgColor);
-
-        // Border (1px)
-        guiGraphics.fill(x - 1, y - 1, x + width + 1, y, borderColor); // Top
-        guiGraphics.fill(x - 1, y + height, x + width + 1, y + height + 1, borderColor); // Bottom
-        guiGraphics.fill(x - 1, y, x, y + height, borderColor); // Left
-        guiGraphics.fill(x + width, y, x + width + 1, y + height, borderColor); // Right
-    }
-
-    @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
+    protected void renderBlurredBackground() {}
 }

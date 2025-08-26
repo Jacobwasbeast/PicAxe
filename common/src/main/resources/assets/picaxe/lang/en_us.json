@@ -11,6 +11,10 @@
   "tooltip.picaxe.when_used": "When used:",
   "tooltip.picaxe.use_action": "▶ Sneak + Right-click: Set image URL",
   "tooltip.picaxe.sneak_use_action": "▶ Right-click on block: Apply image",
+  "tooltip.picaxe.six_sided.lit":     "Lit: %s",
+  "tooltip.picaxe.six_sided.image":   "%s: %s",
+  "tooltip.picaxe.state.true":        "Yes",
+  "tooltip.picaxe.state.false":       "No",
 
   "block.picaxe.image_banner": "Image Banner",
   "block.picaxe.image_bed": "Image Bed",
@@ -72,11 +76,10 @@
   "picaxe.screen.image_frame.error.negative_dimensions": "Dimensions must be positive",
   "picaxe.screen.image_frame.error.dimensions_too_large": "Dimensions too large (max 6)",
 
-
-  "tooltip.picaxe.six_sided.lit":     "Lit: %s",
-  "tooltip.picaxe.six_sided.image":   "%s: %s",
-  "tooltip.picaxe.state.true":        "Yes",
-  "tooltip.picaxe.state.false":       "No",
+  "picaxe.screen.common.paste_icon": "⎘",
+  "picaxe.screen.common.paste_tooltip": "Paste from clipboard",
+  "picaxe.screen.common.plus_tooltip": "Increase",
+  "picaxe.screen.common.minus_tooltip": "Decrease",
 
   "category.picaxe": "Picture Axe Items"
 }
