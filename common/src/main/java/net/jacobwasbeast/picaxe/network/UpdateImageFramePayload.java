@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.network;
 
 import net.jacobwasbeast.picaxe.PictureAxe;
+import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -12,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public record UpdateImageFramePayload(BlockPos pos, String url, int width, int height, boolean stretch) implements CustomPacketPayload {
+public record UpdateImageFramePayload(BlockPos pos, String url, int width, int height, boolean stretch, ImageFrameAlignment alignment, double offsetX, double offsetY, double offsetZ) implements CustomPacketPayload {
     public static final Type<UpdateImageFramePayload> TYPE = new Type<>(ResourceLocation.tryBuild(PictureAxe.MOD_ID, "update_image_frame"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, UpdateImageFramePayload> CODEC = StreamCodec.composite(
@@ -21,6 +22,10 @@ public record UpdateImageFramePayload(BlockPos pos, String url, int width, int h
             ByteBufCodecs.INT, UpdateImageFramePayload::width,
             ByteBufCodecs.INT, UpdateImageFramePayload::height,
             ByteBufCodecs.BOOL, UpdateImageFramePayload::stretch,
+            ByteBufCodecs.idMapper(i -> ImageFrameAlignment.values()[i], ImageFrameAlignment::ordinal), UpdateImageFramePayload::alignment,
+            ByteBufCodecs.DOUBLE, UpdateImageFramePayload::offsetX,
+            ByteBufCodecs.DOUBLE, UpdateImageFramePayload::offsetY,
+            ByteBufCodecs.DOUBLE, UpdateImageFramePayload::offsetZ,
             UpdateImageFramePayload::new
     );
 
@@ -34,7 +39,7 @@ public record UpdateImageFramePayload(BlockPos pos, String url, int width, int h
         if (level.isLoaded(payload.pos)) {
             BlockEntity be = level.getBlockEntity(payload.pos);
             if (be instanceof ImageFrameBlockEntity frameEntity) {
-                frameEntity.setConfiguration(payload.url, payload.width, payload.height, payload.stretch);
+                frameEntity.setConfiguration(payload.url, payload.width, payload.height, payload.stretch, payload.alignment, payload.offsetX, payload.offsetY, payload.offsetZ);
             }
         }
     }

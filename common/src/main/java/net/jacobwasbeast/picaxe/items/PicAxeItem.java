@@ -99,7 +99,11 @@ public class PicAxeItem extends AxeItem {
                             imageFrameEntity.getImageUrl(),
                             imageFrameEntity.getFrameWidth(),
                             imageFrameEntity.getFrameHeight(),
-                            imageFrameEntity.shouldStretchToFit()
+                            imageFrameEntity.shouldStretchToFit(),
+                            imageFrameEntity.getAlignment(),
+                            imageFrameEntity.getOffsetX(),
+                            imageFrameEntity.getOffsetY(),
+                            imageFrameEntity.getOffsetZ()
                     );
                     ClientUtils.OpenImageFrameConfig(player,imageFrameEntity);
                 }
