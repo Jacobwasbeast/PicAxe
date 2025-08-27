@@ -1,6 +1,7 @@
 package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.PictureAxe;
+import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -16,6 +17,10 @@ public class ImageFrameBlockEntity extends BlockEntity {
     private int frameWidth = 1;
     private int frameHeight = 1;
     private boolean stretchToFit = false;
+    private ImageFrameAlignment alignment = ImageFrameAlignment.CENTER;
+    private double offsetX = 0;
+    private double offsetY = 0;
+    private double offsetZ = 0;
 
     public ImageFrameBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.IMAGE_FRAME_BLOCK_ENTITY.get(), pos, state);
@@ -26,11 +31,15 @@ public class ImageFrameBlockEntity extends BlockEntity {
     public int getFrameHeight() { return this.frameHeight; }
     public boolean shouldStretchToFit() { return this.stretchToFit; }
 
-    public void setConfiguration(String url, int width, int height, boolean stretch) {
+    public void setConfiguration(String url, int width, int height, boolean stretch, ImageFrameAlignment alignment, double offsetX, double offsetY, double offsetZ) {
         this.imageUrl = url;
         this.frameWidth = Mth.clamp(width, 1, 6);
         this.frameHeight = Mth.clamp(height, 1, 6);
         this.stretchToFit = stretch;
+        this.alignment = alignment;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        this.offsetZ = offsetZ;
 
         this.setChanged();
         if (level != null && !level.isClientSide) {
@@ -39,22 +48,36 @@ public class ImageFrameBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putString("id", PictureAxe.MOD_ID + ":image_frame");
         tag.putString("imageUrl", this.imageUrl);
         tag.putInt("frameWidth", this.frameWidth);
         tag.putInt("frameHeight", this.frameHeight);
         tag.putBoolean("stretchToFit", this.stretchToFit);
+        tag.putString("alignment", this.alignment.name());
+        tag.putDouble("offsetX", this.offsetX);
+        tag.putDouble("offsetY", this.offsetY);
+        tag.putDouble("offsetZ", this.offsetZ);
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.Provider registries) {
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         this.imageUrl = tag.getString("imageUrl").get();
         this.frameWidth = tag.getInt("frameWidth").get();
         this.frameHeight = tag.getInt("frameHeight").get();
-        this.stretchToFit = tag.getBoolean("stretchToFit").get();
+        this.stretchToFit = tag.getBooleanOr("stretchToFit",false);
+
+        if (tag.getString("alignment").isPresent()) {
+            this.alignment = ImageFrameAlignment.valueOf(tag.getString("alignment").get());
+        } else {
+            this.alignment = ImageFrameAlignment.CENTER;
+        }
+
+        this.offsetX = tag.getDoubleOr("offsetX",0);
+        this.offsetY = tag.getDoubleOr("offsetY",0);
+        this.offsetZ = tag.getDoubleOr("offsetZ",0);
     }
 
     @Override
@@ -65,5 +88,21 @@ public class ImageFrameBlockEntity extends BlockEntity {
     @Override
     public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         return this.saveWithoutMetadata(registries);
+    }
+
+    public double getOffsetX() {
+        return offsetX;
+    }
+
+    public double getOffsetY() {
+        return offsetY;
+    }
+
+    public double getOffsetZ() {
+        return offsetZ;
+    }
+
+    public ImageFrameAlignment getAlignment() {
+        return alignment;
     }
 }
