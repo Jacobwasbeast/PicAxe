@@ -55,7 +55,9 @@ public class PacketHandler {
                 if (level.isLoaded(payload.pos)) {
                     BlockEntity be = level.getBlockEntity(payload.pos);
                     if (be instanceof ImageFrameBlockEntity frameEntity) {
-                        frameEntity.setConfiguration(payload.url, payload.width, payload.height, payload.stretch);
+
+                        frameEntity.setConfiguration(payload.url, payload.width, payload.height, payload.stretch,
+                                payload.alignment, payload.offsetX, payload.offsetY, payload.offsetZ);
                     }
                 }
             }

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -364,6 +365,72 @@ public class ImageUtils {
             int packedLight, int packedOverlay,
             float partialTick, float width, float height,
             String url, boolean keepAspectRatio
+    ) {
+        ResourceLocation tex = getOrLoadTexture(url);
+        if (tex == null) {
+            tex = NOT_FOUND_TEXTURE;
+        }
+
+        int uL = packedLight & 0xFFFF, vL = (packedLight >> 16) & 0xFFFF;
+        int uO = packedOverlay & 0xFFFF, vO = (packedOverlay >> 16) & 0xFFFF;
+
+        ps.pushPose();
+        ps.translate(0.5, 1.01, 0.5);
+        ps.mulPose(Axis.XP.rotationDegrees(90));
+        PoseStack.Pose p = ps.last();
+        VertexConsumer buf = bufSrc.getBuffer(RenderType.text(tex));
+
+        float hw = width / 2f, hh = height / 2f;
+        if (keepAspectRatio) {
+            float aspectRatio = width / height;
+            if (aspectRatio > 1) {
+                hh /= aspectRatio;
+            } else {
+                hw *= aspectRatio;
+            }
+        }
+
+        Matrix4f matrix = p.pose();
+
+        Vector3f nUp = new Vector3f(0, 1, 0);
+        matrix.transformDirection(nUp);
+        Vector3f nDown = new Vector3f(0, -1, 0);
+        matrix.transformDirection(nDown);
+
+        buf.vertex(matrix, -hw, -hh, 0f)
+                .color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+        buf.vertex(matrix, hw, -hh, 0f)
+                .color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+        buf.vertex(matrix, hw, hh, 0f)
+                .color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+        buf.vertex(matrix, -hw, hh, 0f)
+                .color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nUp.x(), nUp.y(), nUp.z()).endVertex();
+
+        buf.vertex(matrix, -hw, hh, 0f)
+                .color(255, 255, 255, 255).uv(0f, 0f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+        buf.vertex(matrix, hw, hh, 0f)
+                .color(255, 255, 255, 255).uv(1f, 0f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+        buf.vertex(matrix, hw, -hh, 0f)
+                .color(255, 255, 255, 255).uv(1f, 1f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+        buf.vertex(matrix, -hw, -hh, 0f)
+                .color(255, 255, 255, 255).uv(0f, 1f).overlayCoords(uO, vO).uv2(uL, vL)
+                .normal(nDown.x(), nDown.y(), nDown.z()).endVertex();
+
+        ps.popPose();
+    }
+
+    public static void renderImageFromURL(
+            PoseStack ps, MultiBufferSource bufSrc,
+            int packedLight, int packedOverlay,
+            float partialTick, float width, float height,
+            String url, boolean keepAspectRatio, ImageFrameAlignment alignment, int offsetX, int offsetY, int offsetZ
     ) {
         ResourceLocation tex = getOrLoadTexture(url);
         if (tex == null) {

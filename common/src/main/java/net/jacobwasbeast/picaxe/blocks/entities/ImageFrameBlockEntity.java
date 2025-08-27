@@ -2,6 +2,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModBlockEntities;
+import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -15,6 +16,10 @@ public class ImageFrameBlockEntity extends BlockEntity {
     private int frameWidth = 1;
     private int frameHeight = 1;
     private boolean stretchToFit = false;
+    private ImageFrameAlignment alignment = ImageFrameAlignment.CENTER;
+    private double offsetX = 0;
+    private double offsetY = 0;
+    private double offsetZ = 0;
 
     public ImageFrameBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.IMAGE_FRAME_BLOCK_ENTITY.get(), pos, state);
@@ -24,12 +29,17 @@ public class ImageFrameBlockEntity extends BlockEntity {
     public int getFrameWidth() { return this.frameWidth; }
     public int getFrameHeight() { return this.frameHeight; }
     public boolean shouldStretchToFit() { return this.stretchToFit; }
+    public ImageFrameAlignment getAlignment() { return this.alignment; }
 
-    public void setConfiguration(String url, int width, int height, boolean stretch) {
+    public void setConfiguration(String url, int width, int height, boolean stretch, ImageFrameAlignment alignment, double offsetX, double offsetY, double offsetZ) {
         this.imageUrl = url;
         this.frameWidth = Mth.clamp(width, 1, 6);
         this.frameHeight = Mth.clamp(height, 1, 6);
         this.stretchToFit = stretch;
+        this.alignment = alignment;
+        this.offsetX = Mth.clamp(offsetX, -16, 16);
+        this.offsetY = Mth.clamp(offsetY, -16, 16);
+        this.offsetZ = Mth.clamp(offsetZ, -16, 16);
 
         this.setChanged();
         if (level != null && !level.isClientSide) {
@@ -45,6 +55,10 @@ public class ImageFrameBlockEntity extends BlockEntity {
         tag.putInt("frameWidth", this.frameWidth);
         tag.putInt("frameHeight", this.frameHeight);
         tag.putBoolean("stretchToFit", this.stretchToFit);
+        tag.putString("alignment", this.alignment.name()); // save alignment
+        tag.putDouble("offsetX", this.offsetX);
+        tag.putDouble("offsetY", this.offsetY);
+        tag.putDouble("offsetZ", this.offsetZ);
     }
 
     @Override
@@ -54,6 +68,18 @@ public class ImageFrameBlockEntity extends BlockEntity {
         this.frameWidth = tag.getInt("frameWidth");
         this.frameHeight = tag.getInt("frameHeight");
         this.stretchToFit = tag.getBoolean("stretchToFit");
+
+        if (tag.contains("alignment")) {
+            try {
+                this.alignment = ImageFrameAlignment.valueOf(tag.getString("alignment"));
+            } catch (IllegalArgumentException e) {
+                this.alignment = ImageFrameAlignment.CENTER; // fallback
+            }
+        }
+
+        this.offsetX = tag.getDouble("offsetX");
+        this.offsetY = tag.getDouble("offsetY");
+        this.offsetZ = tag.getDouble("offsetZ");
     }
 
     @Override
@@ -64,5 +90,15 @@ public class ImageFrameBlockEntity extends BlockEntity {
     @Override
     public CompoundTag getUpdateTag() {
         return this.saveWithoutMetadata();
+    }
+
+    public double getOffsetX() {
+        return offsetX;
+    }
+    public double getOffsetY() {
+        return offsetY;
+    }
+    public double getOffsetZ() {
+        return offsetZ;
     }
 }
