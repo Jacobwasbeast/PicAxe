@@ -82,6 +82,7 @@ public class SixSidedImageBlock extends HorizontalDirectionalBlock implements En
                 if (isLit) {
                     return ItemInteractionResult.SUCCESS;
                 } else {
+                    itemStack.shrink(1);
                     blockState = blockState.setValue(LIT, true);
                     level.setBlock(blockPos, blockState, 3);
                 }
