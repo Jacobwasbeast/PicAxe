@@ -78,6 +78,22 @@
   "picaxe.screen.image_frame.alignment": "Alignment",
   "picaxe.screen.image_frame.offsets_blocks": "Offsets (blk)",
   "picaxe.screen.image_frame.error.invalid_offset": "Invalid offset",
+  "picaxe.screen.image_frame.error.empty_dimensions": "Dimensions cannot be empty",
+  "picaxe.screen.image_frame.error.invalid_url": "Invalid image URL format",
+  "picaxe.screen.image_frame.error.offset_out_of_range": "Offset must be between -16 and 16 blocks",
+
+  "picaxe.screen.image_frame.success.cleared": "Image frame cleared",
+  "picaxe.screen.image_frame.success.updated": "Image frame updated",
+
+  "picaxe.screen.image_frame.url_valid": "✓ Valid image URL",
+  "picaxe.screen.image_frame.url_invalid": "⚠ Invalid URL format",
+
+  "picaxe.screen.image_frame.history_tooltip": "Recent URLs",
+  "picaxe.screen.image_frame.preset_tooltip": "Set dimensions to %dx%d",
+  "picaxe.screen.image_frame.cancel_tooltip": "Cancel and close (Esc)",
+  "picaxe.screen.image_frame.offset_label": "%s (blk)",
+  "picaxe.screen.image_frame.offset_decrease_tooltip": "Decrease by 0.05 blocks",
+  "picaxe.screen.image_frame.offset_increase_tooltip": "Increase by 0.05 blocks",
 
   "picaxe.screen.image_frame.align.top_left": "Top Left",
   "picaxe.screen.image_frame.align.top_center": "Top Center",
