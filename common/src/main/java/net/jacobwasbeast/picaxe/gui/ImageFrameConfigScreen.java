@@ -899,7 +899,7 @@ public class ImageFrameConfigScreen extends Screen {
             isValidUrl = (trimmed.startsWith("http://") || trimmed.startsWith("https://")) &&
                         (trimmed.contains(".png") || trimmed.contains(".jpg") ||
                          trimmed.contains(".jpeg") || trimmed.contains(".gif") ||
-                         trimmed.contains(".webp") || trimmed.contains(".bmp"));
+                         trimmed.contains(".webp") || trimmed.contains(".bmp") || trimmed.contains("picsum.photos"));
         } catch (Exception e) {
             isValidUrl = false;
         }

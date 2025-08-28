@@ -4,6 +4,7 @@ import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.ModBlocks;
 import net.jacobwasbeast.picaxe.api.BedRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
@@ -28,14 +29,14 @@ public class ImageBedBlockEntity extends BlockEntity {
     public ImageBedBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(ModBlockEntities.IMAGE_BED_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = DyeColor.WHITE;
-        imageLocation = "picaxe:blocks/bed";
+        imageLocation = PicAxeItem.EMPTY_URL;
         renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
     }
 
     public ImageBedBlockEntity(BlockPos blockPos, BlockState blockState, DyeColor dyeColor) {
         super(ModBlockEntities.IMAGE_BED_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = dyeColor;
-        imageLocation = "picaxe:blocks/bed";
+        imageLocation = PicAxeItem.EMPTY_URL;
         renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
     }
 
@@ -64,7 +65,7 @@ public class ImageBedBlockEntity extends BlockEntity {
         super.loadAdditional(compoundTag, provider);
         imageLocation = compoundTag.getString("imageLocation");
         if (!compoundTag.contains("imageLocation")) {
-            imageLocation = "picaxe:blocks/bed";
+            imageLocation = PicAxeItem.EMPTY_URL;
         }
         this.color = DyeColor.byName(compoundTag.getString("color"), DyeColor.WHITE);
         if (!compoundTag.contains("color")) {
@@ -140,7 +141,7 @@ public class ImageBedBlockEntity extends BlockEntity {
                 }
             }
         } else {
-            this.imageLocation = "picaxe:blocks/bed";
+            this.imageLocation = PicAxeItem.EMPTY_URL;
             this.color = DyeColor.WHITE;
             this.renderTypes = BedRenderTypes.DRAPE_SIDES_FULL;
         }
