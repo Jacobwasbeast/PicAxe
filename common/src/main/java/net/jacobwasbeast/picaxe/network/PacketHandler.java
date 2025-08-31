@@ -24,6 +24,27 @@ public class PacketHandler {
                 UpdateImageFramePayload.CODEC,
                 PacketHandler::handleUpdateImageFrame
         );
+
+        NetworkManager.registerReceiver(
+                NetworkManager.c2s(),
+                UpdateImageBedPayload.TYPE,
+                UpdateImageBedPayload.CODEC,
+                PacketHandler::handleUpdateImageBed
+        );
+
+        NetworkManager.registerReceiver(
+                NetworkManager.c2s(),
+                UpdateSixSidedImagePayload.TYPE,
+                UpdateSixSidedImagePayload.CODEC,
+                PacketHandler::handleUpdateSixSidedImage
+        );
+
+        NetworkManager.registerReceiver(
+                NetworkManager.c2s(),
+                UpdateImageBannerPayload.TYPE,
+                UpdateImageBannerPayload.CODEC,
+                PacketHandler::handleUpdateImageBanner
+        );
     }
 
     private static void handleUpdateUrl(UpdatePicAxeUrlPayload payload, NetworkManager.PacketContext context) {
@@ -44,11 +65,43 @@ public class PacketHandler {
             if (player != null) {
                 Level level = player.level();
                 if (level.isLoaded(payload.pos())) {
-                    BlockEntity be = level.getBlockEntity(payload.pos());
-                    if (be instanceof ImageFrameBlockEntity frameEntity) {
-                        frameEntity.setConfiguration(payload.url(), payload.width(), payload.height(), payload.stretch(),
-                                payload.alignment(), payload.offX(), payload.offY(), payload.offZ());
-                    }
+                   UpdateImageFramePayload.handle(payload, context);
+                }
+            }
+        });
+    }
+
+    private static void handleUpdateImageBed(UpdateImageBedPayload payload, NetworkManager.PacketContext context) {
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
+        context.queue(() -> {
+            if (player != null) {
+                Level level = player.level();
+                if (level.isLoaded(payload.pos())) {
+                   UpdateImageBedPayload.handle(payload, context);
+                }
+            }
+        });
+    }
+
+    private static void handleUpdateSixSidedImage(UpdateSixSidedImagePayload payload, NetworkManager.PacketContext context) {
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
+        context.queue(() -> {
+            if (player != null) {
+                Level level = player.level();
+                if (level.isLoaded(payload.pos())) {
+                   UpdateSixSidedImagePayload.handle(payload, context);
+                }
+            }
+        });
+    }
+
+    private static void handleUpdateImageBanner(UpdateImageBannerPayload payload, NetworkManager.PacketContext context) {
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
+        context.queue(() -> {
+            if (player != null) {
+                Level level = player.level();
+                if (level.isLoaded(payload.pos())) {
+                   UpdateImageBannerPayload.handle(payload, context);
                 }
             }
         });

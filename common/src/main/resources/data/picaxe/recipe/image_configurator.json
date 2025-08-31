@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "pattern": [
+    "PIP",
+    "ISI",
+    "RSR"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "P": {
+      "item": "picaxe:pixel_dust"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "picaxe:image_configurator"
+  }
+}

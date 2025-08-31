@@ -1,20 +1,18 @@
 package net.jacobwasbeast.picaxe.gui;
 
 import dev.architectury.networking.NetworkManager;
+import net.jacobwasbeast.picaxe.api.ImgurUploadAPI;
 import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.jacobwasbeast.picaxe.network.UpdatePicAxeUrlPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class URLInputScreen extends Screen {
 
@@ -28,20 +26,12 @@ public class URLInputScreen extends Screen {
 
     private final InteractionHand hand;
     private EditBox urlInput;
+    private Button uploadButton, clearButton, pasteButton, confirmButton, cancelButton;
     private String currentUrl;
     private String errorMessage = "";
     private int errorTimer = 0;
 
     private int panelX, panelY, panelWidth, panelHeight;
-
-    private static class Chip {
-        int x,y,w,h; Runnable action; Component label; int bg,bgHover,fg; boolean primary;
-        Chip(int x,int y,int w,int h,Component label,int bg,int bgHover,int fg,boolean primary,Runnable action){
-            this.x=x;this.y=y;this.w=w;this.h=h;this.label=label;this.bg=bg;this.bgHover=bgHover;this.fg=fg;this.primary=primary;this.action=action;
-        }
-        boolean hit(double mx,double my){ return mx>=x && my>=y && mx<=x+w && my<=y+h; }
-    }
-    private final List<Chip> chips = new ArrayList<>();
 
     public URLInputScreen(Player player, InteractionHand hand) {
         super(Component.translatable("picaxe.screen.url_input.title"));
@@ -53,8 +43,6 @@ public class URLInputScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        chips.clear();
-
         int centerX = this.width / 2;
         int centerY = this.height / 2;
         panelWidth = 420;
@@ -62,6 +50,7 @@ public class URLInputScreen extends Screen {
         panelX = centerX - panelWidth / 2;
         panelY = centerY - panelHeight / 2;
 
+        // URL input field - reduced width to make room for buttons
         this.urlInput = new EditBox(this.font, panelX + 30, panelY + 65, panelWidth - 120, 22,
                 Component.translatable("picaxe.screen.url_input.url"));
         this.urlInput.setMaxLength(256);
@@ -70,34 +59,76 @@ public class URLInputScreen extends Screen {
         this.urlInput.setBordered(false);
         this.urlInput.setResponder(text -> validateInput());
 
-        // paste + clear chips
-        addChip(panelX + panelWidth - 80, panelY + 65, 22, 22, Component.literal("⎘"), true, () -> {
-            String clip = Minecraft.getInstance().keyboardHandler.getClipboard();
-            if (clip != null) {
-                this.urlInput.setValue(clip.trim());
-                validateInput();
-            }
-        });
-        addChip(panelX + panelWidth - 54, panelY + 65, 22, 22, Component.literal("✕"), false, () -> {
-            this.urlInput.setValue("");
-            validateInput();
-        });
+        // Upload button - positioned to the right of URL input
+        uploadButton = CustomButton.primary(panelX + panelWidth - 85, panelY + 65, 22, 22,
+                Component.literal("📁"),
+                button -> {
+                    // Disable button during upload
+                    uploadButton.active = false;
+                    uploadButton.setMessage(Component.literal("..."));
 
-        // confirm / cancel
-        int bw = (panelWidth - 90) / 2;
-        addChip(panelX + 30, panelY + 135, bw, 24, Component.translatable("picaxe.screen.url_input.confirm_button"), true, this::submitIfValid);
-        addChip(panelX + 30 + bw + 30, panelY + 135, bw, 24, Component.translatable("picaxe.screen.url_input.cancel_button"), false,
-                () -> this.minecraft.setScreen(null));
+                    // Upload asynchronously to avoid blocking UI
+                    ImgurUploadAPI.promptAndUploadImageAsync(uploadedUrl -> {
+                        // Re-enable button
+                        uploadButton.active = true;
+                        uploadButton.setMessage(Component.literal("📁"));
 
-        this.addWidget(this.urlInput);
+                        if (uploadedUrl != null) {
+                            this.urlInput.setValue(uploadedUrl);
+                            validateInput();
+                        }
+                    });
+                });
+        uploadButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                Component.translatable("picaxe.screen.url_input.upload_tooltip")));
+
+        // Paste button
+        pasteButton = CustomButton.primary(panelX + panelWidth - 60, panelY + 65, 22, 22,
+                Component.literal("⎘"),
+                button -> {
+                    String clip = Minecraft.getInstance().keyboardHandler.getClipboard();
+                    if (clip != null) {
+                        this.urlInput.setValue(clip.trim());
+                        validateInput();
+                    }
+                });
+        pasteButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                Component.translatable("picaxe.screen.url_input.paste_tooltip")));
+
+        // Clear button
+        clearButton = CustomButton.secondary(panelX + panelWidth - 35, panelY + 65, 22, 22,
+                Component.literal("✕"),
+                button -> {
+                    this.urlInput.setValue(PicAxeItem.EMPTY_URL);
+                    validateInput();
+                });
+        clearButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                Component.translatable("picaxe.screen.url_input.clear_tooltip")));
+
+        // Confirm / Cancel buttons
+        int buttonWidth = (panelWidth - 90) / 2;
+        confirmButton = CustomButton.primary(panelX + 30, panelY + 135, buttonWidth, 24,
+                Component.translatable("picaxe.screen.url_input.confirm_button"),
+                button -> submitIfValid());
+        confirmButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                Component.translatable("picaxe.screen.url_input.confirm_tooltip")));
+
+        cancelButton = CustomButton.secondary(panelX + 30 + buttonWidth + 30, panelY + 135, buttonWidth, 24,
+                Component.translatable("picaxe.screen.url_input.cancel_button"),
+                button -> this.minecraft.setScreen(null));
+        cancelButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                Component.translatable("picaxe.screen.url_input.cancel_tooltip")));
+
+        // Add all widgets
+        this.addRenderableWidget(this.urlInput);
+        this.addRenderableWidget(uploadButton);
+        this.addRenderableWidget(pasteButton);
+        this.addRenderableWidget(clearButton);
+        this.addRenderableWidget(confirmButton);
+        this.addRenderableWidget(cancelButton);
+
         this.setInitialFocus(this.urlInput);
         validateInput();
-    }
-
-    private void addChip(int x,int y,int w,int h,Component label,boolean primary,Runnable action){
-        int bg = primary ? 0xFF2B60FF : 0xFF1F2329;
-        int bgHover = primary ? 0xFF3B6CFF : 0xFF262B32;
-        chips.add(new Chip(x,y,w,h,label,bg,bgHover,0xFFFFFFFF,primary,action));
     }
 
     private boolean validateInput() {
@@ -118,12 +149,6 @@ public class URLInputScreen extends Screen {
         if (!validateInput()) return;
         NetworkManager.sendToServer(new UpdatePicAxeUrlPayload(this.urlInput.getValue().trim(), this.hand));
         this.minecraft.setScreen(null);
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        for (Chip c : chips) if (c.hit(mouseX, mouseY)) { c.action.run(); return true; }
-        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -172,13 +197,6 @@ public class URLInputScreen extends Screen {
             gui.fill(panelX + 14, panelY + 65, panelX + 16, panelY + 87, SUCCESS_COLOR);
         }
 
-        // chips
-        for (Chip c : chips) {
-            boolean hover = c.hit(mouseX, mouseY);
-            gui.fill(c.x, c.y, c.x + c.w, c.y + c.h, hover ? c.bgHover : c.bg);
-            gui.drawCenteredString(this.font, c.label, c.x + c.w / 2, c.y + (c.h - 8) / 2, c.fg);
-        }
-
         if (errorTimer > 0 && !errorMessage.isEmpty()) {
             int errorAlpha = Math.min(255, errorTimer * 255 / 60);
             int errorColor = (errorAlpha << 24) | (ERROR_COLOR & 0x00FFFFFF);
@@ -201,4 +219,50 @@ public class URLInputScreen extends Screen {
 
     @Override public boolean isPauseScreen() { return false; }
     @Override protected void renderBlurredBackground(float f) {}
+
+    // Custom button class that matches the other config screens
+    private static class CustomButton extends Button {
+        private static final int BUTTON_PRIMARY = 0xFF2B60FF;
+        private static final int BUTTON_PRIMARY_HOVER = 0xFF3B6CFF;
+        private static final int BUTTON_SECONDARY = 0xFF404040;
+        private static final int BUTTON_SECONDARY_HOVER = 0xFF505050;
+
+        private final boolean isPrimary;
+
+        public CustomButton(int x, int y, int width, int height, Component message, OnPress onPress, boolean isPrimary) {
+            super(x, y, width, height, message, onPress, Button.DEFAULT_NARRATION);
+            this.isPrimary = isPrimary;
+        }
+
+        @Override
+        public void renderWidget(GuiGraphics gui, int mouseX, int mouseY, float partialTick) {
+            boolean isHovered = this.isHovered();
+            int bgColor = isPrimary ?
+                    (isHovered ? BUTTON_PRIMARY_HOVER : BUTTON_PRIMARY) :
+                    (isHovered ? BUTTON_SECONDARY_HOVER : BUTTON_SECONDARY);
+
+            // Render custom background with full alpha
+            gui.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), bgColor | 0xFF000000);
+
+            // Render border with full alpha
+            gui.fill(getX(), getY(), getX() + getWidth(), getY() + 1, 0xFF333333);
+            gui.fill(getX(), getY() + getHeight() - 1, getX() + getWidth(), getY() + getHeight(), 0xFF333333);
+            gui.fill(getX(), getY(), getX() + 1, getY() + getHeight(), 0xFF333333);
+            gui.fill(getX() + getWidth() - 1, getY(), getX() + getWidth(), getY() + getHeight(), 0xFF333333);
+
+            // Render text with full alpha
+            var font = net.minecraft.client.Minecraft.getInstance().font;
+            int textColor = this.active ? 0xFFFFFFFF : 0xFF9AA0A6;
+            gui.drawCenteredString(font, this.getMessage(),
+                    getX() + getWidth() / 2, getY() + (getHeight() - 8) / 2, textColor);
+        }
+
+        public static CustomButton primary(int x, int y, int width, int height, Component message, OnPress onPress) {
+            return new CustomButton(x, y, width, height, message, onPress, true);
+        }
+
+        public static CustomButton secondary(int x, int y, int width, int height, Component message, OnPress onPress) {
+            return new CustomButton(x, y, width, height, message, onPress, false);
+        }
+    }
 }

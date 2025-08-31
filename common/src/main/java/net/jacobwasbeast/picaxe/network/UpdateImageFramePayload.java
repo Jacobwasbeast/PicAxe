@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.network;
 import dev.architectury.networking.NetworkManager;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
+import net.jacobwasbeast.picaxe.api.RotationConfig;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -23,7 +24,8 @@ public record UpdateImageFramePayload(
         ImageFrameAlignment alignment,
         double offX,
         double offY,
-        double offZ
+        double offZ,
+        RotationConfig rotation
 ) implements CustomPacketPayload {
 
     public static final Type<UpdateImageFramePayload> TYPE =
@@ -53,7 +55,15 @@ public record UpdateImageFramePayload(
                     double offY = ByteBufCodecs.DOUBLE.decode(buf);
                     double offZ = ByteBufCodecs.DOUBLE.decode(buf);
 
-                    return new UpdateImageFramePayload(pos, url, width, height, stretch, alignment, offX, offY, offZ);
+                    // Decode rotation
+                    int rotationDegrees = ByteBufCodecs.INT.decode(buf);
+                    boolean flipH = ByteBufCodecs.BOOL.decode(buf);
+                    boolean flipV = ByteBufCodecs.BOOL.decode(buf);
+                    System.out.println("UpdateImageFramePayload decode: rotation=" + rotationDegrees + "° flipH=" + flipH + " flipV=" + flipV);
+                    RotationConfig rotation = new RotationConfig(rotationDegrees, flipH, flipV);
+                    System.out.println("UpdateImageFramePayload decode: created RotationConfig=" + rotation.getRotation() + "° flip:" + rotation.isFlipHorizontal() + "," + rotation.isFlipVertical());
+
+                    return new UpdateImageFramePayload(pos, url, width, height, stretch, alignment, offX, offY, offZ, rotation);
                 }
 
                 @Override
@@ -70,6 +80,11 @@ public record UpdateImageFramePayload(
                     ByteBufCodecs.DOUBLE.encode(buf, p.offX());
                     ByteBufCodecs.DOUBLE.encode(buf, p.offY());
                     ByteBufCodecs.DOUBLE.encode(buf, p.offZ());
+
+                    // Encode rotation
+                    ByteBufCodecs.INT.encode(buf, p.rotation().getRotation());
+                    ByteBufCodecs.BOOL.encode(buf, p.rotation().isFlipHorizontal());
+                    ByteBufCodecs.BOOL.encode(buf, p.rotation().isFlipVertical());
                 }
             };
 
@@ -85,7 +100,7 @@ public record UpdateImageFramePayload(
                 if (level != null && level.isLoaded(payload.pos())) {
                     BlockEntity be = level.getBlockEntity(payload.pos());
                     if (be instanceof ImageFrameBlockEntity frameEntity) {
-                        // Update main config (also triggers mark+update in your impl)
+                        // Update main config with explicit rotation parameter
                         frameEntity.setConfiguration(
                                 payload.url(),
                                 payload.width(),
@@ -94,11 +109,9 @@ public record UpdateImageFramePayload(
                                 payload.alignment(),
                                 payload.offX(),
                                 payload.offY(),
-                                payload.offZ()
+                                payload.offZ(),
+                                payload.rotation()
                         );
-
-                         frameEntity.setChanged();
-                         level.sendBlockUpdated(payload.pos(), frameEntity.getBlockState(), frameEntity.getBlockState(), 3);
                     }
                 }
             });

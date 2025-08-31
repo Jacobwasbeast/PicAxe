@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageWallBannerBlockEntity;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -87,7 +88,7 @@ public class ImageWallBannerBlockRenderer implements BlockEntityRenderer<ImageWa
         this.flag.y = -32.0F;
         BannerRenderer.renderPatterns(poseStack, bufferSource, packedLight, packedOverlay, this.flag, ModelBakery.BANNER_BASE, true, blockEntity.getColor(), BannerPatternLayers.EMPTY);
 
-        if (imageUrl != null && !imageUrl.equals("picaxe:blocks/banner") && !imageUrl.isBlank()) {
+        if (imageUrl != null && !imageUrl.equals(PicAxeItem.EMPTY_URL) && !imageUrl.isBlank()) {
             poseStack.pushPose();
 
             this.flag.translateAndRotate(poseStack);
@@ -95,7 +96,7 @@ public class ImageWallBannerBlockRenderer implements BlockEntityRenderer<ImageWa
             poseStack.mulPose(Axis.XP.rotationDegrees(-90));
             poseStack.mulPose(YP.rotationDegrees(180));
             poseStack.translate(-0.5, -0.88, -1.75f);
-            ImageUtils.renderImageFromURL(poseStack, bufferSource,packedLight, packedOverlay, partialTick,1.25f,2.5f, imageUrl);
+            ImageUtils.renderImageFromURL(poseStack, bufferSource,packedLight, packedOverlay, partialTick,1.25f,2.5f, imageUrl, blockEntity.getRotation());
 
             poseStack.popPose();
         }

@@ -65,6 +65,7 @@ public class SixSidedImageBlockCloneRecipe extends CustomRecipe {
 
         for (Direction d : Direction.values()) {
             beResult.setImageUrl(d, beSrc.getImages().get(d));
+            beResult.setRotation(d, beSrc.getRotation(d));
         }
         return beResult.createItemStack(lookup);
     }

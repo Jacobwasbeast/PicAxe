@@ -71,7 +71,8 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             0.982f,
                             1.565f,
                             0.3f,
-                            blockEntity.getImageLocation()
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
                     );
                     break;
                 }
@@ -88,7 +89,8 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             0.99f,
                             2.002f,
                             0.3f,
-                            blockEntity.getImageLocation()
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
                     );
                     break;
                 }
@@ -105,7 +107,8 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             1.005f,
                             1.982f,
                             0.3f,
-                            blockEntity.getImageLocation()
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
                     );
                     break;
                 }
@@ -122,7 +125,8 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             1.005f,
                             1.542f,
                             0.3f,
-                            blockEntity.getImageLocation()
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
                     );
                     break;
                 }
@@ -139,7 +143,8 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             partialTick,
                             1.005f,
                             1.565f,
-                            blockEntity.getImageLocation()
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
                     );
                     break;
                 }
@@ -156,7 +161,80 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             partialTick,
                             1.005f,
                             2.01f,
-                            blockEntity.getImageLocation()
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
+                    );
+                    break;
+                }
+                case DRAPE_HEAD_ONLY -> {
+                    poseStack.mulPose(XN.rotationDegrees(0));
+                    poseStack.mulPose(YP.rotationDegrees(0));
+                    poseStack.translate(0.5, -0.4672 + seemingOffset, 0.22);
+                    ImageUtils.renderImageBackDrapeFromURL(
+                            poseStack,
+                            bufferSource,
+                            packedLight,
+                            packedOverlay,
+                            partialTick,
+                            1.005f,
+                            1.542f,
+                            0.3f,
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
+                    );
+                    break;
+                }
+                case DRAPE_LEFT_SIDE_ONLY -> {
+                    poseStack.mulPose(XN.rotationDegrees(0));
+                    poseStack.mulPose(YP.rotationDegrees(0));
+                    poseStack.translate(0.5, -0.4672 + seemingOffset, 0);
+                    ImageUtils.renderImageLeftDrapeOnlyFromURL(
+                            poseStack,
+                            bufferSource,
+                            packedLight,
+                            packedOverlay,
+                            partialTick,
+                            0.99f,
+                            2.002f,
+                            0.3f,
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
+                    );
+                    break;
+                }
+                case DRAPE_RIGHT_SIDE_ONLY -> {
+                    poseStack.mulPose(XN.rotationDegrees(0));
+                    poseStack.mulPose(YP.rotationDegrees(0));
+                    poseStack.translate(0.5, -0.4672 + seemingOffset, 0);
+                    ImageUtils.renderImageRightDrapeOnlyFromURL(
+                            poseStack,
+                            bufferSource,
+                            packedLight,
+                            packedOverlay,
+                            partialTick,
+                            0.99f,
+                            2.002f,
+                            0.3f,
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
+                    );
+                    break;
+                }
+                case DRAPE_ALL_SIDES -> {
+                    poseStack.mulPose(XN.rotationDegrees(0));
+                    poseStack.mulPose(YP.rotationDegrees(0));
+                    poseStack.translate(0.5, -0.4672 + seemingOffset, 0);
+                    ImageUtils.renderImageAllSideDrapesFromURL(
+                            poseStack,
+                            bufferSource,
+                            packedLight,
+                            packedOverlay,
+                            partialTick,
+                            0.99f,
+                            2.002f,
+                            0.3f,
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
                     );
                     break;
                 }
@@ -173,7 +251,8 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                             partialTick,
                             1.005f,
                             2.01f,
-                            blockEntity.getImageLocation()
+                            blockEntity.getImageLocation(),
+                            blockEntity.getRotation()
                     );
                     break;
                 }

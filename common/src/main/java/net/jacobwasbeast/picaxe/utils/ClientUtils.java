@@ -4,9 +4,16 @@ package net.jacobwasbeast.picaxe.utils;
 import dev.architectury.registry.client.rendering.BlockEntityRendererRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
+import net.jacobwasbeast.picaxe.blocks.entities.ImageBedBlockEntity;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
+import net.jacobwasbeast.picaxe.blocks.entities.ImageWallBannerBlockEntity;
+import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.jacobwasbeast.picaxe.blocks.renderer.*;
-import net.jacobwasbeast.picaxe.gui.ImageFrameConfigScreen;
+import net.jacobwasbeast.picaxe.gui.ImageBannerConfigScreenTabbed;
+import net.jacobwasbeast.picaxe.gui.ImageBedConfigScreenTabbed;
+import net.jacobwasbeast.picaxe.gui.ImageFrameConfigScreenTabbed;
+import net.jacobwasbeast.picaxe.gui.SixSidedImageConfigScreenTabbed;
 import net.jacobwasbeast.picaxe.gui.URLInputScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -29,11 +36,29 @@ public class ClientUtils {
         }
     }
 
-    public static void OpenImageFrameConfig(Player player, ImageFrameBlockEntity imageFrameEntity) {
-        if (player.level().isClientSide()) {
-            var screen = new ImageFrameConfigScreen(imageFrameEntity);
-            OpenGui(screen);
-        }
+    public static void OpenImageFrameConfigTabbed(ImageFrameBlockEntity imageFrameEntity) {
+        var screen = new ImageFrameConfigScreenTabbed(imageFrameEntity);
+        OpenGui(screen);
+    }
+
+    public static void openImageBedConfigScreen(ImageBedBlockEntity imageBedEntity) {
+        var screen = new ImageBedConfigScreenTabbed(imageBedEntity);
+        OpenGui(screen);
+    }
+
+    public static void openSixSidedImageConfigScreen(SixSidedImageBlockEntity sixSidedEntity) {
+        var screen = new SixSidedImageConfigScreenTabbed(sixSidedEntity);
+        OpenGui(screen);
+    }
+
+    public static void openImageBannerConfigScreen(ImageBannerBlockEntity bannerEntity) {
+        var screen = new ImageBannerConfigScreenTabbed(bannerEntity);
+        OpenGui(screen);
+    }
+
+    public static void openImageWallBannerConfigScreen(ImageWallBannerBlockEntity wallBannerEntity) {
+        var screen = new ImageBannerConfigScreenTabbed(wallBannerEntity);
+        OpenGui(screen);
     }
 
     @Environment(EnvType.CLIENT)

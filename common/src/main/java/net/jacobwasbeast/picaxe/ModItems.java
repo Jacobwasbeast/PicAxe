@@ -17,6 +17,7 @@ public class ModItems {
 
     // Items
     public static final RegistrySupplier<Item> PIC_AXE_ITEM = ITEMS.register("pic_axe", PicAxeItem::new);
+    public static final RegistrySupplier<Item> IMAGE_CONFIGURATOR_ITEM = ITEMS.register("image_configurator", ImageConfiguratorItem::new);
     public static final RegistrySupplier<Item> PIXEL_DUST = ITEMS.register("pixel_dust",
             () -> new Item(new Item.Properties().stacksTo(64).arch$tab(PICAXE_TAB)));
 

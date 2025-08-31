@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class BedBlockMixin {
     @Inject(method = "useWithoutItem", at = @At("HEAD"), cancellable = true)
     private void onUseWithoutItem(BlockState blockState, Level level, BlockPos blockPos, Player player, BlockHitResult blockHitResult, CallbackInfoReturnable<InteractionResult> cir) {
-        if (player.getMainHandItem().is(ModItems.PIC_AXE_ITEM.get())) {
+        if (player.getMainHandItem().is(ModItems.PIC_AXE_ITEM.get()) || player.getMainHandItem().is(ModItems.IMAGE_CONFIGURATOR_ITEM.get())) {
             cir.setReturnValue(InteractionResult.PASS);
         }
     }

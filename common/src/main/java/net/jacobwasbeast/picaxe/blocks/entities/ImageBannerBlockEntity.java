@@ -2,7 +2,9 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
+import net.jacobwasbeast.picaxe.api.RotationConfig;
 import net.jacobwasbeast.picaxe.Main;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -24,17 +26,20 @@ public class ImageBannerBlockEntity extends BlockEntity {
     public DyeColor color;
     private String imageLocation;
     public BannerRenderTypes renderTypes = BannerRenderTypes.OVER_BANNER;
+    private RotationConfig rotation = new RotationConfig();
 
     public ImageBannerBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(ModBlockEntities.IMAGE_BANNER_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = DyeColor.WHITE;
-        this.imageLocation = "picaxe:blocks/banner";
+        this.imageLocation = PicAxeItem.EMPTY_URL;
+        this.rotation = new RotationConfig();
     }
 
     public ImageBannerBlockEntity(BlockPos blockPos, BlockState blockState, DyeColor dyeColor) {
         super(ModBlockEntities.IMAGE_BANNER_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = dyeColor;
-        this.imageLocation = "picaxe:blocks/banner";
+        this.imageLocation = PicAxeItem.EMPTY_URL;
+        this.rotation = new RotationConfig();
     }
 
     public String getImageLocation() {
@@ -47,6 +52,18 @@ public class ImageBannerBlockEntity extends BlockEntity {
 
     public BannerRenderTypes getRenderTypes() {
         return this.renderTypes;
+    }
+
+    public RotationConfig getRotation() {
+        return rotation.copy();
+    }
+
+    public void setRotation(RotationConfig rotation) {
+        this.rotation = rotation != null ? rotation.copy() : new RotationConfig();
+        if (level != null && !level.isClientSide) {
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 
     public void setColor(DyeColor dyeColor) {
@@ -84,6 +101,7 @@ public class ImageBannerBlockEntity extends BlockEntity {
         } else {
             compoundTag.putString("renderTypes", BannerRenderTypes.OVER_BANNER.name());
         }
+        compoundTag.put("rotation", this.rotation.save());
     }
 
     @Override
@@ -91,7 +109,7 @@ public class ImageBannerBlockEntity extends BlockEntity {
         super.loadAdditional(compoundTag, provider);
         this.imageLocation = compoundTag.getString("imageLocation");
         if (!compoundTag.contains("imageLocation")) {
-            this.imageLocation = "picaxe:blocks/banner";
+            this.imageLocation = PicAxeItem.EMPTY_URL;
         }
 
         this.color = DyeColor.byName(compoundTag.getString("color"), DyeColor.WHITE);
@@ -104,6 +122,12 @@ public class ImageBannerBlockEntity extends BlockEntity {
             }
         } else {
             this.renderTypes = BannerRenderTypes.OVER_BANNER;
+        }
+
+        if (compoundTag.contains("rotation")) {
+            this.rotation = RotationConfig.fromNBT(compoundTag.getCompound("rotation"));
+        } else {
+            this.rotation = new RotationConfig();
         }
     }
 
@@ -123,7 +147,7 @@ public class ImageBannerBlockEntity extends BlockEntity {
             this.loadAdditional(customData.copyTag(), null);
         } else {
             this.setColor(DyeColor.WHITE);
-            this.setImageLocation("");
+            this.setImageLocation(PicAxeItem.EMPTY_URL);
             this.setRenderTypes(BannerRenderTypes.OVER_BANNER);
         }
     }
