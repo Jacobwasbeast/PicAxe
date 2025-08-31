@@ -44,7 +44,31 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
                     blockEntity.getBlockState()
             );
             blockEntity.getImages().forEach((direction, s) -> newSix.setImageUrl(direction, s));
+            // Also copy rotation configs for each direction
+            for (Direction dir : Direction.values()) {
+                newSix.setRotation(dir, blockEntity.getRotation(dir));
+            }
             blockEntity = newSix;
+
+            boolean isLit = blockEntity.isLit();
+            if (isLit) {
+                Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                        Blocks.GLOWSTONE.defaultBlockState(),
+                        poseStack,
+                        bufferSource,
+                        packedLight,
+                        packedOverlay
+                );
+            }
+            else {
+                Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
+                        Blocks.OAK_PLANKS.defaultBlockState(),
+                        poseStack,
+                        bufferSource,
+                        packedLight,
+                        packedOverlay
+                );
+            }
         }
         Player player = Minecraft.getInstance().player;
         Direction rotation = blockEntity.getBlockState().getValue(SixSidedImageBlock.FACING);
@@ -84,7 +108,7 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
                     case WEST  -> poseStack.translate(-1, -1 - seemingOffset, 0);
                     default    -> {}
                 }
-                ImageUtils.renderImageFromURL(poseStack, bufferSource, faceLight, packedOverlay, partialTick, 1f, 1f, imageUrl, false, false, false);
+                ImageUtils.renderImageFromURL(poseStack, bufferSource, faceLight, packedOverlay, partialTick, 1f, 1f, imageUrl, false, blockEntity.getRotation(dir));
                 poseStack.popPose();
             }
         }
@@ -105,7 +129,7 @@ public class SixSidedImageBlockRenderer implements BlockEntityRenderer<SixSidedI
                 poseStack.translate(0, -seemingOffset, 0);
                 poseStack.mulPose(YP.rotationDegrees(180));
                 poseStack.translate(-0.5, -0.5, 0);
-                ImageUtils.renderImageFromURL(poseStack, bufferSource, faceLight, packedOverlay, partialTick, 1f, 1f, imageUrl, false, false, false);
+                ImageUtils.renderImageFromURL(poseStack, bufferSource, faceLight, packedOverlay, partialTick, 1f, 1f, imageUrl, false, blockEntity.getRotation(dir));
                 poseStack.popPose();
             }
         }

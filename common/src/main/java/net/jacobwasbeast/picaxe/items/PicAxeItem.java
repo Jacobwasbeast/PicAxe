@@ -6,11 +6,9 @@ import net.jacobwasbeast.picaxe.api.BedRenderTypes;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.blocks.*;
 import net.jacobwasbeast.picaxe.blocks.entities.*;
-import net.jacobwasbeast.picaxe.gui.ImageFrameConfigScreen;
 import net.jacobwasbeast.picaxe.gui.URLInputScreen;
 import net.jacobwasbeast.picaxe.utils.ClientUtils;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -76,130 +74,122 @@ public class PicAxeItem extends AxeItem {
         if (player.isCrouching()) {
             return InteractionResult.PASS;
         }
+        else {
+            Level level = useOnContext.getLevel();
+            BlockPos clickedPos = useOnContext.getClickedPos();
+            BlockState blockState = level.getBlockState(clickedPos);
+            Block block = blockState.getBlock();
+            ItemStack heldStack = useOnContext.getItemInHand();
 
-        Level level = useOnContext.getLevel();
-        BlockPos clickedPos = useOnContext.getClickedPos();
-        BlockState blockState = level.getBlockState(clickedPos);
-        Block block = blockState.getBlock();
-        ItemStack heldStack = useOnContext.getItemInHand();
-
-        if (block instanceof SixSidedImageBlock) {
-            if (player.getCooldowns().isOnCooldown(this)) {
-                return InteractionResult.FAIL;
-            }
-            player.getCooldowns().addCooldown(this, 20);
-
-            if (level.getBlockEntity(clickedPos) instanceof SixSidedImageBlockEntity imageBlockEntity) {
-                Direction face = useOnContext.getClickedFace();
-
-                String imageUrl = getURL(heldStack);
-                imageBlockEntity.setImageUrl(face, imageUrl);
-
-                if (imageUrl.isEmpty()) {
-                    player.displayClientMessage(Component.translatable("picaxe.image_block.remove_face", face.getName()), true);
+            if (block instanceof SixSidedImageBlock) {
+                if (player.getCooldowns().isOnCooldown(this)) {
+                    return InteractionResult.FAIL;
                 }
-                else {
-                    player.displayClientMessage(Component.translatable("picaxe.image_block.set_face", face.getName(), imageUrl), true);
+                player.getCooldowns().addCooldown(this, 20);
+
+                if (level.getBlockEntity(clickedPos) instanceof SixSidedImageBlockEntity imageBlockEntity) {
+                    Direction face = useOnContext.getClickedFace();
+
+                    String imageUrl = getURL(heldStack);
+                    imageBlockEntity.setImageUrl(face, imageUrl);
+
+                    if (imageUrl.isEmpty()) {
+                        player.displayClientMessage(Component.translatable("picaxe.image_block.remove_face", face.getName()), true);
+                    }
+                    else {
+                        player.displayClientMessage(Component.translatable("picaxe.image_block.set_face", face.getName(), imageUrl), true);
+                    }
                 }
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
-        }
-        else if (block instanceof ImageFrameBlock) {
-            if (level.isClientSide) {
-                if (level.getBlockEntity(clickedPos) instanceof ImageFrameBlockEntity imageFrameEntity) {
-                    imageFrameEntity.setConfiguration(
-                            imageFrameEntity.getImageUrl(),
-                            imageFrameEntity.getFrameWidth(),
-                            imageFrameEntity.getFrameHeight(),
-                            imageFrameEntity.shouldStretchToFit(),
-                            imageFrameEntity.getAlignment(),
-                            imageFrameEntity.getOffsetX(),
+            else if (block instanceof ImageFrameBlock) {
+                if (level.isClientSide) {
+                    if (level.getBlockEntity(clickedPos) instanceof ImageFrameBlockEntity imageFrameEntity) {
+                        imageFrameEntity.setConfiguration(
+                                imageFrameEntity.getImageUrl(),
+                                imageFrameEntity.getFrameWidth(),
+                                imageFrameEntity.getFrameHeight(),
+                                imageFrameEntity.shouldStretchToFit(),
+                                imageFrameEntity.getAlignment(),
+                                imageFrameEntity.getOffsetX(),
                             imageFrameEntity.getOffsetY(),
                             imageFrameEntity.getOffsetZ()
-                    );
-                    ClientUtils.OpenImageFrameConfig(player,imageFrameEntity);
+                        );
+                        imageFrameEntity.setImageLocation(getURL(heldStack));
+                    }
                 }
+                return InteractionResult.sidedSuccess(level.isClientSide);
             }
-            return InteractionResult.sidedSuccess(level.isClientSide);
-        }
-        else if (block instanceof BedBlock) {
-            if (player.getCooldowns().isOnCooldown(this)) {
-                return InteractionResult.FAIL;
-            }
-            player.getCooldowns().addCooldown(this, 20);
+            else if (block instanceof BedBlock) {
+                if (player.getCooldowns().isOnCooldown(this)) {
+                    return InteractionResult.FAIL;
+                }
+                player.getCooldowns().addCooldown(this, 20);
 
-            if (block instanceof ImageBedBlock) {
-                BlockPos headPos = blockState.getValue(BedBlock.PART) == BedPart.FOOT
-                        ? clickedPos.relative(blockState.getValue(BedBlock.FACING))
-                        : clickedPos;
+                if (block instanceof ImageBedBlock) {
+                    BlockPos headPos = blockState.getValue(BedBlock.PART) == BedPart.FOOT
+                            ? clickedPos.relative(blockState.getValue(BedBlock.FACING))
+                            : clickedPos;
 
-                if (level.getBlockEntity(headPos) instanceof ImageBedBlockEntity imageBedEntity) {
-                    String imageUrl = getURL(heldStack);
-                    if (imageBedEntity.getImageLocation().equals(imageUrl)) {
-                        int max = BedRenderTypes.values().length;
-                        int currentIndex = imageBedEntity.getRenderTypes().ordinal();
-                        int nextIndex = (currentIndex + 1) % max;
-                        imageBedEntity.setRenderTypes(BedRenderTypes.values()[nextIndex]);
-                        player.displayClientMessage(Component.translatable("picaxe.image_bed.render_type", imageBedEntity.getRenderTypes().name().toLowerCase()), true);
-                    } else {
+                    if (level.getBlockEntity(headPos) instanceof ImageBedBlockEntity imageBedEntity) {
+                        String imageUrl = getURL(heldStack);
                         imageBedEntity.setImageLocation(imageUrl);
                         player.displayClientMessage(Component.translatable("picaxe.image_bed.set", imageUrl), true);
                     }
+                } else {
+                    updateBedEntity(blockState, clickedPos, level, heldStack);
+                    player.displayClientMessage(Component.translatable("picaxe.image_bed.set", getURL(heldStack)), true);
                 }
-            } else {
-                updateBedEntity(blockState, clickedPos, level, heldStack);
-                player.displayClientMessage(Component.translatable("picaxe.image_bed.set", getURL(heldStack)), true);
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
-        }
-        else if (block instanceof AbstractBannerBlock) {
-            if (player.getCooldowns().isOnCooldown(this)) {
-                return InteractionResult.FAIL;
-            }
-            player.getCooldowns().addCooldown(this, 20);
+            else if (block instanceof AbstractBannerBlock) {
+                if (player.getCooldowns().isOnCooldown(this)) {
+                    return InteractionResult.FAIL;
+                }
+                player.getCooldowns().addCooldown(this, 20);
 
-            if (block instanceof ImageBannerBlock || block instanceof ImageWallBannerBlock) {
-                if (level.getBlockEntity(clickedPos) instanceof ImageBannerBlockEntity imageBannerEntity) {
-                    String imageUrl = getURL(heldStack);
-                    if (imageBannerEntity.getImageLocation().equals(imageUrl)) {
-                        int max = BannerRenderTypes.values().length;
-                        if (max > 0) {
-                            int currentIndex = imageBannerEntity.getRenderTypes().ordinal();
-                            int nextIndex = (currentIndex + 1) % max;
-                            imageBannerEntity.setRenderTypes(BannerRenderTypes.values()[nextIndex]);
-                            player.displayClientMessage(Component.translatable("picaxe.image_banner.render_type", imageBannerEntity.getRenderTypes().name().toLowerCase()), true);
+                if (block instanceof ImageBannerBlock || block instanceof ImageWallBannerBlock) {
+                    if (level.getBlockEntity(clickedPos) instanceof ImageBannerBlockEntity imageBannerEntity) {
+                        String imageUrl = getURL(heldStack);
+                        if (imageBannerEntity.getImageLocation().equals(imageUrl)) {
+                            int max = BannerRenderTypes.values().length;
+                            if (max > 0) {
+                                int currentIndex = imageBannerEntity.getRenderTypes().ordinal();
+                                int nextIndex = (currentIndex + 1) % max;
+                                imageBannerEntity.setRenderTypes(BannerRenderTypes.values()[nextIndex]);
+                                player.displayClientMessage(Component.translatable("picaxe.image_banner.render_type", imageBannerEntity.getRenderTypes().name().toLowerCase()), true);
+                            } else {
+                                player.displayClientMessage(Component.translatable("picaxe.image_banner.already_set"), true);
+                            }
                         } else {
-                            player.displayClientMessage(Component.translatable("picaxe.image_banner.already_set"), true);
+                            imageBannerEntity.setImageLocation(imageUrl);
+                            player.displayClientMessage(Component.translatable("picaxe.image_banner.set", imageUrl), true);
                         }
-                    } else {
-                        imageBannerEntity.setImageLocation(imageUrl);
-                        player.displayClientMessage(Component.translatable("picaxe.image_banner.set", imageUrl), true);
                     }
-                }
-                if (level.getBlockEntity(clickedPos) instanceof ImageWallBannerBlockEntity imageBannerEntity) {
-                    String imageUrl = getURL(heldStack);
-                    if (imageBannerEntity.getImageLocation().equals(imageUrl)) {
-                        int max = BannerRenderTypes.values().length;
-                        if (max > 0) {
-                            int currentIndex = imageBannerEntity.getRenderTypes().ordinal();
-                            int nextIndex = (currentIndex + 1) % max;
-                            imageBannerEntity.setRenderTypes(BannerRenderTypes.values()[nextIndex]);
-                            player.displayClientMessage(Component.translatable("picaxe.image_banner.render_type", imageBannerEntity.getRenderTypes().name().toLowerCase()), true);
+                    if (level.getBlockEntity(clickedPos) instanceof ImageWallBannerBlockEntity imageBannerEntity) {
+                        String imageUrl = getURL(heldStack);
+                        if (imageBannerEntity.getImageLocation().equals(imageUrl)) {
+                            int max = BannerRenderTypes.values().length;
+                            if (max > 0) {
+                                int currentIndex = imageBannerEntity.getRenderTypes().ordinal();
+                                int nextIndex = (currentIndex + 1) % max;
+                                imageBannerEntity.setRenderTypes(BannerRenderTypes.values()[nextIndex]);
+                                player.displayClientMessage(Component.translatable("picaxe.image_banner.render_type", imageBannerEntity.getRenderTypes().name().toLowerCase()), true);
+                            } else {
+                                player.displayClientMessage(Component.translatable("picaxe.image_banner.already_set"), true);
+                            }
                         } else {
-                            player.displayClientMessage(Component.translatable("picaxe.image_banner.already_set"), true);
+                            imageBannerEntity.setImageLocation(imageUrl);
+                            player.displayClientMessage(Component.translatable("picaxe.image_banner.set", imageUrl), true);
                         }
-                    } else {
-                        imageBannerEntity.setImageLocation(imageUrl);
-                        player.displayClientMessage(Component.translatable("picaxe.image_banner.set", imageUrl), true);
                     }
+                } else {
+                    updateBannerEntity(blockState, clickedPos, level, heldStack);
+                    player.displayClientMessage(Component.translatable("picaxe.image_banner.set", getURL(heldStack)), true);
                 }
-            } else {
-                updateBannerEntity(blockState, clickedPos, level, heldStack);
-                player.displayClientMessage(Component.translatable("picaxe.image_banner.set", getURL(heldStack)), true);
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
         }
-
         return super.useOn(useOnContext);
     }
 

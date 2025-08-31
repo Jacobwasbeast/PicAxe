@@ -2,6 +2,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
+import net.jacobwasbeast.picaxe.api.RotationConfig;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.minecraft.client.Minecraft;
@@ -21,6 +22,7 @@ public class ImageWallBannerBlockEntity extends BlockEntity {
     public DyeColor color;
     private String imageLocation;
     public BannerRenderTypes renderTypes = BannerRenderTypes.OVER_BANNER;
+    private RotationConfig rotation = new RotationConfig();
 
     public ImageWallBannerBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(ModBlockEntities.IMAGE_WALL_BANNER_BLOCK_ENTITY.get(), blockPos, blockState);
@@ -44,6 +46,18 @@ public class ImageWallBannerBlockEntity extends BlockEntity {
 
     public BannerRenderTypes getRenderTypes() {
         return this.renderTypes;
+    }
+
+    public RotationConfig getRotation() {
+        return rotation.copy();
+    }
+
+    public void setRotation(RotationConfig rotation) {
+        this.rotation = rotation != null ? rotation.copy() : new RotationConfig();
+        if (level != null && !level.isClientSide) {
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 
     public void setColor(DyeColor dyeColor) {
@@ -103,6 +117,7 @@ public class ImageWallBannerBlockEntity extends BlockEntity {
         } else {
             compoundTag.putString("renderTypes", BannerRenderTypes.OVER_BANNER.name());
         }
+        compoundTag.put("rotation", this.rotation.save());
     }
 
     @Override
@@ -123,6 +138,12 @@ public class ImageWallBannerBlockEntity extends BlockEntity {
             }
         } else {
             this.renderTypes = BannerRenderTypes.OVER_BANNER;
+        }
+
+        if (compoundTag.contains("rotation")) {
+            this.rotation = RotationConfig.fromNBT(compoundTag.getCompound("rotation"));
+        } else {
+            this.rotation = new RotationConfig();
         }
     }
 

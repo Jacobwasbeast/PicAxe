@@ -3,6 +3,8 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 import net.jacobwasbeast.picaxe.Main;
 import net.jacobwasbeast.picaxe.ModBlockEntities;
 import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
+import net.jacobwasbeast.picaxe.api.RotationConfig;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -12,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class ImageFrameBlockEntity extends BlockEntity {
 
-    private String imageUrl = "";
+    private String imageUrl = PicAxeItem.EMPTY_URL;
     private int frameWidth = 1;
     private int frameHeight = 1;
     private boolean stretchToFit = false;
@@ -20,6 +22,7 @@ public class ImageFrameBlockEntity extends BlockEntity {
     private double offsetX = 0;
     private double offsetY = 0;
     private double offsetZ = 0;
+    private RotationConfig rotation = new RotationConfig();
 
     public ImageFrameBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.IMAGE_FRAME_BLOCK_ENTITY.get(), pos, state);
@@ -30,17 +33,31 @@ public class ImageFrameBlockEntity extends BlockEntity {
     public int getFrameHeight() { return this.frameHeight; }
     public boolean shouldStretchToFit() { return this.stretchToFit; }
     public ImageFrameAlignment getAlignment() { return this.alignment; }
+    public RotationConfig getRotation() { return this.rotation; }
 
     public void setConfiguration(String url, int width, int height, boolean stretch, ImageFrameAlignment alignment, double offsetX, double offsetY, double offsetZ) {
+        setConfiguration(url, width, height, stretch, alignment, offsetX, offsetY, offsetZ, this.rotation);
+    }
+
+    public void setConfiguration(String url, int width, int height, boolean stretch, ImageFrameAlignment alignment, double offsetX, double offsetY, double offsetZ, RotationConfig rotation) {
         this.imageUrl = url;
-        this.frameWidth = Mth.clamp(width, 1, 6);
-        this.frameHeight = Mth.clamp(height, 1, 6);
+        this.frameWidth = Mth.clamp(width, 1, 32);
+        this.frameHeight = Mth.clamp(height, 1, 32);
         this.stretchToFit = stretch;
         this.alignment = alignment;
-        this.offsetX = Mth.clamp(offsetX, -16, 16);
-        this.offsetY = Mth.clamp(offsetY, -16, 16);
-        this.offsetZ = Mth.clamp(offsetZ, -16, 16);
+        this.offsetX = Mth.clamp(offsetX, -32, 32);
+        this.offsetY = Mth.clamp(offsetY, -32, 32);
+        this.offsetZ = Mth.clamp(offsetZ, -32, 32);
+        this.rotation = rotation != null ? rotation.copy() : new RotationConfig();
 
+        this.setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public void setRotation(RotationConfig rotation) {
+        this.rotation = rotation != null ? rotation.copy() : new RotationConfig();
         this.setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
@@ -59,6 +76,7 @@ public class ImageFrameBlockEntity extends BlockEntity {
         tag.putDouble("offsetX", this.offsetX);
         tag.putDouble("offsetY", this.offsetY);
         tag.putDouble("offsetZ", this.offsetZ);
+        tag.put("rotation", this.rotation.save());
     }
 
     @Override
@@ -80,6 +98,12 @@ public class ImageFrameBlockEntity extends BlockEntity {
         this.offsetX = tag.getDouble("offsetX");
         this.offsetY = tag.getDouble("offsetY");
         this.offsetZ = tag.getDouble("offsetZ");
+
+        if (tag.contains("rotation")) {
+            this.rotation = RotationConfig.fromNBT(tag.getCompound("rotation"));
+        } else {
+            this.rotation = new RotationConfig();
+        }
     }
 
     @Override
@@ -100,5 +124,37 @@ public class ImageFrameBlockEntity extends BlockEntity {
     }
     public double getOffsetZ() {
         return offsetZ;
+    }
+
+    public void setImageLocation(String url) {
+        this.imageUrl = url;
+        this.setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public String getImageLocation() {
+        return this.imageUrl;
+    }
+
+    public boolean getKeepAspectRatio() {
+        return this.stretchToFit;
+    }
+
+    public void setKeepAspectRatio(boolean keepAspectRatio) {
+        this.stretchToFit = keepAspectRatio;
+        this.setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public void setAlignment(ImageFrameAlignment alignment) {
+        this.alignment = alignment;
+        this.setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        }
     }
 }

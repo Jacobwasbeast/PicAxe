@@ -86,7 +86,6 @@ public class ImageWallBannerBlockRenderer implements BlockEntityRenderer<ImageWa
         VertexConsumer flagConsumer = ModelBakery.BANNER_BASE.buffer(bufferSource, RenderType::entitySolid);
         float[] colors = blockEntity.getColor().getTextureDiffuseColors();
         this.flag.render(poseStack, flagConsumer, packedLight, packedOverlay, colors[0], colors[1], colors[2], 1.0f);
-
         if (imageUrl != null && !imageUrl.equals(PicAxeItem.EMPTY_URL) && !imageUrl.isBlank()) {
             poseStack.pushPose();
 
@@ -95,7 +94,7 @@ public class ImageWallBannerBlockRenderer implements BlockEntityRenderer<ImageWa
             poseStack.mulPose(XP.rotationDegrees(-90));
             poseStack.mulPose(YP.rotationDegrees(180));
             poseStack.translate(-0.5, -0.88, -1.75f);
-            ImageUtils.renderImageFromURL(poseStack, bufferSource,packedLight, packedOverlay, partialTick,1.25f,2.5f, imageUrl);
+            ImageUtils.renderImageFromURL(poseStack, bufferSource,packedLight, packedOverlay, partialTick,1.25f,2.5f, imageUrl, blockEntity.getRotation());
 
             poseStack.popPose();
         }

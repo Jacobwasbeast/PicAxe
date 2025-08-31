@@ -6,129 +6,133 @@
 
 ## About the Mod
 
-**PicAxe** is the ultimate decoration mod that gives you the power to apply custom images to a variety of in-game items and blocks. Using a special tool, the **PicAxe**, you can copy an image URL and apply it directly onto beds, banners, shields, and new custom blocks.
+**PicAxe** is the ultimate decoration mod that gives you the power to apply custom images to a variety of in-game items and blocks. Using specialized tools like the **PicAxe** and **Image Configurator**, you can transform your Minecraft world with custom imagery from the internet.
 
-Whether you want to create custom bedding, personalized shields, multi-sided art blocks, or resizable framed pictures, PicAxe provides the tools to make your Minecraft world uniquely yours.
+Whether you want to create custom bedding, personalized shields, multi-sided art blocks, or resizable framed pictures with advanced configuration options, PicAxe provides comprehensive tools to make your Minecraft world uniquely yours.
 
 ---
 
 ## Features
 
-* **The PicAxe Tool**: A new tool used to store an image URL. Simply sneak right-click with it in hand to open a GUI and paste your link.
-* **Image Beds**: Convert any vanilla bed into a custom Image Bed. Apply your chosen image and cycle through different rendering styles, like full drapes or just as the sheet.
-* **Image Banners**: Convert vanilla banners into Image Banners. Your custom image will wave in the wind and can even be applied to shields.
+### **Core Tools**
+* **The PicAxe Tool**: A magical axe used to store and apply image URLs. Right-click in the air to open a modern GUI and paste your image link.
+* **Image Configurator**: An advanced configuration tool that opens detailed tabbed interfaces for fine-tuning your image blocks with precision controls.
+
+### **Image Blocks & Items**
+* **Image Beds**: Convert any vanilla bed into a custom Image Bed with advanced styling options, render types, and color customization.
+* **Image Banners**: Convert vanilla banners into Image Banners that wave in the wind. Supports both standing and wall-mounted variants.
 * **Image Shields**: Craft a custom Image Banner with a regular shield to create a unique Image Shield that displays your chosen picture.
-* **6-Sided Image Block**: A versatile new block that can have a different image applied to each of its six faces.
-* **Image Frame**: A placeable frame that can be resized from 1x1 up to 6x6 blocks. You can configure it to either stretch the image to fit or maintain its original aspect ratio.
-* **Easy to Use**: A simple, unified system—**right-click** with the PicAxe—is used to apply images and configure all custom blocks.
+* **6-Sided Image Block**: A versatile block where each face can display a different image. Features lighting controls (use glowstone to light up, stick to turn off).
+* **Image Frame**: A highly configurable frame block with advanced features:
+  - Resizable from 1x1 up to 6x6 blocks
+  - Multiple alignment options (center, corners, edges)
+  - Rotation and transformation controls
+  - Position offset adjustments
+  - Stretch-to-fit or aspect-ratio preservation
+
+### **Advanced Configuration**
+* **Tabbed Interface System**: Modern, user-friendly configuration screens with organized tabs for different settings
+* **Per-Block Customization**: Each image block type has its own specialized configuration options
+* **Real-time Preview**: See changes as you make them with live preview functionality
 
 ---
 
 ## Crafting Recipes
 
-Here are the crafting recipes you'll need to get started:
+For detailed crafting recipes and instructions, see **[RECIPES.md](RECIPES.md)**.
 
-### **PicAxe Tool**
-
-A magical axe used to store and apply image URLs.
-
-```
- P 
-PAP
- P 
-```
-
-* **P** = Pixel Dust
-* **A** = Iron Axe
-
----
-
-### **Pixel Dust** (x16)
-
-A mystical powder used in all image-based crafting.
-
-```
-Redstone + Lapis + Diamond
-```
-
-* 4x Redstone
-* 4x Lapis Lazuli
-* 1x Diamond
-  *(Shapeless recipe)*
-
----
-
-### **Image Frame**
-
-A resizable frame block that displays stretched or aspect-ratio-corrected images.
-
-```
-GPG
-PLP
-GPG
-```
-
-* **G** = Glass Pane
-* **P** = Pixel Dust
-* **L** = Any Log
-
----
-
-### **6-Sided Image Block**
-
-Each face can have a different image applied.
-
-```
-GPG
-PLP
-GPG
-```
-
-* **G** = Glass
-* **P** = Pixel Dust
-* **L** = Any Log
-
----
-
-### **Image Shield**
-
-Simply combine a **Shield** and an **Image Banner** in a crafting grid (shapeless).
+**Quick Reference:**
+- **PicAxe Tool** - The main tool for applying images (requires Pixel Dust + Iron Axe)
+- **Image Configurator** - Advanced configuration tool (requires Pixel Dust + Iron + Stick + Redstone)
+- **Pixel Dust** - Essential crafting material (Redstone + Lapis + Diamond)
+- **Image Frame** - Configurable display frame (Glass Pane + Pixel Dust + Log)
+- **6-Sided Image Block** - Multi-face image block (Glass + Pixel Dust + Log)
+- **Image Shield** - Combine Shield + Image Banner (shapeless)
 
 ---
 
 ## How to Use
 
-1.  **Get an Image URL**: Find an image online that you want to use. Copy the URL to your clipboard.
-2.  **Use the PicAxe Tool**: Craft a PicAxe (see recipe below). Hold it in your hand and **right-click** in the air to open the URL input screen. Paste your URL and click "Confirm". The URL is now stored on your PicAxe.
-3.  **Apply an Image**:
-    * **To a vanilla bed, banner, or block**: **right-click** on the block with the PicAxe in hand. This will convert it into its "Image" version and apply the stored URL.
-    * **To an existing Image Block**: right-clicking will apply a new image from your PicAxe.
-4.  **Configure Render Types**:
-    * If you right-click on an **Image Bed*** with a PicAxe that has the *same URL* already applied, you will cycle through its different render styles (e.g., drapes, full cover).
-5.  **Configure the 6-Sided Image Block**:
-    * Apply an image by right-clicking on a specific face of the block. The image will be applied only to that face.
-6.  **Configure the Image Frame**:
-    * First, apply an image with the PicAxe like any other block.
-    * Then, right-click the Image Frame again to open its configuration GUI. Here you can set the width, height, and stretch mode.
-7.  **Create an Image Shield**:
-    * Place a regular Shield and an Image Banner in a crafting grid. The resulting Image Shield will have the banner's image applied to it.
+### **Basic Usage**
 
+1.  **Get an Image URL**: Find an image online that you want to use. Copy the URL to your clipboard.
+2.  **Use the PicAxe Tool**: Craft a PicAxe and hold it in your hand. **Right-click in the air** to open the modern URL input screen. Paste your URL and click "Confirm". The URL is now stored on your PicAxe.
+3.  **Apply Images to Blocks**:
+    * **To vanilla beds or banners**: Right-click on them with the PicAxe to convert them into Image versions and apply your stored URL.
+    * **To existing Image Blocks**: Right-click to apply a new image from your PicAxe.
+    * **To 6-Sided Image Blocks**: Right-click on specific faces to apply images to individual sides.
+
+### **Advanced Configuration**
+
+4.  **Use the Image Configurator**: Craft an Image Configurator for advanced block customization. Right-click on any Image Block to open detailed configuration screens with multiple tabs:
+    * **Image Tab**: Change URLs and validate image links
+    * **Size & Layout Tab**: Adjust dimensions and stretch settings (Image Frames)
+    * **Alignment Tab**: Control image positioning and alignment
+    * **Transform Tab**: Apply rotations and transformations
+    * **Position Tab**: Fine-tune X/Y/Z offsets
+    * **Style Tabs**: Block-specific options (bed colors, banner styles, etc.)
+
+### **Special Features**
+
+5.  **6-Sided Image Block Lighting**:
+    * Use **Glowstone** on the block to make it emit light
+    * Use a **Stick** on a lit block to turn off the light and retrieve the glowstone
+6.  **Image Frame Advanced Setup**:
+    * Apply an image with the PicAxe first
+    * Use the Image Configurator for detailed positioning, sizing, and transformation options
+7.  **Create Image Shields**:
+    * Craft an Image Banner first, then combine it with a regular Shield in a crafting grid
+
+
+---
 
 ## Installation
 
-This mod requires the **Architectury API**. Please install the correct version for your mod loader.
+This mod requires the **Architectury API** and supports both **Fabric** and **NeoForge** mod loaders.
+
+**Minecraft Version**: 1.21.1
+**Current Mod Version**: 1.1.0
 
 ### For Fabric:
 
-1.  Install the [Fabric Loader](https://fabricmc.net/use/installer/).
-2.  Install the [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api).
-3.  Install the [Architectury API](https://www.curseforge.com/minecraft/mc-mods/architectury-api).
-4.  Place the PicAxe mod `.jar` file into your `mods` folder.
+1.  Install [Fabric Loader](https://fabricmc.net/use/installer/) (version 0.16.14 or later)
+2.  Install [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api) (version 0.115.6+1.21.1 or later)
+3.  Install [Architectury API](https://www.curseforge.com/minecraft/mc-mods/architectury-api) (version 13.0.8 or later)
+4.  Place the PicAxe mod `.jar` file into your `mods` folder
 
 ### For NeoForge:
 
-1.  Install the latest version of [NeoForge](https://neoforged.net/).
-2.  Install the [Architectury API](https://www.curseforge.com/minecraft/mc-mods/architectury-api).
-3.  Place the PicAxe mod `.jar` file into your `mods` folder.
+1.  Install [NeoForge](https://neoforged.net/) (version 21.1.168 or later)
+2.  Install [Architectury API](https://www.curseforge.com/minecraft/mc-mods/architectury-api) (version 13.0.8 or later)
+3.  Place the PicAxe mod `.jar` file into your `mods` folder
+
+---
+
+## Development & Contributing
+
+This mod is built using the Architectury toolchain for cross-platform compatibility. The project uses Gradle for building and includes automated CI/CD workflows.
+
+### Building from Source:
+```bash
+./gradlew build
+```
+
+### Project Structure:
+- `common/` - Shared code between platforms
+- `fabric/` - Fabric-specific implementations
+- `neoforge/` - NeoForge-specific implementations
+
+---
+
+## Changelog & Updates
+
+The mod has undergone significant development with major improvements including:
+- Modern tabbed configuration interfaces
+- Advanced image positioning and transformation controls
+- Enhanced lighting system for 6-Sided Image Blocks
+- Improved rendering and performance optimizations
+- Cross-platform compatibility improvements
+
+For detailed version history, check the project's commit history and releases.
 
 

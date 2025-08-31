@@ -6,6 +6,9 @@ import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
 import net.jacobwasbeast.picaxe.blocks.ImageFrameBlock;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
+import net.jacobwasbeast.picaxe.utils.RenderUtils;
+import net.jacobwasbeast.picaxe.utils.RotationUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -33,7 +36,9 @@ public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBl
     public void render(ImageFrameBlockEntity blockEntity, float partialTick, PoseStack poseStack,
                        MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         Level level = blockEntity.getLevel();
-        if (level == null) return;
+        if (level == null) {
+            level = Minecraft.getInstance().level;
+        }
 
         BlockState blockState = blockEntity.getBlockState();
         Direction facing = blockState.getValue(ImageFrameBlock.FACING);
@@ -105,7 +110,8 @@ public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBl
             poseStack.pushPose();
 
             // This quad sits just a little above the face too (but closer than the frame to avoid z-fighting)
-            float localZ = 0.018f - offZ;
+            float seemingOffset = RenderUtils.getSeamOffset(Minecraft.getInstance().player, blockEntity.getBlockPos());
+            float localZ = 0.018f - offZ + seemingOffset - 0.01f;
 
             // Keep image and frame locked together: same alignment/offsets
             poseStack.translate(anchor.x + offX, anchor.y + offY, localZ);
@@ -115,7 +121,6 @@ public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBl
             poseStack.mulPose(XN.rotationDegrees(-180));
             poseStack.translate(0, -0.99, 0);
             poseStack.translate(-0.5, -0.5, -0.5);
-
             // Sample light at the world position of the image center
             int faceLight = sampleLightAt(level, blockEntity.getBlockPos(), faceBasis,
                     anchor.x + offX, anchor.y + offY, localZ);
@@ -129,7 +134,8 @@ public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBl
                     frameWidth,
                     frameHeight,
                     imageUrl,
-                    keepAspectRatio
+                    keepAspectRatio,
+                    blockEntity.getRotation()
             );
 
             poseStack.popPose();

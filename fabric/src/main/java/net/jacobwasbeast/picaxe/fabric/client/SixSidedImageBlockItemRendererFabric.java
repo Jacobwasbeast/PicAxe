@@ -26,25 +26,6 @@ public class SixSidedImageBlockItemRendererFabric implements BuiltinItemRenderer
             poseStack.scale(0.9F, 0.9F, 0.9F);
             poseStack.translate(0.05, -1, 0.1);
         }
-        boolean isLit = dummyBlockEntity.isLit();
-        if (isLit) {
-            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
-                    Blocks.GLOWSTONE.defaultBlockState(),
-                    poseStack,
-                    buffer,
-                    packedLight,
-                    packedOverlay
-            );
-        }
-        else {
-            Minecraft.getInstance().getBlockRenderer().renderSingleBlock(
-                    Blocks.OAK_PLANKS.defaultBlockState(),
-                    poseStack,
-                    buffer,
-                    packedLight,
-                    packedOverlay
-            );
-        }
         Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(dummyBlockEntity)
                 .render(dummyBlockEntity, 0, poseStack, buffer, packedLight, packedOverlay);
     }
