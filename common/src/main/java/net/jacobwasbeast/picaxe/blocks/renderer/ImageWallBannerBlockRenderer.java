@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.blocks.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageWallBannerBlockEntity;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -86,7 +87,7 @@ public class ImageWallBannerBlockRenderer implements BlockEntityRenderer<ImageWa
         float[] colors = blockEntity.getColor().getTextureDiffuseColors();
         this.flag.render(poseStack, flagConsumer, packedLight, packedOverlay, colors[0], colors[1], colors[2], 1.0f);
 
-        if (imageUrl != null && !imageUrl.equals("picaxe:blocks/banner") && !imageUrl.isBlank()) {
+        if (imageUrl != null && !imageUrl.equals(PicAxeItem.EMPTY_URL) && !imageUrl.isBlank()) {
             poseStack.pushPose();
 
             this.flag.translateAndRotate(poseStack);

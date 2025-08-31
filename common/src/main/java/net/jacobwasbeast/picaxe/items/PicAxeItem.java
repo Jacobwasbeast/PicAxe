@@ -34,7 +34,8 @@ import static net.jacobwasbeast.picaxe.ModCreativeTabs.PICAXE_TAB;
 
 public class PicAxeItem extends AxeItem {
 
-    public static final String DEFAULT_URL = "picaxe:blocks/bed";
+    public static final String DEFAULT_URL = "https://picsum.photos/200/300";
+    public static final String EMPTY_URL = "";
     private static final String URL_KEY = "image_url";
 
     public PicAxeItem() {

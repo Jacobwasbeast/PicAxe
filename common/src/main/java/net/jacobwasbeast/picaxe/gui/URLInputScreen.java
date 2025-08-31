@@ -108,7 +108,7 @@ public class URLInputScreen extends Screen {
         boolean ok = url.startsWith("http://") || url.startsWith("https://") ||
                 url.startsWith("file://") || url.endsWith(".png") ||
                 url.endsWith(".jpg") || url.endsWith(".jpeg") ||
-                url.endsWith(".gif") || url.endsWith(".webp");
+                url.endsWith(".gif") || url.endsWith(".webp") || url.contains("picsum.photos");
         if (!ok) {
             errorMessage = Component.translatable("picaxe.screen.url_input.error.invalid").getString();
             errorTimer = 60;
