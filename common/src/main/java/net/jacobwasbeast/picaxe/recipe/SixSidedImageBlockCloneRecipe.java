@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.recipe;
 import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
 import net.jacobwasbeast.picaxe.blocks.entities.SixSidedImageBlockEntity;
 import net.jacobwasbeast.picaxe.items.ModItems;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -73,7 +74,7 @@ public class SixSidedImageBlockCloneRecipe extends CustomRecipe {
 
         // Copy images ONLY from src -> dst
         for (Direction d : Direction.values()) {
-            String url = beSrc.getImages().getOrDefault(d, "");
+            String url = beSrc.getImages().getOrDefault(d, PicAxeItem.EMPTY_URL);
             beDst.setImageUrl(d, url);
         }
 

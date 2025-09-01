@@ -2,6 +2,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.PictureAxe;
 import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -13,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ImageFrameBlockEntity extends BlockEntity {
 
-    private String imageUrl = "";
+    private String imageUrl = PicAxeItem.EMPTY_URL;
     private int frameWidth = 1;
     private int frameHeight = 1;
     private boolean stretchToFit = false;

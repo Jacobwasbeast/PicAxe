@@ -2,6 +2,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 
 import net.jacobwasbeast.picaxe.PictureAxe;
 import net.jacobwasbeast.picaxe.api.BannerRenderTypes;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
@@ -23,13 +24,13 @@ public class ImageBannerBlockEntity extends BlockEntity {
     public ImageBannerBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(ModBlockEntities.IMAGE_BANNER_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = DyeColor.WHITE;
-        this.imageLocation = "picaxe:blocks/banner";
+        this.imageLocation = PicAxeItem.EMPTY_URL;
     }
 
     public ImageBannerBlockEntity(BlockPos blockPos, BlockState blockState, DyeColor dyeColor) {
         super(ModBlockEntities.IMAGE_BANNER_BLOCK_ENTITY.get(), blockPos, blockState);
         this.color = dyeColor;
-        this.imageLocation = "picaxe:blocks/banner";
+        this.imageLocation = PicAxeItem.EMPTY_URL;
     }
 
     public String getImageLocation() {
@@ -86,7 +87,7 @@ public class ImageBannerBlockEntity extends BlockEntity {
         super.loadAdditional(compoundTag, provider);
         this.imageLocation = compoundTag.getString("imageLocation").get();
         if (!compoundTag.contains("imageLocation")) {
-            this.imageLocation = "picaxe:blocks/banner";
+            this.imageLocation = PicAxeItem.EMPTY_URL;
         }
 
         this.color = DyeColor.byName(compoundTag.getString("color").get(), DyeColor.WHITE);
@@ -118,7 +119,7 @@ public class ImageBannerBlockEntity extends BlockEntity {
             this.loadAdditional(customData.copyTag(), null);
         } else {
             this.setColor(DyeColor.WHITE);
-            this.setImageLocation("");
+            this.setImageLocation(PicAxeItem.EMPTY_URL);
             this.setRenderTypes(BannerRenderTypes.OVER_BANNER);
         }
     }

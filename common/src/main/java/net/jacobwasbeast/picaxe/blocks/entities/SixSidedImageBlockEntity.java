@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.blocks.entities;
 import net.jacobwasbeast.picaxe.blocks.SixSidedImageBlock;
 import net.jacobwasbeast.picaxe.items.ModItems;
 import net.jacobwasbeast.picaxe.PictureAxe;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -25,10 +26,10 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     public SixSidedImageBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SIX_SIDED_IMAGE_BLOCK_ENTITY.get(), pos, state);
         for (Direction dir : Direction.Plane.HORIZONTAL) {
-            imageUrls.put(dir, "");
+            imageUrls.put(dir, PicAxeItem.EMPTY_URL);
         }
         for (Direction dir : Direction.Plane.VERTICAL) {
-            imageUrls.put(dir, "");
+            imageUrls.put(dir, PicAxeItem.EMPTY_URL);
         }
     }
 
@@ -71,7 +72,7 @@ public class SixSidedImageBlockEntity extends BlockEntity {
     }
 
     public String getImageUrl(Direction direction) {
-        return imageUrls.getOrDefault(direction, "");
+        return imageUrls.getOrDefault(direction, PicAxeItem.EMPTY_URL);
     }
 
     public void setImageUrl(Direction direction, String url) {
@@ -90,14 +91,14 @@ public class SixSidedImageBlockEntity extends BlockEntity {
             if (imageUrls.containsKey(dir)) {
                 tag.putString("image_url_" + dir.getName(), imageUrls.get(dir));
             } else {
-                tag.putString("image_url_" + dir.getName(), "");
+                tag.putString("image_url_" + dir.getName(), PicAxeItem.EMPTY_URL);
             }
         }
         for (Direction dir : Direction.Plane.VERTICAL) {
             if (imageUrls.containsKey(dir)) {
                 tag.putString("image_url_" + dir.getName(), imageUrls.get(dir));
             } else {
-                tag.putString("image_url_" + dir.getName(), "");
+                tag.putString("image_url_" + dir.getName(), PicAxeItem.EMPTY_URL);
             }
         }
     }
@@ -109,14 +110,14 @@ public class SixSidedImageBlockEntity extends BlockEntity {
             if (tag.contains("image_url_" + dir.getName())) {
                 imageUrls.put(dir, tag.getString("image_url_" + dir.getName()).get());
             } else {
-                imageUrls.put(dir, "");
+                imageUrls.put(dir, PicAxeItem.EMPTY_URL);
             }
         }
         for (Direction dir : Direction.Plane.VERTICAL) {
             if (tag.contains("image_url_" + dir.getName())) {
                 imageUrls.put(dir, tag.getString("image_url_" + dir.getName()).get());
             } else {
-                imageUrls.put(dir, "");
+                imageUrls.put(dir, PicAxeItem.EMPTY_URL);
             }
         }
     }
@@ -137,10 +138,10 @@ public class SixSidedImageBlockEntity extends BlockEntity {
             this.loadAdditional(customData.copyTag(), null);
         } else {
             for (Direction dir : Direction.Plane.HORIZONTAL) {
-                this.imageUrls.put(dir, "");
+                this.imageUrls.put(dir, PicAxeItem.EMPTY_URL);
             }
             for (Direction dir : Direction.Plane.VERTICAL) {
-                this.imageUrls.put(dir, "");
+                this.imageUrls.put(dir, PicAxeItem.EMPTY_URL);
             }
         }
     }

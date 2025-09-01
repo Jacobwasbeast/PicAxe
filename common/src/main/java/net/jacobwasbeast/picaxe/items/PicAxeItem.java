@@ -30,9 +30,9 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 import java.util.function.Consumer;
 
 public class PicAxeItem extends AxeItem {
-
-    public static final String DEFAULT_URL = "picaxe:blocks/bed";
-
+    public static final String DEFAULT_URL = "https://picsum.photos/200/300";
+    public static final String EMPTY_URL = "";
+    
     public PicAxeItem(Item.Properties properties) {
         super(ToolMaterial.IRON,1,1,properties
                 .stacksTo(1)

@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import net.jacobwasbeast.picaxe.blocks.ImageBannerBlock;
 import net.jacobwasbeast.picaxe.blocks.ImageWallBannerBlock;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageBannerBlockEntity;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -85,7 +86,7 @@ public class ImageBannerBlockRenderer implements BlockEntityRenderer<ImageBanner
 
         BannerRenderer.renderPatterns(poseStack, bufferSource, packedLight, packedOverlay, this.standingFlag, ModelBakery.BANNER_BASE, true, blockEntity.getColor(), BannerPatternLayers.EMPTY);
 
-        if (imageUrl != null && !imageUrl.equals("picaxe:blocks/banner") && !imageUrl.isBlank()) {
+        if (imageUrl != null && !imageUrl.equals(PicAxeItem.EMPTY_URL) && !imageUrl.isBlank()) {
             poseStack.pushPose();
 
             this.standingFlag.translateAndRotate(poseStack);
@@ -136,7 +137,7 @@ public class ImageBannerBlockRenderer implements BlockEntityRenderer<ImageBanner
 
         BannerRenderer.renderPatterns(poseStack, bufferSource, packedLight, packedOverlay, this.wallFlag, ModelBakery.BANNER_BASE, true, blockEntity.getColor(), BannerPatternLayers.EMPTY);
 
-        if (imageUrl != null && !imageUrl.equals("picaxe:blocks/banner") && !imageUrl.isBlank()) {
+        if (imageUrl != null && !imageUrl.equals(PicAxeItem.EMPTY_URL) && !imageUrl.isBlank()) {
             poseStack.pushPose();
 
             this.wallFlag.translateAndRotate(poseStack);
