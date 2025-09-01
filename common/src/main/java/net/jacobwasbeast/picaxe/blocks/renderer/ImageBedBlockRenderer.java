@@ -3,6 +3,7 @@ package net.jacobwasbeast.picaxe.blocks.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.jacobwasbeast.picaxe.blocks.ImageBedBlock;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageBedBlockEntity;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.jacobwasbeast.picaxe.utils.ColorUtils;
 import net.jacobwasbeast.picaxe.utils.ImageUtils;
 import net.jacobwasbeast.picaxe.utils.RenderUtils;
@@ -53,7 +54,7 @@ public class ImageBedBlockRenderer implements BlockEntityRenderer<ImageBedBlockE
                 packedOverlay
         );
 
-        if (blockEntity.getImageLocation().equals("picaxe:blocks/bed")) {
+        if (blockEntity.getImageLocation().equals(PicAxeItem.EMPTY_URL)) {
 
         }
         else {

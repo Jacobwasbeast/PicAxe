@@ -79,7 +79,7 @@ public class URLInputScreen extends Screen {
             }
         });
         addChip(panelX + panelWidth - 54, panelY + 65, 22, 22, Component.literal("✕"), false, () -> {
-            this.urlInput.setValue("");
+            this.urlInput.setValue(PicAxeItem.EMPTY_URL);
             validateInput();
         });
 
@@ -106,7 +106,7 @@ public class URLInputScreen extends Screen {
         boolean ok = url.startsWith("http://") || url.startsWith("https://") ||
                 url.startsWith("file://") || url.endsWith(".png") ||
                 url.endsWith(".jpg") || url.endsWith(".jpeg") ||
-                url.endsWith(".gif") || url.endsWith(".webp");
+                url.endsWith(".gif") || url.endsWith(".webp") || url.contains("picsum.photos");
         if (!ok) {
             errorMessage = Component.translatable("picaxe.screen.url_input.error.invalid").getString();
             errorTimer = 60;

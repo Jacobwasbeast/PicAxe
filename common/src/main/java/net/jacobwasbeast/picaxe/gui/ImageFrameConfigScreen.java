@@ -4,6 +4,7 @@ import net.blay09.mods.balm.api.Balm;
 import net.blay09.mods.balm.api.network.BalmNetworking;
 import net.jacobwasbeast.picaxe.api.ImageFrameAlignment;
 import net.jacobwasbeast.picaxe.blocks.entities.ImageFrameBlockEntity;
+import net.jacobwasbeast.picaxe.items.PicAxeItem;
 import net.jacobwasbeast.picaxe.network.UpdateImageFramePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -175,7 +176,7 @@ public class ImageFrameConfigScreen extends Screen {
 
         int clearX = pasteX + smallBtnW + smallBtnGap;
         addChip(clearX, pasteY, smallBtnW, inputH, Component.literal("✕"), false, () -> {
-            urlInput.setValue("");
+            urlInput.setValue(PicAxeItem.EMPTY_URL);
             inputsValid();
         });
 
