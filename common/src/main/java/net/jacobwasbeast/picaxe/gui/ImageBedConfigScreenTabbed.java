@@ -261,13 +261,24 @@ public class ImageBedConfigScreenTabbed extends BlockConfigScreen {
 
         @Override
         public boolean isValid() {
-            return imageUrl != null && !imageUrl.trim().isEmpty();
+            if (imageUrl == null) return false;
+            String url = imageUrl.trim();
+            // Allow clearing the bed image by submitting an empty URL.
+            if (url.isEmpty()) return true;
+            return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("file://");
         }
 
         @Override
         public Component getValidationError() {
-            if (imageUrl == null || imageUrl.trim().isEmpty()) {
-                return Component.translatable("picaxe.screen.image_bed.error.empty_url");
+            if (imageUrl == null) {
+                return Component.translatable("picaxe.screen.url_input.error.invalid");
+            }
+            String url = imageUrl.trim();
+            if (url.isEmpty()) {
+                return Component.empty();
+            }
+            if (!(url.startsWith("http://") || url.startsWith("https://") || url.startsWith("file://"))) {
+                return Component.translatable("picaxe.screen.url_input.error.invalid");
             }
             return Component.empty();
         }
