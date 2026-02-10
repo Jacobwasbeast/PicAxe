@@ -332,18 +332,18 @@ public abstract class BlockConfigScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         // Handle 3D preview mouse input first
-        if (preview3D != null && preview3D.mouseScrolled(mouseX, mouseY, deltaX, deltaY)) {
+        if (preview3D != null && preview3D.mouseScrolled(mouseX, mouseY, delta)) {
             return true;
         }
 
         if (activeTabIndex >= 0 && activeTabIndex < tabs.size()) {
-            if (tabs.get(activeTabIndex).mouseScrolled(mouseX, mouseY, deltaX, deltaY)) {
+            if (tabs.get(activeTabIndex).mouseScrolled(mouseX, mouseY, delta)) {
                 return true;
             }
         }
-        return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
@@ -416,9 +416,8 @@ public abstract class BlockConfigScreen extends Screen {
         return false;
     }
 
-    @Override
+    // Present in newer Minecraft; harmless as a no-op method in older versions.
     protected void renderBlurredBackground(float f) {
-        // Override to disable blur background like URLInputScreen
     }
 
     @Override

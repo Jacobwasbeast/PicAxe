@@ -233,9 +233,9 @@ public class Block3DPreview {
         return false;
     }
 
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (isMouseOver(mouseX, mouseY)) {
-            float zoomDelta = (float) scrollY * 0.1f;
+            float zoomDelta = (float) delta * 0.1f;
             zoom = Math.max(minZoom, Math.min(maxZoom, zoom + zoomDelta));
             return true;
         }

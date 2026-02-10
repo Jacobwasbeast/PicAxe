@@ -345,15 +345,15 @@ public class SixSidedImageConfigScreenTabbed extends BlockConfigScreen {
         }
 
         @Override
-        public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+        public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
             if (!active) return false;
 
             // Forward to rotation tab
-            if (rotationTab != null && rotationTab.mouseScrolled(mouseX, mouseY, deltaX, deltaY)) {
+            if (rotationTab != null && rotationTab.mouseScrolled(mouseX, mouseY, delta)) {
                 return true;
             }
 
-            return super.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
+            return super.mouseScrolled(mouseX, mouseY, delta);
         }
 
         @Override

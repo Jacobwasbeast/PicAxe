@@ -172,7 +172,7 @@ public abstract class ConfigTab {
     // Optional methods with default implementations
     public boolean mouseReleased(double mouseX, double mouseY, int button) { return false; }
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) { return false; }
-    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) { return false; }
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) { return false; }
     // Utility methods for subclasses
     protected boolean isMouseInContent(double mouseX, double mouseY) {
         return mouseX >= contentX && mouseX < contentX + contentWidth &&
