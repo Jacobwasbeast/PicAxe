@@ -12,10 +12,10 @@
   "tooltip.picaxe.when_used": "When used:",
   "tooltip.picaxe.use_action": "▶ Sneak + Right-click: Set image URL",
   "tooltip.picaxe.sneak_use_action": "▶ Right-click on block: Apply image",
-  "tooltip.picaxe.six_sided.lit":     "Lit: %s",
-  "tooltip.picaxe.six_sided.image":   "%s: %s",
-  "tooltip.picaxe.state.true":        "Yes",
-  "tooltip.picaxe.state.false":       "No",
+  "tooltip.picaxe.six_sided.lit": "Lit: %s",
+  "tooltip.picaxe.six_sided.image": "%s: %s",
+  "tooltip.picaxe.state.true": "Yes",
+  "tooltip.picaxe.state.false": "No",
 
   "tooltip.picaxe.image_bed.url": "Image: %s",
   "tooltip.picaxe.image_bed.render_type": "Style: %s",
@@ -53,6 +53,8 @@
   "picaxe.screen.url_input.paste_tooltip": "Paste from clipboard",
   "picaxe.screen.url_input.cancel_tooltip": "Cancel and close (Esc)",
   "picaxe.screen.url_input.error.invalid": "Please enter a valid image URL",
+  "picaxe.errors.invalid_url_format": "Invalid URL format",
+  "picaxe.errors.invalid_image_extension": "Invalid image extension (must be .png, .jpg, or .jpeg)",
 
   "picaxe.screen.image_frame.title": "Image Frame Configuration",
   "picaxe.screen.six_sided_image.title": "Configure Six-Sided Image Block",
@@ -61,6 +63,7 @@
   "picaxe.screen.image_frame.height": "Height",
   "picaxe.screen.image_frame.width_label": "Width (1-32)",
   "picaxe.screen.image_frame.height_label": "Height (1-32)",
+  "picaxe.screen.image_frame.url": "Image URL",
   "picaxe.screen.image_frame.url_label": "🔗 Image URL",
   "picaxe.screen.image_frame.dimensions_label": "📐 Dimensions (1-32 blocks)",
   "picaxe.screen.image_frame.url_hint": "https://example.com/image.png or empty",
@@ -86,6 +89,8 @@
   "picaxe.screen.image_frame.alignment": "Alignment",
   "picaxe.screen.image_frame.offsets_blocks": "Offsets (blk)",
   "picaxe.screen.image_frame.error.invalid_offset": "Invalid offset",
+  "picaxe.screen.image_frame.url_valid": "URL looks valid",
+  "picaxe.screen.image_frame.url_invalid": "URL must start with http:// or https://",
 
   "picaxe.screen.image_frame.align.top_left": "Top Left",
   "picaxe.screen.image_frame.align.top_center": "Top Center",
@@ -96,7 +101,6 @@
   "picaxe.screen.image_frame.align.bottom_left": "Bottom Left",
   "picaxe.screen.image_frame.align.bottom_center": "Bottom Center",
   "picaxe.screen.image_frame.align.bottom_right": "Bottom Right",
-
 
   "picaxe.screen.common.paste_icon": "⎘",
   "picaxe.screen.common.paste_tooltip": "Paste from clipboard",
@@ -164,6 +168,7 @@
   "picaxe.screen.image_bed.color_label": "Bed Color",
 
   "picaxe.screen.image_banner.title": "Image Banner Configuration",
+  "picaxe.screen.image_banner.url": "Image URL",
   "picaxe.screen.image_banner.url_label": "🔗 Image URL",
   "picaxe.screen.image_banner.url_hint": "Enter a direct image URL (http:// or https://)",
   "picaxe.screen.image_banner.render_type_label": "Banner Render Type",
