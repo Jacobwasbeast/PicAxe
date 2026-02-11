@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component;
  * Features separate tabs for Image settings, Size & Layout, Transform (rotation), and Position.
  */
 public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
+    private static final int MAX_URL_LENGTH = Short.MAX_VALUE;
 
     private final ImageFrameBlockEntity blockEntity;
 
@@ -181,6 +182,7 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
             urlInput = new EditBox(font, contentX, contentY + 30, contentWidth - 100, 20,
                     Component.translatable("picaxe.screen.image_frame.url"));
             urlInput.setValue(imageUrl);
+            urlInput.setMaxLength(MAX_URL_LENGTH);
             urlInput.setResponder(url -> {
                 this.imageUrl = url;
                 onUrlChanged.accept(url);

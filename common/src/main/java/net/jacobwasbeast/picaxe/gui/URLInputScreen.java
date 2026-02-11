@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public class URLInputScreen extends Screen {
+    private static final int MAX_URL_LENGTH = Short.MAX_VALUE;
 
     private static final int BACKGROUND_COLOR = 0xE6000000;
     private static final int PANEL_COLOR = 0xCC161616;
@@ -53,7 +54,7 @@ public class URLInputScreen extends Screen {
         // URL input field - reduced width to make room for buttons
         this.urlInput = new EditBox(this.font, panelX + 30, panelY + 65, panelWidth - 120, 22,
                 Component.translatable("picaxe.screen.url_input.url"));
-        this.urlInput.setMaxLength(256);
+        this.urlInput.setMaxLength(MAX_URL_LENGTH);
         this.urlInput.setValue(this.currentUrl);
         this.urlInput.setHint(Component.translatable("picaxe.screen.url_input.hint"));
         this.urlInput.setBordered(false);

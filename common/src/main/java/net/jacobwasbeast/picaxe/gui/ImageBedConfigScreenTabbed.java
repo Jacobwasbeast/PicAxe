@@ -18,6 +18,7 @@ import net.minecraft.world.item.DyeColor;
  * Features separate tabs for Image settings, Bed Style, and Transform (rotation).
  */
 public class ImageBedConfigScreenTabbed extends BlockConfigScreen {
+    private static final int MAX_URL_LENGTH = Short.MAX_VALUE;
 
     private final ImageBedBlockEntity blockEntity;
 
@@ -147,6 +148,7 @@ public class ImageBedConfigScreenTabbed extends BlockConfigScreen {
                     Component.translatable("picaxe.screen.image_bed.url_input")
             );
             urlInput.setValue(imageUrl);
+            urlInput.setMaxLength(MAX_URL_LENGTH);
             urlInput.setResponder(this::onUrlInputChanged);
             addWidget(urlInput);
 

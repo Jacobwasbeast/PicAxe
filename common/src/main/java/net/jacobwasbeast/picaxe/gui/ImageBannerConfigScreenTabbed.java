@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * Features separate tabs for Image settings, Banner Style (render type and color), and Transform (rotation).
  */
 public class ImageBannerConfigScreenTabbed extends BlockConfigScreen {
+    private static final int MAX_URL_LENGTH = Short.MAX_VALUE;
 
     private final BlockEntity blockEntity; // Can be ImageBannerBlockEntity or ImageWallBannerBlockEntity
 
@@ -174,6 +175,7 @@ public class ImageBannerConfigScreenTabbed extends BlockConfigScreen {
             urlInput = new EditBox(font, contentX, contentY + 30, contentWidth - 100, 20,
                     Component.translatable("picaxe.screen.image_banner.url"));
             urlInput.setValue(imageUrl);
+            urlInput.setMaxLength(MAX_URL_LENGTH);
             urlInput.setResponder(url -> {
                 this.imageUrl = url;
                 onUrlChanged.accept(url);
