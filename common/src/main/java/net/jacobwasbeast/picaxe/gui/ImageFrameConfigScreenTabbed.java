@@ -184,8 +184,8 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
             // URL input field - reduced width to make room for upload button
             urlInput = new EditBox(font, contentX, contentY + 30, contentWidth - 100, 20,
                     Component.translatable("picaxe.screen.image_frame.url"));
-            urlInput.setValue(imageUrl);
             urlInput.setMaxLength(MAX_URL_LENGTH);
+            urlInput.setValue(imageUrl);
             urlInput.setResponder(url -> {
                 this.imageUrl = url;
                 onUrlChanged.accept(url);
