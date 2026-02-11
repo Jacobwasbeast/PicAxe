@@ -23,6 +23,7 @@ import java.util.Map;
  * Features separate tabs for each face (North, South, East, West, Up, Down) plus a Facing Direction tab.
  */
 public class SixSidedImageConfigScreenTabbed extends BlockConfigScreen {
+    private static final int MAX_URL_LENGTH = Short.MAX_VALUE;
 
     private final SixSidedImageBlockEntity blockEntity;
 
@@ -182,6 +183,7 @@ public class SixSidedImageConfigScreenTabbed extends BlockConfigScreen {
             urlInput = new EditBox(font, contentX, contentY + 30, contentWidth - 100, 20,
                     Component.translatable("picaxe.screen.image_frame.url"));
             urlInput.setValue(imageUrl);
+            urlInput.setMaxLength(MAX_URL_LENGTH);
             urlInput.setResponder(url -> {
                 this.imageUrl = url;
                 notifyChanged();

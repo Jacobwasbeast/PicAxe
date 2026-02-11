@@ -5,23 +5,22 @@ import com.google.gson.JsonParser;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class ImgurUploadAPI {
     private static final String IMGUR_UPLOAD_URL = "https://api.imgur.com/3/image";
     private static final String CLIENT_ID = "546c25a59c58ad7"; // Anonymous upload client ID
+    private static final long MAX_STATIC_IMAGE_BYTES = 10L * 1024L * 1024L; // 10 MB
+    private static final long MAX_GIF_IMAGE_BYTES = 20L * 1024L * 1024L; // 20 MB
 
     /* --------------------------
        PUBLIC API
@@ -65,59 +64,34 @@ public class ImgurUploadAPI {
                 return null;
             }
 
-            long fileSize = Files.size(path);
-            if (fileSize > 10 * 1024 * 1024) { // 10 MB Imgur anonymous limit
-                System.err.println("Image file too large: " + fileSize + " bytes (max 10MB)");
-                return null;
-            }
-
             String fileName = path.getFileName().toString().toLowerCase();
             if (!isValidImageFile(fileName)) {
                 System.err.println("Invalid image file type: " + fileName);
                 return null;
             }
 
-            byte[] imageBytes = Files.readAllBytes(path);
-            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
-
-            URL url = new URL(IMGUR_UPLOAD_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Client-ID " + CLIENT_ID);
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("User-Agent", "PicAxe-Mod/1.0");
-            conn.setDoOutput(true);
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(30000);
-
-            String postData = "image=" + java.net.URLEncoder.encode(base64Image, "UTF-8");
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(postData.getBytes("UTF-8"));
-                os.flush();
+            long fileSize = Files.size(path);
+            long maxSize = maxAllowedBytes(fileName);
+            if (fileSize > maxSize) {
+                System.err.println("Image file too large: " + fileSize + " bytes (max " + (maxSize / (1024 * 1024)) + "MB)");
+                return null;
             }
+
+            HttpURLConnection conn = openMultipartUploadConnection();
+            String boundary = "----PicAxeBoundary" + System.currentTimeMillis();
+            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            conn.setRequestProperty("User-Agent", "PicAxe-Mod/1.1.1");
+
+            writeMultipartBody(conn, boundary, path, fileName);
 
             int responseCode = conn.getResponseCode();
-            StringBuilder response = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    responseCode >= 200 && responseCode < 300 ? conn.getInputStream() : conn.getErrorStream(), "UTF-8"))) {
-                String line;
-                while ((line = reader.readLine()) != null) response.append(line);
-            }
+            String response = readResponseBody(conn, responseCode);
 
             if (responseCode >= 200 && responseCode < 300) {
-                try {
-                    JsonObject jsonResponse = JsonParser.parseString(response.toString()).getAsJsonObject();
-                    if (jsonResponse.has("success") && jsonResponse.get("success").getAsBoolean()) {
-                        JsonObject data = jsonResponse.getAsJsonObject("data");
-                        String imageUrl = data.get("link").getAsString();
-                        System.out.println("Uploaded to Imgur: " + imageUrl);
-                        return imageUrl;
-                    } else {
-                        System.err.println("Imgur API returned success=false: " + response);
-                    }
-                } catch (Exception jsonEx) {
-                    System.err.println("Failed to parse Imgur response: " + jsonEx.getMessage());
-                    System.err.println("Response was: " + response);
+                String imageUrl = parseImgurUrlFromResponse(response, fileName);
+                if (imageUrl != null) {
+                    System.out.println("Uploaded to Imgur: " + imageUrl);
+                    return imageUrl;
                 }
             } else {
                 System.err.println("HTTP error " + responseCode + ": " + response);
@@ -181,6 +155,93 @@ public class ImgurUploadAPI {
         String f = fileName.toLowerCase();
         return f.endsWith(".png") || f.endsWith(".jpg") || f.endsWith(".jpeg")
                 || f.endsWith(".gif") || f.endsWith(".bmp") || f.endsWith(".webp");
+    }
+
+    private static long maxAllowedBytes(String fileName) {
+        return fileName.endsWith(".gif") ? MAX_GIF_IMAGE_BYTES : MAX_STATIC_IMAGE_BYTES;
+    }
+
+    private static HttpURLConnection openMultipartUploadConnection() throws IOException {
+        URL url = new URL(IMGUR_UPLOAD_URL);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Authorization", "Client-ID " + CLIENT_ID);
+        conn.setDoOutput(true);
+        conn.setConnectTimeout(10000);
+        conn.setReadTimeout(30000);
+        return conn;
+    }
+
+    private static void writeMultipartBody(HttpURLConnection conn, String boundary, Path path, String fileName) throws IOException {
+        byte[] lineBreak = "\r\n".getBytes("UTF-8");
+        try (OutputStream output = conn.getOutputStream()) {
+            output.write(("--" + boundary + "\r\n").getBytes("UTF-8"));
+            output.write("Content-Disposition: form-data; name=\"type\"\r\n\r\n".getBytes("UTF-8"));
+            output.write("file".getBytes("UTF-8"));
+            output.write(lineBreak);
+
+            output.write(("--" + boundary + "\r\n").getBytes("UTF-8"));
+            output.write(("Content-Disposition: form-data; name=\"image\"; filename=\"" + fileName + "\"\r\n").getBytes("UTF-8"));
+            output.write("Content-Type: application/octet-stream\r\n\r\n".getBytes("UTF-8"));
+
+            Files.copy(path, output);
+            output.write(lineBreak);
+            output.write(("--" + boundary + "--\r\n").getBytes("UTF-8"));
+            output.flush();
+        }
+    }
+
+    private static String readResponseBody(HttpURLConnection conn, int responseCode) throws IOException {
+        InputStream stream = (responseCode >= 200 && responseCode < 300) ? conn.getInputStream() : conn.getErrorStream();
+        if (stream == null) {
+            return "";
+        }
+
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+        }
+        return response.toString();
+    }
+
+    private static String parseImgurUrlFromResponse(String responseBody, String originalFileName) {
+        try {
+            JsonObject jsonResponse = JsonParser.parseString(responseBody).getAsJsonObject();
+            if (!jsonResponse.has("success") || !jsonResponse.get("success").getAsBoolean()) {
+                System.err.println("Imgur API returned success=false: " + responseBody);
+                return null;
+            }
+
+            JsonObject data = jsonResponse.getAsJsonObject("data");
+            if (data == null || !data.has("link")) {
+                System.err.println("Imgur API response missing data.link: " + responseBody);
+                return null;
+            }
+
+            String imageUrl = data.get("link").getAsString();
+            if (originalFileName.endsWith(".gif")) {
+                return normalizeAnimatedImgurLink(data, imageUrl);
+            }
+            return imageUrl;
+        } catch (Exception jsonEx) {
+            System.err.println("Failed to parse Imgur response: " + jsonEx.getMessage());
+            System.err.println("Response was: " + responseBody);
+            return null;
+        }
+    }
+
+    private static String normalizeAnimatedImgurLink(JsonObject data, String imageUrl) {
+        String lower = imageUrl.toLowerCase();
+        if (lower.endsWith(".gifv")) {
+            return imageUrl.substring(0, imageUrl.length() - 5) + ".gif";
+        }
+        if (lower.endsWith(".mp4") && data.has("id")) {
+            return "https://i.imgur.com/" + data.get("id").getAsString() + ".gif";
+        }
+        return imageUrl;
     }
 
     private static String guessPicturesDir() {
