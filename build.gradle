@@ -1,7 +1,9 @@
 plugins {
+    id 'java'
     id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+    id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
 architectury {
@@ -67,4 +69,187 @@ subprojects {
             // retrieving dependencies.
         }
     }
+}
+
+def gitOutput(List<String> command) {
+    def output = new ByteArrayOutputStream()
+    exec {
+        commandLine command
+        standardOutput = output
+        errorOutput = new ByteArrayOutputStream()
+        ignoreExitValue = true
+    }
+    return output.toString("UTF-8").trim()
+}
+
+def latestReleaseTag() {
+    def tag = gitOutput(['git', 'describe', '--tags', '--abbrev=0', '--match', 'v*'])
+    return tag?.trim() ? tag.trim() : null
+}
+
+def parseSemverTag(String tag) {
+    if (tag == null) return null
+    def m = (tag =~ /^v(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/)
+    if (!m.matches()) return null
+    return [
+            major: Integer.parseInt(m.group(1)),
+            minor: Integer.parseInt(m.group(2)),
+            patch: Integer.parseInt(m.group(3)),
+            tag  : tag
+    ]
+}
+
+def compareSemver(Map a, Map b) {
+    if (a.major != b.major) return a.major <=> b.major
+    if (a.minor != b.minor) return a.minor <=> b.minor
+    return a.patch <=> b.patch
+}
+
+def previousReleaseTagForCurrentVersion() {
+    def current = parseSemverTag("v${rootProject.mod_version}")
+    if (current == null) {
+        return latestReleaseTag()
+    }
+
+    def tags = gitOutput(['git', 'tag', '--list', 'v*'])
+            .readLines()
+            .collect { it.trim() }
+            .findAll { !it.isEmpty() }
+
+    def parsed = tags.collect { parseSemverTag(it) }.findAll { it != null }
+    def previous = parsed.findAll { compareSemver(it, current) < 0 }
+            .max { a, b -> compareSemver(a, b) }
+    return previous?.tag
+}
+
+def parseSemverFromSubject(String subject) {
+    if (subject == null) return null
+    def m = (subject =~ /(?:^|\\s)v(\\d+)\\.(\\d+)\\.(\\d+)(?:\\b|:)/)
+    if (!m.find()) return null
+    return [
+            major: Integer.parseInt(m.group(1)),
+            minor: Integer.parseInt(m.group(2)),
+            patch: Integer.parseInt(m.group(3)),
+            label: "v${m.group(1)}.${m.group(2)}.${m.group(3)}"
+    ]
+}
+
+def previousReleaseRefOnBranch() {
+    def current = parseSemverTag("v${rootProject.mod_version}")
+    if (current == null) return [ref: (latestReleaseTag() ?: ''), label: (latestReleaseTag() ?: '')]
+
+    def lines = gitOutput(['git', 'log', '--first-parent', '--pretty=format:%H%x09%s'])
+            .readLines()
+
+    def sameLine = lines.find { line ->
+        def parts = line.split('\\t', 2)
+        def sem = parseSemverFromSubject(parts.length > 1 ? parts[1] : '')
+        sem != null &&
+                sem.major == current.major &&
+                sem.minor == current.minor &&
+                sem.patch < current.patch
+    }
+    if (sameLine != null) {
+        def parts = sameLine.split('\\t', 2)
+        def sem = parseSemverFromSubject(parts.length > 1 ? parts[1] : '')
+        return [ref: parts[0], label: sem.label]
+    }
+
+    def fallback = lines.find { line ->
+        def parts = line.split('\\t', 2)
+        def sem = parseSemverFromSubject(parts.length > 1 ? parts[1] : '')
+        sem != null && compareSemver(sem, current) < 0
+    }
+    if (fallback != null) {
+        def parts = fallback.split('\\t', 2)
+        def sem = parseSemverFromSubject(parts.length > 1 ? parts[1] : '')
+        return [ref: parts[0], label: sem.label]
+    }
+
+    def tag = previousReleaseTagForCurrentVersion()
+    return [ref: (tag ?: ''), label: (tag ?: '')]
+}
+
+def curseforgeChangelog() {
+    def previous = previousReleaseRefOnBranch()
+    def range = previous.ref ? "${previous.ref}..HEAD" : "HEAD"
+    def log = gitOutput(['git', 'log', '--pretty=format:- %h %s', range])
+
+    if (!log?.trim()) {
+        return previous.label ?
+                "No commits found since `${previous.label}`." :
+                "No commits found."
+    }
+
+    def header = previous.label ?
+            "## Changes since ${previous.label}\n\n" :
+            "## Changes\n\n"
+    return header + log + "\n"
+}
+
+def fabricRemapJar = project(':fabric').tasks.named('remapJar')
+def neoforgeRemapJar = project(':neoforge').tasks.named('remapJar')
+def curseApiKey = {
+    (System.getenv('CURSEFORGE_TOKEN') ?: (findProperty('curseforge_api_key') ?: "")).toString()
+}
+
+def makeCurseArtifact = { File file, String displayName, List<String> versionTags ->
+    def artifact = new com.matthewprenger.cursegradle.CurseArtifact()
+    artifact.artifact = file
+    artifact.displayName = displayName
+    artifact.releaseType = 'release'
+    artifact.changelogType = 'markdown'
+    artifact.changelog = curseforgeChangelog()
+    artifact.gameVersionStrings = versionTags
+    artifact.relations {
+        requiredDependency 'architectury-api'
+    }
+    artifact
+}
+
+tasks.register('curseforgeFabricUpload', com.matthewprenger.cursegradle.CurseUploadTask) {
+    group = 'publishing'
+    description = 'Uploads Fabric jar to CurseForge as a separate file entry.'
+    dependsOn(fabricRemapJar)
+    apiKey = curseApiKey()
+    projectId = '1283860'
+    mainArtifact = makeCurseArtifact(
+            fabricRemapJar.get().archiveFile.get().asFile,
+            fabricRemapJar.get().archiveFileName.get(),
+            ['1.21.1', 'Fabric']
+    )
+    additionalArtifacts = []
+
+    doFirst {
+        if (!apiKey) {
+            throw new GradleException("Missing CurseForge API token. Set CURSEFORGE_TOKEN (recommended) or -Pcurseforge_api_key.")
+        }
+    }
+}
+
+tasks.register('curseforgeNeoForgeUpload', com.matthewprenger.cursegradle.CurseUploadTask) {
+    group = 'publishing'
+    description = 'Uploads NeoForge jar to CurseForge as a separate file entry.'
+    dependsOn(neoforgeRemapJar)
+    apiKey = curseApiKey()
+    projectId = '1283860'
+    mainArtifact = makeCurseArtifact(
+            neoforgeRemapJar.get().archiveFile.get().asFile,
+            neoforgeRemapJar.get().archiveFileName.get(),
+            ['1.21.1', 'NeoForge']
+    )
+    additionalArtifacts = []
+
+    doFirst {
+        if (!apiKey) {
+            throw new GradleException("Missing CurseForge API token. Set CURSEFORGE_TOKEN (recommended) or -Pcurseforge_api_key.")
+        }
+    }
+}
+
+tasks.register('publishCurseForge') {
+    group = 'publishing'
+    description = 'Builds Fabric+NeoForge jars and uploads each as a separate CurseForge file.'
+    dependsOn(tasks.named('curseforgeFabricUpload'))
+    dependsOn(tasks.named('curseforgeNeoForgeUpload'))
 }
