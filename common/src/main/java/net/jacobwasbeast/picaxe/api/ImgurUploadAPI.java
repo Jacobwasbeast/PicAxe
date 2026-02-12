@@ -80,7 +80,7 @@ public class ImgurUploadAPI {
             HttpURLConnection conn = openMultipartUploadConnection();
             String boundary = "----PicAxeBoundary" + System.currentTimeMillis();
             conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-            conn.setRequestProperty("User-Agent", "PicAxe-Mod/1.1.1");
+            conn.setRequestProperty("User-Agent", "PicAxe-Mod/1.1.2");
 
             writeMultipartBody(conn, boundary, path, fileName);
 
