@@ -91,7 +91,7 @@ For detailed crafting recipes and instructions, see **[RECIPES.md](RECIPES.md)**
 This mod requires the **Architectury API** and supports both **Fabric** and **NeoForge** mod loaders.
 
 **Minecraft Version**: 1.21.1
-**Current Mod Version**: 1.1.0
+**Current Mod Version**: 1.1.2
 
 ### For Fabric:
 
@@ -126,13 +126,10 @@ This mod is built using the Architectury toolchain for cross-platform compatibil
 
 ## Changelog & Updates
 
-The mod has undergone significant development with major improvements including:
-- Modern tabbed configuration interfaces
-- Advanced image positioning and transformation controls
-- Enhanced lighting system for 6-Sided Image Blocks
-- Improved rendering and performance optimizations
-- Cross-platform compatibility improvements
+### v1.1.2
+- Added an oak planks background toggle for Image Frames.
+- Fixed image rotation tiling behavior so rotated textures render correctly.
+- Synced Image Frame config networking updates for the new background toggle setting.
 
 For detailed version history, check the project's commit history and releases.
-
 
