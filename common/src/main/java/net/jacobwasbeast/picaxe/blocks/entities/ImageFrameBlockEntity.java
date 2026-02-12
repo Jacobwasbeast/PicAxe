@@ -20,6 +20,7 @@ public class ImageFrameBlockEntity extends BlockEntity {
     private int frameWidth = 1;
     private int frameHeight = 1;
     private boolean stretchToFit = false;
+    private boolean showOakPlanksBackground = true;
     private ImageFrameAlignment alignment = ImageFrameAlignment.CENTER;
     private double offsetX = 0;
     private double offsetY = 0;
@@ -36,12 +37,17 @@ public class ImageFrameBlockEntity extends BlockEntity {
     public boolean shouldStretchToFit() { return this.stretchToFit; }
     public ImageFrameAlignment getAlignment() { return this.alignment; }
     public RotationConfig getRotation() { return this.rotation; }
+    public boolean shouldShowOakPlanksBackground() { return this.showOakPlanksBackground; }
 
     public void setConfiguration(String url, int width, int height, boolean stretch, ImageFrameAlignment alignment, double offsetX, double offsetY, double offsetZ) {
-        setConfiguration(url, width, height, stretch, alignment, offsetX, offsetY, offsetZ, this.rotation);
+        setConfiguration(url, width, height, stretch, alignment, offsetX, offsetY, offsetZ, this.rotation, this.showOakPlanksBackground);
     }
 
     public void setConfiguration(String url, int width, int height, boolean stretch, ImageFrameAlignment alignment, double offsetX, double offsetY, double offsetZ, RotationConfig rotation) {
+        setConfiguration(url, width, height, stretch, alignment, offsetX, offsetY, offsetZ, rotation, this.showOakPlanksBackground);
+    }
+
+    public void setConfiguration(String url, int width, int height, boolean stretch, ImageFrameAlignment alignment, double offsetX, double offsetY, double offsetZ, RotationConfig rotation, boolean showOakPlanksBackground) {
         this.imageUrl = url;
         this.frameWidth = Mth.clamp(width, 1, 32);
         this.frameHeight = Mth.clamp(height, 1, 32);
@@ -51,6 +57,7 @@ public class ImageFrameBlockEntity extends BlockEntity {
         this.offsetY = Mth.clamp(offsetY, -32, 32);
         this.offsetZ = Mth.clamp(offsetZ, -32, 32);
         this.rotation = rotation != null ? rotation.copy() : new RotationConfig();
+        this.showOakPlanksBackground = showOakPlanksBackground;
 
         this.setChanged();
         if (level != null && !level.isClientSide) {
@@ -74,6 +81,7 @@ public class ImageFrameBlockEntity extends BlockEntity {
         tag.putInt("frameWidth", this.frameWidth);
         tag.putInt("frameHeight", this.frameHeight);
         tag.putBoolean("stretchToFit", this.stretchToFit);
+        tag.putBoolean("showOakPlanksBackground", this.showOakPlanksBackground);
         tag.putString("alignment", this.alignment.name()); // save alignment
         tag.putDouble("offsetX", this.offsetX);
         tag.putDouble("offsetY", this.offsetY);
@@ -88,6 +96,7 @@ public class ImageFrameBlockEntity extends BlockEntity {
         this.frameWidth = tag.getInt("frameWidth");
         this.frameHeight = tag.getInt("frameHeight");
         this.stretchToFit = tag.getBoolean("stretchToFit");
+        this.showOakPlanksBackground = !tag.contains("showOakPlanksBackground") || tag.getBoolean("showOakPlanksBackground");
 
         if (tag.contains("alignment")) {
             try {
@@ -154,6 +163,14 @@ public class ImageFrameBlockEntity extends BlockEntity {
 
     public void setAlignment(ImageFrameAlignment alignment) {
         this.alignment = alignment;
+        this.setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public void setShowOakPlanksBackground(boolean showOakPlanksBackground) {
+        this.showOakPlanksBackground = showOakPlanksBackground;
         this.setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);

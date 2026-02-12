@@ -25,9 +25,9 @@ public record UpdateImageFramePayload(
         double offX,
         double offY,
         double offZ,
-        RotationConfig rotation
+        RotationConfig rotation,
+        boolean showOakPlanksBackground
 ) implements CustomPacketPayload {
-
     public static final Type<UpdateImageFramePayload> TYPE =
             new Type<>(ResourceLocation.tryBuild(Main.MOD_ID, "update_image_frame"));
 
@@ -62,8 +62,9 @@ public record UpdateImageFramePayload(
                     System.out.println("UpdateImageFramePayload decode: rotation=" + rotationDegrees + "° flipH=" + flipH + " flipV=" + flipV);
                     RotationConfig rotation = new RotationConfig(rotationDegrees, flipH, flipV);
                     System.out.println("UpdateImageFramePayload decode: created RotationConfig=" + rotation.getRotation() + "° flip:" + rotation.isFlipHorizontal() + "," + rotation.isFlipVertical());
+                    boolean showOakPlanksBackground = ByteBufCodecs.BOOL.decode(buf);
 
-                    return new UpdateImageFramePayload(pos, url, width, height, stretch, alignment, offX, offY, offZ, rotation);
+                    return new UpdateImageFramePayload(pos, url, width, height, stretch, alignment, offX, offY, offZ, rotation, showOakPlanksBackground);
                 }
 
                 @Override
@@ -85,6 +86,7 @@ public record UpdateImageFramePayload(
                     ByteBufCodecs.INT.encode(buf, p.rotation().getRotation());
                     ByteBufCodecs.BOOL.encode(buf, p.rotation().isFlipHorizontal());
                     ByteBufCodecs.BOOL.encode(buf, p.rotation().isFlipVertical());
+                    ByteBufCodecs.BOOL.encode(buf, p.showOakPlanksBackground());
                 }
             };
 
@@ -110,7 +112,8 @@ public record UpdateImageFramePayload(
                                 payload.offX(),
                                 payload.offY(),
                                 payload.offZ(),
-                                payload.rotation()
+                                payload.rotation(),
+                                payload.showOakPlanksBackground()
                         );
                     }
                 }

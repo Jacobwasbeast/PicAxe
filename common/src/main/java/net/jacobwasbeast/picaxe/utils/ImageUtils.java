@@ -531,6 +531,12 @@ public class ImageUtils {
             }
         }
 
+        // Keep UVs in bounds so arbitrary-angle rotation does not sample wrapped tiles.
+        for (float[] corner : corners) {
+            corner[0] = Math.max(0.0f, Math.min(1.0f, corner[0]));
+            corner[1] = Math.max(0.0f, Math.min(1.0f, corner[1]));
+        }
+
         // Return as flat array in the order expected by drawDoubleSidedQuadUV
         return new float[]{
             corners[0][0], corners[0][1], // (x0,y0) -> u00, v00

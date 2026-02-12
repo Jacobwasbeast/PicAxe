@@ -74,7 +74,7 @@ public class ImageFrameBlockRenderer implements BlockEntityRenderer<ImageFrameBl
         // =========================
         // Render the wooden frame
         // =========================
-        {
+        if (blockEntity.shouldShowOakPlanksBackground()) {
             poseStack.pushPose();
 
             // Z location in the local face space (+Z points out of the block after the rotation above).

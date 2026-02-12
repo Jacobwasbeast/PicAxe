@@ -262,7 +262,8 @@ public class Block3DPreview {
                     src.getOffsetX(),
                     src.getOffsetY(),
                     src.getOffsetZ(),
-                    src.getRotation()
+                    src.getRotation(),
+                    src.shouldShowOakPlanksBackground()
             );
         } else if (blockEntity instanceof SixSidedImageBlockEntity sixSided && newBlockEntity instanceof SixSidedImageBlockEntity src) {
             // Update all face images and rotations
