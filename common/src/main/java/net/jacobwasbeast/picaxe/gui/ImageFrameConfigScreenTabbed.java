@@ -28,6 +28,7 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
     private String imageUrl;
     private int frameWidth, frameHeight;
     private boolean stretchToFit;
+    private boolean showOakPlanksBackground;
     private ImageFrameAlignment alignment;
     private double offsetX, offsetY, offsetZ;
     private RotationConfig rotation;
@@ -48,6 +49,7 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
         this.frameWidth = blockEntity.getFrameWidth();
         this.frameHeight = blockEntity.getFrameHeight();
         this.stretchToFit = blockEntity.shouldStretchToFit();
+        this.showOakPlanksBackground = blockEntity.shouldShowOakPlanksBackground();
         this.alignment = blockEntity.getAlignment();
         this.offsetX = blockEntity.getOffsetX();
         this.offsetY = blockEntity.getOffsetY();
@@ -62,7 +64,7 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
         addTab(imageTab);
 
         // Size & Layout Tab - Dimensions and stretch
-        sizeLayoutTab = new SizeLayoutTab(frameWidth, frameHeight, stretchToFit,
+        sizeLayoutTab = new SizeLayoutTab(frameWidth, frameHeight, stretchToFit, showOakPlanksBackground,
                 this::onSizeLayoutChanged);
         addTab(sizeLayoutTab);
 
@@ -83,7 +85,7 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
     protected void initialize3DPreview() {
         // Create a preview block entity with current settings
         ImageFrameBlockEntity previewEntity = new ImageFrameBlockEntity(blockEntity.getBlockPos(), blockEntity.getBlockState());
-        previewEntity.setConfiguration(imageUrl, frameWidth, frameHeight, stretchToFit, alignment, offsetX, offsetY, offsetZ, rotation);
+        previewEntity.setConfiguration(imageUrl, frameWidth, frameHeight, stretchToFit, alignment, offsetX, offsetY, offsetZ, rotation, showOakPlanksBackground);
 
         setup3DPreview(previewEntity, blockEntity);
     }
@@ -109,7 +111,8 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
                 offsetX,
                 offsetY,
                 offsetZ,
-                rotation
+                rotation,
+                showOakPlanksBackground
         );
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         payload.write(buf);
@@ -123,7 +126,7 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
         if (preview3D != null) {
             System.out.println("ImageFrameConfigScreenTabbed: updatePreview called with offsets: x=" + offsetX + ", y=" + offsetY + ", z=" + offsetZ);
             ImageFrameBlockEntity previewEntity = new ImageFrameBlockEntity(blockEntity.getBlockPos(), blockEntity.getBlockState());
-            previewEntity.setConfiguration(imageUrl, frameWidth, frameHeight, stretchToFit, alignment, offsetX, offsetY, offsetZ, rotation);
+            previewEntity.setConfiguration(imageUrl, frameWidth, frameHeight, stretchToFit, alignment, offsetX, offsetY, offsetZ, rotation, showOakPlanksBackground);
             update3DPreview(previewEntity);
         } else {
             System.out.println("ImageFrameConfigScreenTabbed: updatePreview called but preview3D is null");
@@ -136,10 +139,11 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
         updatePreview();
     }
 
-    private void onSizeLayoutChanged(int width, int height, boolean stretch) {
+    private void onSizeLayoutChanged(int width, int height, boolean stretch, boolean showBackground) {
         this.frameWidth = width;
         this.frameHeight = height;
         this.stretchToFit = stretch;
+        this.showOakPlanksBackground = showBackground;
         updatePreview();
     }
 
@@ -322,18 +326,23 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
     private static class SizeLayoutTab extends ConfigTab implements BlockConfigScreen.UnfocusableTab {
         private int width, height;
         private boolean stretch;
+        private boolean showBackground;
         private final SizeLayoutChangeListener onChanged;
 
         private EditBox widthInput, heightInput;
         private Button stretchButton;
+        private Button backgroundButton;
 
         interface SizeLayoutChangeListener {
-            void onChanged(int width, int height, boolean stretch);
+            void onChanged(int width, int height, boolean stretch, boolean showBackground);
         }
 
-        SizeLayoutTab(int width, int height, boolean stretch, SizeLayoutChangeListener onChanged) {
+        SizeLayoutTab(int width, int height, boolean stretch, boolean showBackground, SizeLayoutChangeListener onChanged) {
             super("size", Component.translatable("picaxe.config.tab.size"), Component.literal("📏"));
-            this.width = width; this.height = height; this.stretch = stretch;
+            this.width = width;
+            this.height = height;
+            this.stretch = stretch;
+            this.showBackground = showBackground;
             this.onChanged = onChanged;
         }
 
@@ -359,10 +368,18 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
             stretchButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
                     Component.translatable("picaxe.screen.image_frame.stretch_tooltip")));
 
+            // Oak planks background visibility toggle button
+            backgroundButton = CustomButton.primary(contentX + 130, contentY + 70, 180, 24,
+                    Component.translatable(showBackground ? "picaxe.screen.image_frame.background_on" : "picaxe.screen.image_frame.background_off"),
+                    button -> toggleBackground());
+            backgroundButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                    Component.translatable("picaxe.screen.image_frame.background_tooltip")));
+
             // Register widgets with tab
             addWidget(widthInput);
             addWidget(heightInput);
             addWidget(stretchButton);
+            addWidget(backgroundButton);
         }
 
         private void onWidthChanged(String widthStr) {
@@ -396,8 +413,15 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
             notifyChanged();
         }
 
+        private void toggleBackground() {
+            this.showBackground = !this.showBackground;
+            backgroundButton.setMessage(Component.translatable(showBackground ?
+                    "picaxe.screen.image_frame.background_on" : "picaxe.screen.image_frame.background_off"));
+            notifyChanged();
+        }
+
         private void notifyChanged() {
-            onChanged.onChanged(width, height, stretch);
+            onChanged.onChanged(width, height, stretch, showBackground);
         }
 
         @Override
@@ -431,6 +455,7 @@ public class ImageFrameConfigScreenTabbed extends BlockConfigScreen {
 
             // Stretch control
             stretchButton.render(gui, mouseX, mouseY, partialTick);
+            backgroundButton.render(gui, mouseX, mouseY, partialTick);
         }
 
         // Event handling is now managed by base ConfigTab class

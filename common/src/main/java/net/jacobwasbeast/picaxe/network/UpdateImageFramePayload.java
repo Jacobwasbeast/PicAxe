@@ -19,6 +19,7 @@ public class UpdateImageFramePayload {
     public final double offsetY;
     public final double offsetZ;
     public final RotationConfig rotation;
+    public final boolean showOakPlanksBackground;
 
     public UpdateImageFramePayload(
             BlockPos pos,
@@ -30,7 +31,8 @@ public class UpdateImageFramePayload {
             double offsetX,
             double offsetY,
             double offsetZ,
-            RotationConfig rotation
+            RotationConfig rotation,
+            boolean showOakPlanksBackground
     ) {
         this.pos = pos;
         this.url = url;
@@ -42,6 +44,7 @@ public class UpdateImageFramePayload {
         this.offsetY = offsetY;
         this.offsetZ = offsetZ;
         this.rotation = rotation != null ? rotation.copy() : new RotationConfig();
+        this.showOakPlanksBackground = showOakPlanksBackground;
     }
 
     public UpdateImageFramePayload(FriendlyByteBuf buf) {
@@ -68,6 +71,7 @@ public class UpdateImageFramePayload {
         boolean flipH = buf.readBoolean();
         boolean flipV = buf.readBoolean();
         this.rotation = new RotationConfig(rotationDegrees, flipH, flipV);
+        this.showOakPlanksBackground = buf.readBoolean();
     }
 
     public void write(FriendlyByteBuf buf) {
@@ -83,5 +87,6 @@ public class UpdateImageFramePayload {
         buf.writeInt(rotation.getRotation());
         buf.writeBoolean(rotation.isFlipHorizontal());
         buf.writeBoolean(rotation.isFlipVertical());
+        buf.writeBoolean(showOakPlanksBackground);
     }
 }

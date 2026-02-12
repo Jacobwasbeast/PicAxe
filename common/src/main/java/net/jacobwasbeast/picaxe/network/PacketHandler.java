@@ -97,7 +97,8 @@ public class PacketHandler {
                         payload.offsetX,
                         payload.offsetY,
                         payload.offsetZ,
-                        payload.rotation
+                        payload.rotation,
+                        payload.showOakPlanksBackground
                 );
             }
         });
